@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
-  base: '/bekya/', // غيري "bekya" لاسم الـ repository بتاعك
+  base: '/bekya2.1/',
   plugins: [
     react(),
     VitePWA({
