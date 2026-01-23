@@ -286,7 +286,7 @@ export const useProductStore = create((set, get) => ({
   acceptNegotiation: async (productId) => {
     const { data: product } = await supabase
       .from('products')
-      .select('negotiated_price')
+      .select('negotiated_price, title, user_id')
       .eq('id', productId)
       .single();
 
@@ -302,6 +302,23 @@ export const useProductStore = create((set, get) => ({
       .single();
 
     if (error) throw error;
+
+    // إرسال إشعار للأدمن بأن البائع وافق
+    const { data: admins } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('role', 'admin');
+
+    if (admins && admins.length > 0) {
+      const notifications = admins.map(admin => ({
+        user_id: admin.id,
+        product_id: productId,
+        message: `✅ البائع وافق على العرض! تم نشر المنتج "${product.title}" بسعر ${product.negotiated_price} جنيه`,
+        type: 'offer'
+      }));
+
+      await supabase.from('notifications').insert(notifications);
+    }
 
     // إرسال إشعارات للمستخدمين القريبين
     await get().sendLocationNotifications(data);
