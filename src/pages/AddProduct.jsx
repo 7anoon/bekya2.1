@@ -80,7 +80,6 @@ export default function AddProduct() {
         description: formData.description,
         category: formData.category,
         images: imageUrls,
-        condition: 'pending_review', // حالة مؤقتة لحين مراجعة الأدمن
         status: 'pending' // في انتظار موافقة الأدمن
       };
       

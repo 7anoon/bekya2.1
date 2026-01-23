@@ -290,13 +290,13 @@ export const useProductStore = create((set, get) => ({
       .eq('id', productId)
       .single();
 
-    // تغيير الحالة لـ pending (في انتظار موافقة الأدمن النهائية)
+    // تغيير الحالة لـ pending مع وضع السعر النهائي
     const { data, error } = await supabase
       .from('products')
       .update({ 
         status: 'pending',
         final_price: product.negotiated_price,
-        seller_accepted: true // علامة إن البائع وافق
+        negotiation_note: 'البائع وافق - يحتاج موافقة نهائية من الإدارة'
       })
       .eq('id', productId)
       .select()

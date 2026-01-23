@@ -30,8 +30,8 @@ export default function AdminDashboard() {
   };
 
   const getStatusText = (product) => {
-    // إذا البائع وافق على العرض - يحتاج موافقة نهائية من الأدمن
-    if (product.seller_accepted) {
+    // إذا البائع وافق على العرض - نتحقق من negotiation_note
+    if (product.status === 'pending' && product.final_price && product.negotiation_note?.includes('البائع وافق')) {
       return '🎉 البائع وافق - يحتاج موافقتك النهائية';
     }
     
@@ -60,7 +60,7 @@ export default function AdminDashboard() {
     };
 
     // إذا البائع وافق - لون أخضر مميز
-    if (product.seller_accepted) {
+    if (product.status === 'pending' && product.final_price && product.negotiation_note?.includes('البائع وافق')) {
       return {
         ...baseStyle,
         background: '#10b981',
@@ -256,7 +256,7 @@ export default function AdminDashboard() {
                   )}
                   
                   {/* رسالة إذا البائع وافق */}
-                  {product.seller_accepted && (
+                  {product.status === 'pending' && product.final_price && product.negotiation_note?.includes('البائع وافق') && (
                     <div style={styles.acceptanceNotice}>
                       <strong>✅ البائع وافق على العرض!</strong>
                       <p>السعر المتفق عليه: <span style={styles.agreedPrice}>{product.final_price} جنيه</span></p>
