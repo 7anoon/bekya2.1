@@ -13,6 +13,30 @@ export default function Home() {
 
   useEffect(() => {
     loadOffers();
+    
+    // الاشتراك في تحديثات المنتجات الفورية
+    const channel = supabase
+      .channel('products-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'products',
+          filter: 'status=eq.approved'
+        },
+        (payload) => {
+          console.log('Product changed:', payload);
+          // إعادة تحميل المنتجات عند أي تغيير
+          loadProducts();
+        }
+      )
+      .subscribe();
+
+    // تنظيف الاشتراك عند مغادرة الصفحة
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {
@@ -25,7 +49,10 @@ export default function Home() {
     try {
       const data = await fetchProducts(profile?.location);
       // فلترة المنتجات: عرض منتجات البيع فقط (استبعاد إعادة التدوير)
-      const sellProducts = data.filter(product => product.choice_type === 'sell');
+      // إذا choice_type مش موجود أو null، نعتبره منتج بيع
+      const sellProducts = data.filter(product => 
+        !product.choice_type || product.choice_type === 'sell'
+      );
       
       // تطبيق الخصومات من العروض النشطة
       const productsWithDiscounts = sellProducts.map(product => {
