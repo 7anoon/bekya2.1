@@ -37,7 +37,7 @@ function App() {
   }
 
   return (
-    <BrowserRouter basename="/bekya">
+    <BrowserRouter basename="/bekya2.1">
       {user && <Navbar />}
       <Routes>
         <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />

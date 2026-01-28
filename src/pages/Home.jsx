@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useProductStore } from '../store/productStore';
 import { useAuthStore } from '../store/authStore';
 import { supabase } from '../lib/supabase';
 import ProductCard from '../components/ProductCard';
 
 export default function Home() {
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,7 +16,6 @@ export default function Home() {
   useEffect(() => {
     loadOffers();
     
-    // الاشتراك في تحديثات المنتجات الفورية
     const channel = supabase
       .channel('products-changes')
       .on(
@@ -27,13 +28,11 @@ export default function Home() {
         },
         (payload) => {
           console.log('Product changed:', payload);
-          // إعادة تحميل المنتجات عند أي تغيير
           loadProducts();
         }
       )
       .subscribe();
 
-    // تنظيف الاشتراك عند مغادرة الصفحة
     return () => {
       supabase.removeChannel(channel);
     };
@@ -48,15 +47,11 @@ export default function Home() {
   const loadProducts = async () => {
     try {
       const data = await fetchProducts(profile?.location);
-      // فلترة المنتجات: عرض منتجات البيع فقط (استبعاد إعادة التدوير)
-      // إذا choice_type مش موجود أو null، نعتبره منتج بيع
       const sellProducts = data.filter(product => 
         !product.choice_type || product.choice_type === 'sell'
       );
       
-      // تطبيق الخصومات من العروض النشطة
       const productsWithDiscounts = sellProducts.map(product => {
-        // البحث عن عرض نشط يطابق فئة المنتج
         const activeOffer = offers.find(offer => 
           offer.is_active && 
           offer.discount_percentage && 
@@ -93,12 +88,10 @@ export default function Home() {
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
-      // فلترة العروض حسب المنطقة
       const { data, error } = await query;
       
       if (error) throw error;
 
-      // عرض العروض العامة أو الخاصة بمنطقة المستخدم
       const filteredOffers = data?.filter(offer => 
         !offer.target_location || offer.target_location === profile?.location
       ) || [];
@@ -112,35 +105,105 @@ export default function Home() {
   if (loading) {
     return (
       <div className="loading">
-        <div className="spinner"></div>
+        <div className="netflix-loading"></div>
       </div>
     );
   }
 
   return (
     <div className="container">
-      {/* Netflix Hero Section */}
-      <div className="netflix-hero" style={styles.hero}>
-        <h1 style={styles.title} className="netflix-shimmer">المنتجات المتاحة</h1>
-        <p style={styles.heroSubtitle}>اكتشف أفضل العروض والمنتجات المميزة</p>
+      {/* 🌟 Hero Section */}
+      <div className="netflix-hero" style={styles.heroSection}>
+        <div style={styles.heroContent}>
+          <h1 style={styles.heroTitle} className="netflix-shimmer">
+            🛒 بيكيا
+          </h1>
+          <p style={styles.heroSubtitle}>
+            الحاجة القديمة لسه ليها قيمة
+          </p>
+          <p style={styles.heroDescription}>
+            اكتشف أفضل العروض على المنتجات المستعملة بجودة عالية
+          </p>
+          <div style={styles.heroButtons}>
+            <button className="morph-button" onClick={() => navigate('/add-product')}>
+              🎯 ابدأ البيع الآن
+            </button>
+            <button className="morph-button" style={{background: 'linear-gradient(135deg, #8b7355 0%, #6d5a42 100%)'}}>
+              🔍 تصفح المنتجات
+            </button>
+          </div>
+        </div>
+        
+        {/* Stats */}
+        <div style={styles.statsRow}>
+          <div className="stats-card" style={styles.statCard}>
+            <div className="icon-3d">📦</div>
+            <div className="stats-number">{products.length}+</div>
+            <div className="stats-label">منتج متاح</div>
+          </div>
+          <div className="stats-card" style={styles.statCard}>
+            <div className="icon-3d">✅</div>
+            <div className="stats-number">500+</div>
+            <div className="stats-label">عملية بيع</div>
+          </div>
+          <div className="stats-card" style={styles.statCard}>
+            <div className="icon-3d">⭐</div>
+            <div className="stats-number">4.8</div>
+            <div className="stats-label">تقييم العملاء</div>
+          </div>
+        </div>
       </div>
+
+      <div className="glow-divider"></div>
+
+      {/* 🎨 Categories Section */}
+      <div style={styles.categoriesSection}>
+        <h2 style={styles.sectionTitle}>
+          <span className="icon-3d" style={{marginLeft: '16px'}}>🏷️</span>
+          تصفح حسب الفئة
+        </h2>
+        <div style={styles.categoriesGrid}>
+          {[
+            {icon: '💻', name: 'إلكترونيات', count: '50+'},
+            {icon: '🪑', name: 'أثاث', count: '30+'},
+            {icon: '👕', name: 'ملابس', count: '40+'},
+            {icon: '📚', name: 'كتب', count: '25+'},
+            {icon: '🎮', name: 'ألعاب', count: '20+'},
+            {icon: '🏠', name: 'أجهزة منزلية', count: '35+'}
+          ].map((cat, i) => (
+            <div key={i} className="stats-card netflix-lift" style={styles.categoryCard}>
+              <div className="icon-3d" style={{fontSize: '48px', marginBottom: '16px'}}>
+                {cat.icon}
+              </div>
+              <h3 style={styles.categoryName}>{cat.name}</h3>
+              <p style={styles.categoryCount}>{cat.count} منتج</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="glow-divider"></div>
 
       {/* قسم العروض */}
       {offers.length > 0 && (
         <div style={styles.offersSection}>
-          <h2 style={styles.offersTitle} className="home-offers-title">🎉 العروض الحالية</h2>
-          <div style={styles.offersGrid} className="home-offers-grid">
+          <h2 style={styles.offersTitle}>
+            <span className="icon-3d" style={{marginLeft: '16px'}}>🎉</span>
+            العروض الحالية
+          </h2>
+          <div style={styles.offersGrid}>
             {offers.map((offer) => (
-              <div key={offer.id} className="card" style={styles.offerCard}>
+              <div key={offer.id} className="card netflix-spotlight netflix-lift" style={styles.offerCard}>
                 {offer.image && (
                   <img src={offer.image} alt={offer.title} style={styles.offerImage} />
                 )}
+                
                 <div style={styles.offerContent}>
                   <h3 style={styles.offerTitle}>{offer.title}</h3>
                   <p style={styles.offerDesc}>{offer.description}</p>
                   {offer.discount_percentage && (
-                    <div style={styles.discountBadge}>
-                      خصم {offer.discount_percentage}%
+                    <div style={styles.discountBadge} className="netflix-badge">
+                      🔥 خصم {offer.discount_percentage}%
                     </div>
                   )}
                   {offer.end_date && (
@@ -155,64 +218,158 @@ export default function Home() {
         </div>
       )}
 
+      <div className="glow-divider"></div>
+
+      {/* 🎯 How It Works */}
+      <div style={styles.howItWorksSection}>
+        <h2 style={styles.sectionTitle}>
+          <span className="icon-3d" style={{marginLeft: '16px'}}>🔄</span>
+          كيف يعمل بيكيا؟
+        </h2>
+        <div style={styles.stepsGrid}>
+          {[
+            {icon: '📸', title: 'صور منتجك', desc: 'التقط صور واضحة للمنتج'},
+            {icon: '💰', title: 'حدد السعر', desc: 'اقترح سعر مناسب أو دعنا نساعدك'},
+            {icon: '✅', title: 'انتظر الموافقة', desc: 'سنراجع منتجك ونوافق عليه'},
+            {icon: '🎉', title: 'ابدأ البيع', desc: 'منتجك متاح للبيع الآن!'}
+          ].map((step, i) => (
+            <div key={i} className="stats-card netflix-lift" style={styles.stepCard}>
+              <div className="icon-3d" style={{fontSize: '56px', marginBottom: '20px'}}>
+                {step.icon}
+              </div>
+              <div style={styles.stepNumber}>{i + 1}</div>
+              <h3 style={styles.stepTitle}>{step.title}</h3>
+              <p style={styles.stepDesc}>{step.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="glow-divider"></div>
+
       {/* قسم المنتجات */}
       <div style={styles.productsSection}>
-        <h2 style={styles.sectionTitle} className="home-section-title">المنتجات</h2>
+        <h2 style={styles.sectionTitle}>
+          <span className="icon-3d" style={{marginLeft: '16px'}}>🛍️</span>
+          المنتجات المتاحة
+        </h2>
         {products.length === 0 ? (
           <div style={styles.empty}>
+            <div className="icon-3d" style={{fontSize: '80px', marginBottom: '24px'}}>📦</div>
             <p>لا توجد منتجات متاحة حالياً</p>
           </div>
         ) : (
-          <div style={styles.grid} className="home-products-grid">
+          <div style={styles.grid}>
             {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
         )}
       </div>
+
+      {/* 🎯 Final CTA */}
+      <div style={styles.finalCTA}>
+        <div className="stats-card" style={styles.ctaCard}>
+          <div className="icon-3d" style={{fontSize: '64px', marginBottom: '24px'}}>🚀</div>
+          <h2 style={styles.ctaTitle}>جاهز للبدء؟</h2>
+          <p style={styles.ctaDesc}>انضم لآلاف البائعين الناجحين على بيكيا</p>
+          <button className="morph-button" onClick={() => navigate('/add-product')} style={{marginTop: '24px'}}>
+            ابدأ البيع الآن
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
 
 const styles = {
-  hero: {
+  heroSection: {
     textAlign: 'center',
     marginBottom: '60px',
-    position: 'relative',
-    zIndex: 2
+    padding: '60px 20px'
   },
-  title: {
-    fontSize: '56px',
-    marginBottom: '16px',
-    fontWeight: '800',
-    letterSpacing: '-1px'
-  },
-  heroSubtitle: {
-    fontSize: '20px',
-    color: '#d1d5db',
-    fontWeight: '400'
-  },
-  header: {
-    textAlign: 'center',
+  heroContent: {
     marginBottom: '48px'
   },
-  subtitle: {
-    color: '#7a7a7a',
+  heroTitle: {
+    fontSize: '72px',
+    marginBottom: '16px',
+    fontWeight: '900',
+    letterSpacing: '-2px'
+  },
+  heroSubtitle: {
+    fontSize: '28px',
+    color: '#d1d5db',
+    fontWeight: '600',
+    marginBottom: '16px'
+  },
+  heroDescription: {
     fontSize: '18px',
-    fontWeight: '400'
+    color: '#9ca3af',
+    marginBottom: '32px',
+    maxWidth: '600px',
+    margin: '0 auto 32px'
+  },
+  heroButtons: {
+    display: 'flex',
+    gap: '20px',
+    justifyContent: 'center',
+    flexWrap: 'wrap'
+  },
+  statsRow: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gap: '24px',
+    maxWidth: '900px',
+    margin: '0 auto'
+  },
+  statCard: {
+    textAlign: 'center'
+  },
+  categoriesSection: {
+    marginBottom: '60px'
+  },
+  sectionTitle: {
+    fontSize: '36px',
+    color: '#f9fafb',
+    marginBottom: '40px',
+    fontWeight: '700',
+    textShadow: '0 2px 10px rgba(0, 0, 0, 0.5)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  categoriesGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+    gap: '24px'
+  },
+  categoryCard: {
+    textAlign: 'center',
+    cursor: 'pointer'
+  },
+  categoryName: {
+    fontSize: '18px',
+    fontWeight: '600',
+    color: '#f9fafb',
+    marginBottom: '8px'
+  },
+  categoryCount: {
+    fontSize: '14px',
+    color: '#9ca3af'
   },
   offersSection: {
-    marginBottom: '80px',
-    position: 'relative',
-    zIndex: 2
+    marginBottom: '60px'
   },
   offersTitle: {
     fontSize: '36px',
     color: '#f9fafb',
     marginBottom: '40px',
-    textAlign: 'center',
     fontWeight: '700',
-    textShadow: '0 2px 10px rgba(0, 0, 0, 0.5)'
+    textShadow: '0 2px 10px rgba(0, 0, 0, 0.5)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   offersGrid: {
     display: 'grid',
@@ -220,17 +377,12 @@ const styles = {
     gap: '32px'
   },
   offerCard: {
-    background: 'linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(31, 41, 55, 0.95) 100%)',
-    border: '1px solid rgba(107, 124, 89, 0.2)',
-    overflow: 'hidden',
-    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-    position: 'relative'
+    overflow: 'hidden'
   },
   offerImage: {
     width: '100%',
     height: '260px',
-    objectFit: 'cover',
-    transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
+    objectFit: 'cover'
   },
   offerContent: {
     padding: '32px'
@@ -239,109 +391,166 @@ const styles = {
     fontSize: '24px',
     fontWeight: '700',
     color: '#f9fafb',
-    marginBottom: '12px',
-    textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
+    marginBottom: '12px'
   },
   offerDesc: {
     color: '#d1d5db',
     marginBottom: '20px',
-    lineHeight: '1.7',
-    fontSize: '15px'
+    lineHeight: '1.7'
   },
   discountBadge: {
     display: 'inline-block',
-    background: 'linear-gradient(135deg, #6b7c59 0%, #556b2f 100%)',
-    color: 'white',
-    padding: '10px 20px',
-    borderRadius: '24px',
-    fontSize: '15px',
-    fontWeight: '700',
-    marginBottom: '12px',
-    boxShadow: '0 4px 15px rgba(107, 124, 89, 0.4), 0 0 20px rgba(107, 124, 89, 0.2)',
-    textTransform: 'uppercase',
-    letterSpacing: '1px'
+    marginBottom: '12px'
   },
   offerDate: {
     fontSize: '13px',
-    color: '#9ca3af',
-    fontWeight: '500'
+    color: '#9ca3af'
+  },
+  howItWorksSection: {
+    marginBottom: '60px'
+  },
+  stepsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+    gap: '32px'
+  },
+  stepCard: {
+    textAlign: 'center',
+    position: 'relative'
+  },
+  stepNumber: {
+    position: 'absolute',
+    top: '20px',
+    right: '20px',
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    background: 'linear-gradient(135deg, #6b7c59 0%, #556b2f 100%)',
+    color: 'white',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '20px',
+    fontWeight: '700',
+    boxShadow: '0 4px 15px rgba(107, 124, 89, 0.4)'
+  },
+  stepTitle: {
+    fontSize: '20px',
+    fontWeight: '700',
+    color: '#f9fafb',
+    marginBottom: '12px'
+  },
+  stepDesc: {
+    fontSize: '15px',
+    color: '#d1d5db',
+    lineHeight: '1.6'
   },
   productsSection: {
-    marginTop: '60px',
-    position: 'relative',
-    zIndex: 2
-  },
-  sectionTitle: {
-    fontSize: '32px',
-    color: '#f9fafb',
-    marginBottom: '40px',
-    fontWeight: '700',
-    textShadow: '0 2px 10px rgba(0, 0, 0, 0.5)'
+    marginBottom: '60px'
   },
   empty: {
     textAlign: 'center',
     padding: '80px 20px',
-    color: '#9ca3af',
-    fontSize: '17px'
+    color: '#9ca3af'
   },
   grid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
     gap: '40px'
   },
-  '@media (max-width: 768px)': {
-    title: {
-      fontSize: '32px'
-    },
-    offersTitle: {
-      fontSize: '26px'
-    },
-    offersGrid: {
-      gridTemplateColumns: '1fr',
-      gap: '24px'
-    },
-    grid: {
-      gridTemplateColumns: '1fr',
-      gap: '24px'
-    },
-    offerContent: {
-      padding: '24px'
-    }
+  finalCTA: {
+    marginTop: '80px',
+    marginBottom: '60px'
+  },
+  ctaCard: {
+    textAlign: 'center',
+    padding: '60px 40px',
+    maxWidth: '600px',
+    margin: '0 auto'
+  },
+  ctaTitle: {
+    fontSize: '36px',
+    fontWeight: '800',
+    color: '#f9fafb',
+    marginBottom: '16px'
+  },
+  ctaDesc: {
+    fontSize: '18px',
+    color: '#d1d5db',
+    lineHeight: '1.6'
   }
 };
 
-// Add responsive CSS
-if (typeof window !== 'undefined') {
-  const style = document.createElement('style');
-  style.textContent = `
-    @media (max-width: 768px) {
-      .home-title {
-        font-size: 24px !important;
-      }
-      .home-offers-title {
-        font-size: 22px !important;
-      }
-      .home-offers-grid {
-        grid-template-columns: 1fr !important;
-        gap: 16px !important;
-      }
-      .home-products-grid {
-        grid-template-columns: 1fr !important;
-        gap: 16px !important;
-      }
+
+// Responsive CSS
+const responsiveStyles = `
+  @media (max-width: 768px) {
+    .netflix-hero {
+      padding: 40px 16px !important;
     }
     
-    @media (max-width: 480px) {
-      .home-title {
-        font-size: 20px !important;
-      }
-      .home-offers-title {
-        font-size: 18px !important;
-      }
-      .home-section-title {
-        font-size: 18px !important;
-      }
+    .netflix-hero h1 {
+      font-size: 48px !important;
     }
-  `;
-  document.head.appendChild(style);
+    
+    .netflix-hero p {
+      font-size: 16px !important;
+    }
+    
+    .morph-button {
+      width: 100%;
+      margin-bottom: 12px;
+    }
+    
+    .stats-card {
+      padding: 20px !important;
+    }
+    
+    .icon-3d {
+      width: 48px !important;
+      height: 48px !important;
+      font-size: 24px !important;
+    }
+    
+    .stats-number {
+      font-size: 32px !important;
+    }
+    
+    .category-card {
+      padding: 20px !important;
+    }
+    
+    .offer-card {
+      margin-bottom: 16px;
+    }
+    
+    .step-card {
+      padding: 24px !important;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .netflix-hero h1 {
+      font-size: 36px !important;
+    }
+    
+    .netflix-hero p {
+      font-size: 14px !important;
+    }
+    
+    .stats-number {
+      font-size: 28px !important;
+    }
+    
+    .sectionTitle {
+      font-size: 24px !important;
+    }
+  }
+`;
+
+// Inject responsive styles
+if (typeof document !== 'undefined') {
+  const styleElement = document.createElement('style');
+  styleElement.textContent = responsiveStyles;
+  document.head.appendChild(styleElement);
 }
