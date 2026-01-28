@@ -119,8 +119,10 @@ export default function Home() {
 
   return (
     <div className="container">
-      <div style={styles.header}>
-        <h1 style={styles.title} className="home-title">المنتجات المتاحة</h1>
+      {/* Netflix Hero Section */}
+      <div className="netflix-hero" style={styles.hero}>
+        <h1 style={styles.title} className="netflix-shimmer">المنتجات المتاحة</h1>
+        <p style={styles.heroSubtitle}>اكتشف أفضل العروض والمنتجات المميزة</p>
       </div>
 
       {/* قسم العروض */}
@@ -173,110 +175,137 @@ export default function Home() {
 }
 
 const styles = {
-  header: {
+  hero: {
     textAlign: 'center',
-    marginBottom: '40px'
+    marginBottom: '60px',
+    position: 'relative',
+    zIndex: 2
   },
   title: {
-    fontSize: '32px',
-    color: '#000000',
-    marginBottom: '8px'
+    fontSize: '56px',
+    marginBottom: '16px',
+    fontWeight: '800',
+    letterSpacing: '-1px'
+  },
+  heroSubtitle: {
+    fontSize: '20px',
+    color: '#d1d5db',
+    fontWeight: '400'
+  },
+  header: {
+    textAlign: 'center',
+    marginBottom: '48px'
   },
   subtitle: {
-    color: '#000000',
-    fontSize: '24px',
-    fontWeight: '600'
+    color: '#7a7a7a',
+    fontSize: '18px',
+    fontWeight: '400'
   },
   offersSection: {
-    marginBottom: '50px'
+    marginBottom: '80px',
+    position: 'relative',
+    zIndex: 2
   },
   offersTitle: {
-    fontSize: '28px',
-    color: '#f59e0b',
-    marginBottom: '20px',
-    textAlign: 'center'
+    fontSize: '36px',
+    color: '#f9fafb',
+    marginBottom: '40px',
+    textAlign: 'center',
+    fontWeight: '700',
+    textShadow: '0 2px 10px rgba(0, 0, 0, 0.5)'
   },
   offersGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
-    gap: '20px'
+    gap: '32px'
   },
   offerCard: {
-    background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-    border: '2px solid #f59e0b',
-    overflow: 'hidden'
+    background: 'linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(31, 41, 55, 0.95) 100%)',
+    border: '1px solid rgba(107, 124, 89, 0.2)',
+    overflow: 'hidden',
+    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+    position: 'relative'
   },
   offerImage: {
     width: '100%',
-    height: '200px',
-    objectFit: 'cover'
+    height: '260px',
+    objectFit: 'cover',
+    transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
   },
   offerContent: {
-    padding: '20px'
+    padding: '32px'
   },
   offerTitle: {
-    fontSize: '20px',
+    fontSize: '24px',
     fontWeight: '700',
-    color: '#92400e',
-    marginBottom: '12px'
+    color: '#f9fafb',
+    marginBottom: '12px',
+    textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
   },
   offerDesc: {
-    color: '#78350f',
-    marginBottom: '12px',
-    lineHeight: '1.6'
+    color: '#d1d5db',
+    marginBottom: '20px',
+    lineHeight: '1.7',
+    fontSize: '15px'
   },
   discountBadge: {
     display: 'inline-block',
-    background: '#dc2626',
+    background: 'linear-gradient(135deg, #6b7c59 0%, #556b2f 100%)',
     color: 'white',
-    padding: '8px 16px',
-    borderRadius: '20px',
-    fontSize: '16px',
+    padding: '10px 20px',
+    borderRadius: '24px',
+    fontSize: '15px',
     fontWeight: '700',
-    marginBottom: '8px'
+    marginBottom: '12px',
+    boxShadow: '0 4px 15px rgba(107, 124, 89, 0.4), 0 0 20px rgba(107, 124, 89, 0.2)',
+    textTransform: 'uppercase',
+    letterSpacing: '1px'
   },
   offerDate: {
-    fontSize: '14px',
-    color: '#92400e',
-    fontWeight: '600'
+    fontSize: '13px',
+    color: '#9ca3af',
+    fontWeight: '500'
   },
   productsSection: {
-    marginTop: '40px'
+    marginTop: '60px',
+    position: 'relative',
+    zIndex: 2
   },
   sectionTitle: {
-    fontSize: '24px',
-    color: '#374151',
-    marginBottom: '20px'
+    fontSize: '32px',
+    color: '#f9fafb',
+    marginBottom: '40px',
+    fontWeight: '700',
+    textShadow: '0 2px 10px rgba(0, 0, 0, 0.5)'
   },
   empty: {
     textAlign: 'center',
-    padding: '60px 20px',
-    color: '#6b7280',
-    fontSize: '18px'
+    padding: '80px 20px',
+    color: '#9ca3af',
+    fontSize: '17px'
   },
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-    gap: '24px'
+    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+    gap: '40px'
   },
-  // Mobile responsive styles
   '@media (max-width: 768px)': {
     title: {
-      fontSize: '24px'
+      fontSize: '32px'
     },
     offersTitle: {
-      fontSize: '22px'
+      fontSize: '26px'
     },
     offersGrid: {
       gridTemplateColumns: '1fr',
-      gap: '16px'
+      gap: '24px'
     },
     grid: {
       gridTemplateColumns: '1fr',
-      gap: '16px'
+      gap: '24px'
     },
     offerContent: {
-      padding: '16px'
+      padding: '24px'
     }
   }
 };

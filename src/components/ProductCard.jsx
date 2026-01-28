@@ -17,7 +17,7 @@ export default function ProductCard({ product }) {
 
   return (
     <>
-      <div className="card" style={styles.card} onClick={handleCardClick}>
+      <div className="card netflix-spotlight netflix-lift" style={styles.card} onClick={handleCardClick}>
         <div 
           style={styles.imageContainer}
           onClick={handleImageClick}
@@ -28,8 +28,13 @@ export default function ProductCard({ product }) {
             style={styles.image}
           />
           {product.images.length > 1 && (
-            <div style={styles.imageCount}>
+            <div style={styles.imageCount} className="netflix-badge">
               📷 {product.images.length}
+            </div>
+          )}
+          {product.active_offer && (
+            <div style={styles.offerOverlay} className="netflix-badge">
+              🔥 خصم {product.active_offer.discount_percentage}%
             </div>
           )}
         </div>
@@ -77,14 +82,16 @@ export default function ProductCard({ product }) {
 const styles = {
   card: {
     overflow: 'hidden',
-    transition: 'transform 0.3s, box-shadow 0.3s',
-    cursor: 'pointer'
+    transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+    cursor: 'pointer',
+    animation: 'fadeInUp 0.6s ease-out',
+    position: 'relative'
   },
   imageContainer: {
     width: '100%',
-    height: '200px',
+    height: '320px',
     overflow: 'hidden',
-    background: '#f3f4f6',
+    background: 'linear-gradient(135deg, #1a1f2e 0%, #2d3748 100%)',
     position: 'relative',
     cursor: 'pointer'
   },
@@ -92,87 +99,120 @@ const styles = {
     width: '100%',
     height: '100%',
     objectFit: 'cover',
-    transition: 'transform 0.3s'
+    transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+    filter: 'brightness(0.9) contrast(1.1) saturate(1.2)'
   },
   imageCount: {
     position: 'absolute',
-    top: '8px',
-    right: '8px',
-    background: 'rgba(0, 0, 0, 0.7)',
-    color: 'white',
-    padding: '4px 8px',
-    borderRadius: '12px',
-    fontSize: '12px',
-    fontWeight: '600'
+    top: '16px',
+    right: '16px',
+    zIndex: 2
+  },
+  offerOverlay: {
+    position: 'absolute',
+    top: '16px',
+    left: '16px',
+    zIndex: 2,
+    animation: 'badge-pulse 2s ease-in-out infinite'
   },
   content: {
-    padding: '16px'
+    padding: '32px',
+    position: 'relative',
+    zIndex: 1
   },
   title: {
-    fontSize: '20px',
-    fontWeight: '600',
-    marginBottom: '8px',
-    color: '#1f2937'
+    fontSize: '24px',
+    fontWeight: '800',
+    marginBottom: '14px',
+    color: '#f9fafb',
+    lineHeight: '1.3',
+    letterSpacing: '-0.5px',
+    textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
   },
   description: {
-    color: '#6b7280',
-    fontSize: '14px',
-    marginBottom: '12px',
-    lineHeight: '1.5'
+    color: '#d1d5db',
+    fontSize: '15px',
+    marginBottom: '24px',
+    lineHeight: '1.7',
+    display: '-webkit-box',
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: 'vertical',
+    overflow: 'hidden'
   },
   details: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px',
-    marginBottom: '12px'
+    gap: '16px',
+    marginBottom: '24px'
   },
   priceContainer: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '6px'
+    gap: '12px'
   },
   offerBadge: {
-    background: '#dc2626',
+    background: 'linear-gradient(135deg, #8b7355 0%, #6d5a42 100%)',
     color: 'white',
-    padding: '4px 10px',
-    borderRadius: '12px',
-    fontSize: '12px',
+    padding: '8px 16px',
+    borderRadius: '20px',
+    fontSize: '13px',
     fontWeight: '700',
-    alignSelf: 'flex-start'
+    alignSelf: 'flex-start',
+    boxShadow: '0 4px 12px rgba(139, 115, 85, 0.4), 0 0 20px rgba(139, 115, 85, 0.2)',
+    animation: 'pulse 2s ease-in-out infinite',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px'
   },
   priceWithDiscount: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px'
+    gap: '14px'
   },
   oldPrice: {
-    fontSize: '16px',
-    color: '#9ca3af',
-    textDecoration: 'line-through'
+    fontSize: '18px',
+    color: '#6b7280',
+    textDecoration: 'line-through',
+    fontWeight: '500'
   },
   newPrice: {
-    fontSize: '22px',
-    fontWeight: 'bold',
-    color: '#dc2626'
+    fontSize: '32px',
+    fontWeight: '900',
+    background: 'linear-gradient(135deg, #6b7c59 0%, #8b7355 100%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+    letterSpacing: '-1px',
+    textShadow: '0 0 20px rgba(107, 124, 89, 0.5)'
   },
   price: {
-    fontSize: '20px',
-    fontWeight: 'bold',
-    color: '#10b981'
+    fontSize: '30px',
+    fontWeight: '900',
+    background: 'linear-gradient(135deg, #6b7c59 0%, #8b7355 100%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+    letterSpacing: '-1px'
   },
   condition: {
-    background: '#dbeafe',
-    color: '#1e40af',
-    padding: '4px 12px',
-    borderRadius: '12px',
-    fontSize: '12px'
+    background: 'rgba(107, 124, 89, 0.2)',
+    color: '#a7f3d0',
+    padding: '8px 18px',
+    borderRadius: '20px',
+    fontSize: '13px',
+    fontWeight: '700',
+    alignSelf: 'flex-start',
+    border: '1px solid rgba(107, 124, 89, 0.3)',
+    boxShadow: '0 2px 8px rgba(107, 124, 89, 0.2)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px'
   },
   seller: {
     display: 'flex',
     justifyContent: 'space-between',
-    fontSize: '12px',
-    color: '#6b7280',
-    paddingTop: '12px',
-    borderTop: '1px solid #e5e7eb'
+    fontSize: '13px',
+    color: '#9ca3af',
+    paddingTop: '24px',
+    borderTop: '2px solid rgba(107, 124, 89, 0.15)',
+    fontWeight: '600'
   }
 };

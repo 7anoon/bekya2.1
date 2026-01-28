@@ -299,7 +299,7 @@ export default function ManageOffers() {
                   <h3 style={styles.offerTitle}>{offer.title}</h3>
                   <span style={{
                     ...styles.statusBadge,
-                    background: offer.is_active ? '#10b981' : '#ef4444'
+                    background: offer.is_active ? '#6b7c59' : '#8b7355'
                   }}>
                     {offer.is_active ? 'نشط' : 'متوقف'}
                   </span>
@@ -334,8 +334,9 @@ export default function ManageOffers() {
                   <button
                     className="btn"
                     style={{
-                      background: offer.is_active ? '#f59e0b' : '#10b981',
-                      color: 'white'
+                      background: offer.is_active ? '#8b7355' : '#6b7c59',
+                      color: 'white',
+                      borderRadius: '20px'
                     }}
                     onClick={() => toggleOfferStatus(offer.id, offer.is_active)}
                   >
@@ -368,16 +369,19 @@ const styles = {
   },
   title: {
     fontSize: '32px',
-    color: '#10b981',
-    margin: 0
+    color: '#2d2d2d',
+    margin: 0,
+    fontWeight: '600'
   },
   formCard: {
-    marginBottom: '30px'
+    marginBottom: '40px',
+    padding: '32px'
   },
   formTitle: {
     fontSize: '24px',
-    color: '#374151',
-    marginBottom: '20px'
+    color: '#2d2d2d',
+    marginBottom: '24px',
+    fontWeight: '600'
   },
   field: {
     marginBottom: '20px',
@@ -391,8 +395,9 @@ const styles = {
   label: {
     display: 'block',
     marginBottom: '8px',
-    fontWeight: '600',
-    color: '#374151'
+    fontWeight: '500',
+    color: '#5d5d5d',
+    fontSize: '14px'
   },
   submitBtn: {
     width: '100%',
@@ -410,14 +415,16 @@ const styles = {
   },
   offerCard: {
     display: 'flex',
-    gap: '20px',
-    flexWrap: 'wrap'
+    gap: '24px',
+    flexWrap: 'wrap',
+    padding: '24px'
   },
   offerImage: {
-    width: '200px',
-    height: '200px',
+    width: '220px',
+    height: '220px',
     objectFit: 'cover',
-    borderRadius: '8px'
+    borderRadius: '16px',
+    flexShrink: 0
   },
   offerContent: {
     flex: 1,
@@ -426,27 +433,33 @@ const styles = {
   offerHeader: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '12px',
-    gap: '12px'
+    alignItems: 'flex-start',
+    marginBottom: '16px',
+    gap: '16px',
+    flexWrap: 'wrap'
   },
   offerTitle: {
-    fontSize: '20px',
+    fontSize: '22px',
     fontWeight: '600',
-    color: '#1f2937',
-    margin: 0
+    color: '#2d2d2d',
+    margin: 0,
+    flex: '1',
+    minWidth: '200px'
   },
   statusBadge: {
-    padding: '4px 12px',
-    borderRadius: '12px',
+    padding: '8px 16px',
+    borderRadius: '20px',
     color: 'white',
-    fontSize: '12px',
-    fontWeight: '600'
+    fontSize: '13px',
+    fontWeight: '500',
+    whiteSpace: 'nowrap',
+    flexShrink: 0
   },
   offerDesc: {
-    color: '#6b7280',
-    marginBottom: '16px',
-    lineHeight: '1.6'
+    color: '#7a7a7a',
+    marginBottom: '20px',
+    lineHeight: '1.7',
+    fontSize: '15px'
   },
   offerDetails: {
     display: 'flex',
@@ -455,33 +468,36 @@ const styles = {
     marginBottom: '16px'
   },
   discountBadge: {
-    background: '#fef3c7',
-    color: '#92400e',
-    padding: '6px 12px',
-    borderRadius: '8px',
+    background: 'rgba(139, 115, 85, 0.1)',
+    color: '#8b7355',
+    padding: '8px 16px',
+    borderRadius: '16px',
     fontSize: '14px',
     fontWeight: '600'
   },
   categoryBadge: {
-    background: '#dbeafe',
-    color: '#1e40af',
-    padding: '6px 12px',
-    borderRadius: '8px',
-    fontSize: '14px'
+    background: 'rgba(107, 124, 89, 0.1)',
+    color: '#556b2f',
+    padding: '8px 16px',
+    borderRadius: '16px',
+    fontSize: '14px',
+    fontWeight: '500'
   },
   locationBadge: {
-    background: '#dbeafe',
-    color: '#1e40af',
-    padding: '6px 12px',
-    borderRadius: '8px',
-    fontSize: '14px'
+    background: 'rgba(107, 124, 89, 0.1)',
+    color: '#556b2f',
+    padding: '8px 16px',
+    borderRadius: '16px',
+    fontSize: '14px',
+    fontWeight: '500'
   },
   dateBadge: {
-    background: '#fee2e2',
-    color: '#991b1b',
-    padding: '6px 12px',
-    borderRadius: '8px',
-    fontSize: '14px'
+    background: 'rgba(139, 115, 85, 0.1)',
+    color: '#8b7355',
+    padding: '8px 16px',
+    borderRadius: '16px',
+    fontSize: '14px',
+    fontWeight: '500'
   },
   offerActions: {
     display: 'flex',

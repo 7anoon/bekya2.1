@@ -225,31 +225,39 @@ export default function Navbar() {
 
 const styles = {
   nav: {
-    background: 'white',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-    marginBottom: '20px',
+    background: 'rgba(255, 255, 255, 0.85)',
+    backdropFilter: 'blur(20px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+    boxShadow: '0 2px 20px rgba(31, 38, 135, 0.1)',
+    marginBottom: '32px',
     position: 'sticky',
     top: 0,
-    zIndex: 100
+    zIndex: 100,
+    borderBottom: '1px solid rgba(107, 124, 89, 0.1)'
   },
   container: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '16px 20px',
+    padding: '20px 28px',
     position: 'relative'
   },
   logo: {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    color: '#10b981',
+    fontSize: '28px',
+    fontWeight: '800',
+    background: 'linear-gradient(135deg, #6b7c59 0%, #556b2f 100%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
     textDecoration: 'none',
-    zIndex: 101
+    zIndex: 101,
+    letterSpacing: '-0.5px',
+    transition: 'all 0.3s ease'
   },
   rightSection: {
     display: 'flex',
     alignItems: 'center',
-    gap: '16px',
+    gap: '24px',
     zIndex: 101
   },
   hamburger: {
@@ -257,39 +265,45 @@ const styles = {
     fontSize: '28px',
     background: 'none',
     border: 'none',
-    color: '#10b981',
+    color: '#6b7c59',
     cursor: 'pointer',
     padding: '8px',
-    zIndex: 101
+    zIndex: 101,
+    transition: 'all 0.3s ease'
   },
   menu: {
     display: 'flex',
-    gap: '20px',
+    gap: '28px',
     alignItems: 'center'
   },
   link: {
-    color: '#4b5563',
+    color: '#718096',
     textDecoration: 'none',
-    fontWeight: '500',
-    transition: 'color 0.3s',
-    whiteSpace: 'nowrap'
+    fontWeight: '600',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    whiteSpace: 'nowrap',
+    fontSize: '15px',
+    position: 'relative',
+    padding: '8px 0'
   },
   notificationLink: {
     position: 'relative',
-    color: '#4b5563',
+    color: '#718096',
     textDecoration: 'none',
     display: 'flex',
     alignItems: 'center',
-    padding: '8px'
+    padding: '10px',
+    transition: 'all 0.3s ease',
+    borderRadius: '12px'
   },
   bellIcon: {
-    fontSize: '20px'
+    fontSize: '22px'
   },
   badge: {
     position: 'absolute',
-    top: '-8px',
-    right: '-8px',
-    background: '#ef4444',
+    top: '2px',
+    right: '2px',
+    background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
     color: 'white',
     borderRadius: '50%',
     width: '20px',
@@ -298,15 +312,22 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     fontSize: '11px',
-    fontWeight: 'bold'
+    fontWeight: '700',
+    border: '2px solid white',
+    boxShadow: '0 2px 8px rgba(239, 68, 68, 0.4)',
+    animation: 'pulse 2s ease-in-out infinite'
   },
   logoutBtn: {
-    padding: '8px 16px',
-    background: '#ef4444',
+    padding: '10px 24px',
+    background: 'linear-gradient(135deg, #8b7355 0%, #6d5a42 100%)',
     color: 'white',
-    borderRadius: '6px',
-    fontWeight: '500',
-    whiteSpace: 'nowrap'
+    borderRadius: '20px',
+    fontWeight: '600',
+    whiteSpace: 'nowrap',
+    fontSize: '14px',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    boxShadow: '0 4px 12px rgba(139, 115, 85, 0.3)',
+    border: 'none'
   }
 };
 

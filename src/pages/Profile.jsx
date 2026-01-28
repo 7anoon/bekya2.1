@@ -93,8 +93,40 @@ export default function Profile() {
 
   return (
     <div className="container">
+      {/* Premium Stats Cards */}
+      <div style={styles.statsGrid}>
+        <div className="stats-card">
+          <div className="icon-3d">👤</div>
+          <div style={{marginTop: '16px'}}>
+            <div className="stats-number">{products.length}</div>
+            <div className="stats-label">منتجاتي</div>
+          </div>
+        </div>
+        
+        <div className="stats-card">
+          <div className="icon-3d">✅</div>
+          <div style={{marginTop: '16px'}}>
+            <div className="stats-number">{products.filter(p => p.status === 'approved').length}</div>
+            <div className="stats-label">تم الموافقة</div>
+          </div>
+        </div>
+        
+        <div className="stats-card">
+          <div className="icon-3d">⏳</div>
+          <div style={{marginTop: '16px'}}>
+            <div className="stats-number">{products.filter(p => p.status === 'pending').length}</div>
+            <div className="stats-label">قيد المراجعة</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="glow-divider"></div>
+
       <div className="card" style={styles.profileCard}>
-        <h1 style={styles.title}>الملف الشخصي</h1>
+        <h1 style={styles.title} className="netflix-shimmer">
+          <span className="icon-3d" style={{marginLeft: '16px'}}>👤</span>
+          الملف الشخصي
+        </h1>
         
         <div style={styles.info}>
           <div style={styles.infoRow}>
@@ -230,13 +262,23 @@ export default function Profile() {
 }
 
 const styles = {
+  statsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+    gap: '24px',
+    marginBottom: '40px'
+  },
   profileCard: {
-    marginBottom: '30px'
+    marginBottom: '40px',
+    padding: '40px'
   },
   title: {
-    fontSize: '28px',
-    color: '#10b981',
-    marginBottom: '24px'
+    fontSize: '36px',
+    color: '#f9fafb',
+    marginBottom: '32px',
+    fontWeight: '800',
+    display: 'flex',
+    alignItems: 'center'
   },
   info: {
     display: 'flex',
@@ -246,163 +288,177 @@ const styles = {
   infoRow: {
     display: 'flex',
     justifyContent: 'space-between',
-    padding: '12px',
-    background: '#f9fafb',
-    borderRadius: '8px'
+    padding: '16px',
+    background: 'rgba(107, 124, 89, 0.04)',
+    borderRadius: '16px',
+    border: '1px solid rgba(107, 124, 89, 0.08)'
   },
   label: {
-    fontWeight: '600',
-    color: '#374151'
+    fontWeight: '500',
+    color: '#7a7a7a',
+    fontSize: '14px'
   },
   value: {
-    color: '#6b7280'
+    color: '#2d2d2d',
+    fontWeight: '500'
   },
   productsSection: {
-    marginTop: '30px'
+    marginTop: '48px'
   },
   subtitle: {
-    fontSize: '24px',
-    color: '#374151',
-    marginBottom: '20px'
+    fontSize: '28px',
+    color: '#2d2d2d',
+    marginBottom: '32px',
+    fontWeight: '600'
   },
   empty: {
     textAlign: 'center',
-    padding: '40px',
-    color: '#6b7280'
+    padding: '60px',
+    color: '#999',
+    fontSize: '16px'
   },
   productsList: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '16px'
+    gap: '24px'
   },
   productCard: {
-    transition: 'transform 0.2s'
+    transition: 'all 0.3s ease',
+    padding: '24px'
   },
   productLayout: {
     display: 'flex',
-    gap: '20px',
+    gap: '24px',
     flexWrap: 'wrap'
   },
   productImages: {
     position: 'relative',
-    flex: '0 0 150px',
-    height: '150px'
+    flex: '0 0 180px',
+    height: '180px'
   },
   productImage: {
     width: '100%',
     height: '100%',
     objectFit: 'cover',
-    borderRadius: '8px'
+    borderRadius: '16px'
   },
   imageCount: {
     position: 'absolute',
-    bottom: '8px',
-    right: '8px',
-    background: 'rgba(0, 0, 0, 0.7)',
+    bottom: '12px',
+    right: '12px',
+    background: 'rgba(107, 124, 89, 0.9)',
+    backdropFilter: 'blur(8px)',
     color: 'white',
-    padding: '4px 8px',
-    borderRadius: '12px',
-    fontSize: '12px',
-    fontWeight: '600'
+    padding: '6px 12px',
+    borderRadius: '16px',
+    fontSize: '13px',
+    fontWeight: '500'
   },
   productInfo: {
     flex: '1',
-    minWidth: '250px'
+    minWidth: '280px'
   },
   productHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '12px'
+    marginBottom: '16px',
+    gap: '12px'
   },
   productTitle: {
-    fontSize: '18px',
+    fontSize: '20px',
     fontWeight: '600',
-    color: '#1f2937'
+    color: '#2d2d2d'
   },
   status: {
-    padding: '6px 12px',
-    borderRadius: '12px',
-    fontSize: '12px',
-    fontWeight: '600'
+    padding: '8px 16px',
+    borderRadius: '20px',
+    fontSize: '13px',
+    fontWeight: '500',
+    whiteSpace: 'nowrap'
   },
   productDesc: {
-    color: '#6b7280',
-    marginBottom: '12px'
+    color: '#7a7a7a',
+    marginBottom: '16px',
+    lineHeight: '1.6',
+    fontSize: '15px'
   },
   productDetails: {
     display: 'flex',
     justifyContent: 'space-between',
-    gap: '12px',
+    gap: '16px',
     flexWrap: 'wrap',
     fontSize: '14px',
-    color: '#374151',
-    paddingTop: '12px',
-    borderTop: '1px solid #e5e7eb'
+    color: '#5d5d5d',
+    paddingTop: '16px',
+    borderTop: '1px solid rgba(107, 124, 89, 0.1)'
   },
   rejection: {
-    marginTop: '12px',
-    padding: '12px',
-    background: '#fee2e2',
-    color: '#dc2626',
-    borderRadius: '6px',
-    fontSize: '14px'
+    marginTop: '16px',
+    padding: '16px',
+    background: 'rgba(139, 115, 85, 0.08)',
+    color: '#8b7355',
+    borderRadius: '16px',
+    fontSize: '14px',
+    border: '1px solid rgba(139, 115, 85, 0.2)'
   },
   recycleInfo: {
-    marginTop: '12px',
-    padding: '12px',
-    background: '#f0fdf4',
-    color: '#166534',
-    borderRadius: '6px',
+    marginTop: '16px',
+    padding: '16px',
+    background: 'rgba(107, 124, 89, 0.08)',
+    color: '#556b2f',
+    borderRadius: '16px',
     fontSize: '14px',
-    border: '1px solid #bbf7d0'
+    border: '1px solid rgba(107, 124, 89, 0.2)'
   },
   negotiationOffer: {
-    marginTop: '12px',
-    padding: '16px',
-    background: '#eff6ff',
-    borderRadius: '8px',
-    border: '2px solid #3b82f6'
+    marginTop: '16px',
+    padding: '20px',
+    background: 'rgba(107, 124, 89, 0.06)',
+    borderRadius: '20px',
+    border: '1px solid rgba(107, 124, 89, 0.15)'
   },
   negotiationTitle: {
-    fontSize: '16px',
+    fontSize: '18px',
     fontWeight: '600',
-    color: '#1e40af',
-    marginBottom: '12px'
+    color: '#2d2d2d',
+    marginBottom: '16px'
   },
   priceComparison: {
     display: 'flex',
     justifyContent: 'space-around',
-    marginBottom: '12px',
-    gap: '16px',
+    marginBottom: '16px',
+    gap: '20px',
     flexWrap: 'wrap'
   },
   priceLabel: {
     display: 'block',
-    fontSize: '12px',
-    color: '#6b7280',
-    marginBottom: '4px'
+    fontSize: '13px',
+    color: '#999',
+    marginBottom: '6px',
+    fontWeight: '500'
   },
   oldPrice: {
     display: 'block',
     fontSize: '18px',
-    fontWeight: '600',
-    color: '#6b7280',
+    fontWeight: '500',
+    color: '#b0b0b0',
     textDecoration: 'line-through'
   },
   newPrice: {
     display: 'block',
-    fontSize: '20px',
-    fontWeight: 'bold',
-    color: '#10b981'
+    fontSize: '22px',
+    fontWeight: '600',
+    color: '#6b7c59'
   },
   negotiationNote: {
     background: 'white',
-    padding: '10px',
-    borderRadius: '6px',
+    padding: '14px',
+    borderRadius: '12px',
     fontSize: '14px',
-    marginBottom: '12px',
-    color: '#374151'
+    marginBottom: '16px',
+    color: '#5d5d5d',
+    lineHeight: '1.6'
   },
   negotiationActions: {
     display: 'flex',

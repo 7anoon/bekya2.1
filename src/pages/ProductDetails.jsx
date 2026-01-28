@@ -487,18 +487,20 @@ const styles = {
   },
   productCard: {
     maxWidth: '1000px',
-    margin: '0 auto'
+    margin: '0 auto',
+    padding: '40px'
   },
   imageGallery: {
     marginBottom: '30px'
   },
   mainImage: {
     width: '100%',
-    height: '400px',
-    marginBottom: '16px',
-    borderRadius: '12px',
+    height: '500px',
+    marginBottom: '24px',
+    borderRadius: '24px',
     overflow: 'hidden',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    background: '#f5f5f0'
   },
   mainImg: {
     width: '100%',
@@ -507,22 +509,23 @@ const styles = {
   },
   thumbnails: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-    gap: '12px'
+    gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+    gap: '16px'
   },
   thumbnail: {
     width: '100%',
-    height: '100px',
+    height: '120px',
     objectFit: 'cover',
-    borderRadius: '8px',
+    borderRadius: '16px',
     cursor: 'pointer',
     border: '2px solid transparent',
-    transition: 'border 0.2s'
+    transition: 'all 0.3s ease',
+    background: '#f5f5f0'
   },
   details: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '24px'
+    gap: '32px'
   },
   header: {
     display: 'flex',
@@ -532,26 +535,28 @@ const styles = {
     flexWrap: 'wrap'
   },
   title: {
-    fontSize: '32px',
-    fontWeight: 'bold',
-    color: '#1f2937',
-    margin: 0
+    fontSize: '36px',
+    fontWeight: '600',
+    color: '#2d2d2d',
+    margin: 0,
+    lineHeight: '1.3'
   },
   status: {
-    padding: '8px 16px',
-    borderRadius: '20px',
+    padding: '10px 20px',
+    borderRadius: '24px',
     fontSize: '14px',
-    fontWeight: '600'
+    fontWeight: '500'
   },
   description: {
-    fontSize: '16px',
+    fontSize: '17px',
     lineHeight: '1.8',
-    color: '#6b7280'
+    color: '#7a7a7a'
   },
   priceSection: {
-    padding: '20px',
-    background: '#f9fafb',
-    borderRadius: '12px'
+    padding: '32px',
+    background: 'rgba(107, 124, 89, 0.05)',
+    borderRadius: '24px',
+    border: '1px solid rgba(107, 124, 89, 0.1)'
   },
   priceBox: {
     display: 'flex',
@@ -564,58 +569,60 @@ const styles = {
   },
   finalPrice: {
     fontSize: '32px',
-    fontWeight: 'bold',
-    color: '#10b981'
+    fontWeight: '600',
+    color: '#6b7c59'
   },
   negotiatedPrice: {
     fontSize: '28px',
-    fontWeight: 'bold',
-    color: '#3b82f6'
+    fontWeight: '600',
+    color: '#8b7355'
   },
   suggestedPrice: {
     fontSize: '28px',
-    fontWeight: 'bold',
-    color: '#f59e0b'
+    fontWeight: '600',
+    color: '#8b7355'
   },
   recycleBox: {
-    textAlign: 'center'
+    textAlign: 'center',
+    padding: '20px'
   },
   recycleTitle: {
-    fontSize: '24px',
-    color: '#10b981',
-    marginBottom: '12px'
+    fontSize: '26px',
+    color: '#6b7c59',
+    marginBottom: '16px',
+    fontWeight: '600'
   },
   recycleIdea: {
     fontSize: '16px',
-    color: '#6b7280',
-    lineHeight: '1.6'
+    color: '#7a7a7a',
+    lineHeight: '1.8'
   },
   offerPriceBox: {
-    background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-    padding: '24px',
-    borderRadius: '12px',
-    border: '3px solid #f59e0b'
+    background: 'rgba(139, 115, 85, 0.08)',
+    padding: '28px',
+    borderRadius: '24px',
+    border: '2px solid rgba(139, 115, 85, 0.2)'
   },
   offerBanner: {
-    background: '#dc2626',
+    background: '#8b7355',
     color: 'white',
-    padding: '10px 20px',
-    borderRadius: '8px',
-    fontSize: '18px',
-    fontWeight: 'bold',
+    padding: '12px 24px',
+    borderRadius: '20px',
+    fontSize: '17px',
+    fontWeight: '600',
     textAlign: 'center',
     marginBottom: '16px'
   },
   offerTitle: {
     fontSize: '20px',
-    fontWeight: 'bold',
-    color: '#92400e',
+    fontWeight: '600',
+    color: '#5d5d5d',
     marginBottom: '8px',
     textAlign: 'center'
   },
   offerDesc: {
     fontSize: '14px',
-    color: '#78350f',
+    color: '#7a7a7a',
     marginBottom: '16px',
     textAlign: 'center'
   },
@@ -646,17 +653,17 @@ const styles = {
   },
   newPriceValue: {
     fontSize: '32px',
-    fontWeight: 'bold',
-    color: '#dc2626'
+    fontWeight: '600',
+    color: '#6b7c59'
   },
   savings: {
-    background: '#10b981',
+    background: '#6b7c59',
     color: 'white',
-    padding: '12px',
-    borderRadius: '8px',
+    padding: '14px',
+    borderRadius: '16px',
     textAlign: 'center',
-    fontSize: '18px',
-    fontWeight: 'bold',
+    fontSize: '17px',
+    fontWeight: '600',
     marginBottom: '12px'
   },
   offerEndDate: {
@@ -671,34 +678,37 @@ const styles = {
     gap: '16px'
   },
   infoItem: {
-    padding: '16px',
-    background: '#f9fafb',
-    borderRadius: '8px',
+    padding: '20px',
+    background: 'rgba(107, 124, 89, 0.04)',
+    borderRadius: '20px',
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px'
+    gap: '10px',
+    border: '1px solid rgba(107, 124, 89, 0.08)'
   },
   infoLabel: {
-    fontSize: '14px',
-    color: '#6b7280',
-    fontWeight: '600'
+    fontSize: '13px',
+    color: '#999',
+    fontWeight: '500',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px'
   },
   infoValue: {
-    fontSize: '16px',
-    color: '#1f2937',
+    fontSize: '17px',
+    color: '#2d2d2d',
     fontWeight: '500'
   },
   sellerSection: {
-    padding: '20px',
-    background: '#eff6ff',
-    borderRadius: '12px',
-    border: '2px solid #3b82f6'
+    padding: '28px',
+    background: 'rgba(107, 124, 89, 0.06)',
+    borderRadius: '24px',
+    border: '1px solid rgba(107, 124, 89, 0.15)'
   },
   sectionTitle: {
     fontSize: '20px',
     fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: '16px'
+    color: '#2d2d2d',
+    marginBottom: '20px'
   },
   sellerInfo: {
     display: 'flex',
@@ -708,30 +718,30 @@ const styles = {
   sellerItem: {
     display: 'flex',
     justifyContent: 'space-between',
-    padding: '12px',
+    padding: '14px',
     background: 'white',
-    borderRadius: '8px'
+    borderRadius: '16px'
   },
   sellerLabel: {
     fontSize: '14px',
-    color: '#6b7280',
-    fontWeight: '600'
+    color: '#999',
+    fontWeight: '500'
   },
   sellerValue: {
-    fontSize: '14px',
-    color: '#1f2937',
+    fontSize: '15px',
+    color: '#2d2d2d',
     fontWeight: '500'
   },
   noteSection: {
-    padding: '20px',
-    background: '#fef3c7',
-    borderRadius: '12px',
-    border: '2px solid #f59e0b'
+    padding: '28px',
+    background: 'rgba(139, 115, 85, 0.06)',
+    borderRadius: '24px',
+    border: '1px solid rgba(139, 115, 85, 0.15)'
   },
   note: {
     fontSize: '16px',
-    color: '#92400e',
-    lineHeight: '1.6'
+    color: '#5d5d5d',
+    lineHeight: '1.7'
   },
   rejectionSection: {
     padding: '20px',
@@ -745,10 +755,10 @@ const styles = {
     lineHeight: '1.6'
   },
   adminActions: {
-    padding: '20px',
-    background: '#f0fdf4',
-    borderRadius: '12px',
-    border: '2px solid #10b981'
+    padding: '28px',
+    background: 'rgba(107, 124, 89, 0.08)',
+    borderRadius: '24px',
+    border: '1px solid rgba(107, 124, 89, 0.2)'
   },
   actionButtons: {
     display: 'flex',
@@ -779,9 +789,10 @@ const styles = {
     overflow: 'auto'
   },
   modalTitle: {
-    fontSize: '20px',
-    marginBottom: '16px',
-    color: '#10b981'
+    fontSize: '22px',
+    marginBottom: '20px',
+    color: '#2d2d2d',
+    fontWeight: '600'
   },
   field: {
     marginTop: '16px',
