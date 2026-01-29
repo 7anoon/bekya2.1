@@ -294,22 +294,22 @@ const styles = {
     border: '1px solid rgba(107, 124, 89, 0.08)'
   },
   label: {
-    fontWeight: '500',
-    color: '#7a7a7a',
+    fontWeight: '600',
+    color: '#d1d5db',
     fontSize: '14px'
   },
   value: {
-    color: '#2d2d2d',
-    fontWeight: '500'
+    color: '#f9fafb',
+    fontWeight: '600'
   },
   productsSection: {
     marginTop: '48px'
   },
   subtitle: {
     fontSize: '28px',
-    color: '#2d2d2d',
+    color: '#f9fafb',
     marginBottom: '32px',
-    fontWeight: '600'
+    fontWeight: '700'
   },
   empty: {
     textAlign: 'center',
@@ -367,8 +367,8 @@ const styles = {
   },
   productTitle: {
     fontSize: '20px',
-    fontWeight: '600',
-    color: '#2d2d2d'
+    fontWeight: '700',
+    color: '#f9fafb'
   },
   status: {
     padding: '8px 16px',
@@ -378,7 +378,7 @@ const styles = {
     whiteSpace: 'nowrap'
   },
   productDesc: {
-    color: '#7a7a7a',
+    color: '#d1d5db',
     marginBottom: '16px',
     lineHeight: '1.6',
     fontSize: '15px'
@@ -389,7 +389,7 @@ const styles = {
     gap: '16px',
     flexWrap: 'wrap',
     fontSize: '14px',
-    color: '#5d5d5d',
+    color: '#9ca3af',
     paddingTop: '16px',
     borderTop: '1px solid rgba(107, 124, 89, 0.1)'
   },
@@ -420,8 +420,8 @@ const styles = {
   },
   negotiationTitle: {
     fontSize: '18px',
-    fontWeight: '600',
-    color: '#2d2d2d',
+    fontWeight: '700',
+    color: '#f9fafb',
     marginBottom: '16px'
   },
   priceComparison: {
@@ -434,7 +434,7 @@ const styles = {
   priceLabel: {
     display: 'block',
     fontSize: '13px',
-    color: '#999',
+    color: '#9ca3af',
     marginBottom: '6px',
     fontWeight: '500'
   },
@@ -452,13 +452,14 @@ const styles = {
     color: '#6b7c59'
   },
   negotiationNote: {
-    background: 'white',
+    background: 'rgba(107, 124, 89, 0.1)',
     padding: '14px',
     borderRadius: '12px',
     fontSize: '14px',
     marginBottom: '16px',
-    color: '#5d5d5d',
-    lineHeight: '1.6'
+    color: '#d1d5db',
+    lineHeight: '1.6',
+    border: '1px solid rgba(107, 124, 89, 0.2)'
   },
   negotiationActions: {
     display: 'flex',
