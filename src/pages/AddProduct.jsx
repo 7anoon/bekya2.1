@@ -234,7 +234,8 @@ const styles = {
     fontSize: '28px',
     marginBottom: '24px',
     textAlign: 'center',
-    color: '#10b981'
+    color: '#f9fafb',
+    fontWeight: '700'
   },
   error: {
     background: '#fee2e2',
@@ -256,7 +257,7 @@ const styles = {
   },
   label: {
     fontWeight: '600',
-    color: '#374151',
+    color: '#e5e7eb',
     fontSize: '16px'
   },
   fileInput: {
@@ -272,7 +273,7 @@ const styles = {
   },
   hint: {
     fontSize: '13px',
-    color: '#6b7280',
+    color: '#9ca3af',
     marginTop: '4px'
   },
   submitBtn: {
@@ -284,11 +285,11 @@ const styles = {
   note: {
     marginTop: '20px',
     padding: '16px',
-    background: '#eff6ff',
+    background: 'rgba(107, 124, 89, 0.1)',
     borderRadius: '8px',
-    border: '1px solid #3b82f6',
+    border: '1px solid rgba(107, 124, 89, 0.3)',
     textAlign: 'center',
-    color: '#1e40af',
+    color: '#d1d5db',
     fontSize: '14px'
   }
 };
