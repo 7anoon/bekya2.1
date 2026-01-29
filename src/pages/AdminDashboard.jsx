@@ -12,6 +12,7 @@ export default function AdminDashboard() {
   const [negotiationNote, setNegotiationNote] = useState('');
   const [lightboxImages, setLightboxImages] = useState(null);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [userRole, setUserRole] = useState(null);
   const { fetchPendingProducts, approveProduct, rejectProduct, negotiateProduct } = useProductStore();
 
   const getCategoryName = (category) => {
@@ -124,21 +125,67 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     loadData();
+    
+    // Timeout fallback - إذا التحميل أخذ أكثر من 10 ثواني، نوقفه
+    const timeout = setTimeout(() => {
+      if (loading) {
+        console.error('Loading timeout - forcing stop');
+        setLoading(false);
+        alert('انتهت مهلة التحميل. يرجى التحقق من الاتصال بالإنترنت والمحاولة مرة أخرى.');
+      }
+    }, 10000);
+    
+    return () => clearTimeout(timeout);
   }, []);
 
   const loadData = async () => {
     try {
+      console.log('Starting to load data...');
+      
+      // التحقق من دور المستخدم
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert('يجب تسجيل الدخول أولاً');
+        window.location.href = '/login';
+        return;
+      }
+      
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      
+      console.log('User role:', profile?.role);
+      setUserRole(profile?.role);
+      
+      if (profile?.role !== 'admin') {
+        alert('ليس لديك صلاحية الوصول لهذه الصفحة');
+        window.location.href = '/';
+        return;
+      }
+      
       const products = await fetchPendingProducts();
-      setPendingProducts(products);
+      console.log('Fetched products:', products);
+      setPendingProducts(products || []);
 
-      const { data: users } = await supabase
+      const { data: users, error: usersError } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
       
+      if (usersError) {
+        console.error('Error fetching users:', usersError);
+      }
+      
       setAllUsers(users || []);
+      console.log('Data loaded successfully');
     } catch (err) {
       console.error('Error loading data:', err);
+      alert('حدث خطأ في تحميل البيانات: ' + err.message);
+      // حتى لو في خطأ، نوقف التحميل
+      setPendingProducts([]);
+      setAllUsers([]);
     } finally {
       setLoading(false);
     }
@@ -191,8 +238,16 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="loading">
+      <div style={styles.loadingContainer}>
         <div className="spinner"></div>
+        <p style={styles.loadingText}>جاري التحميل...</p>
+        <button 
+          className="btn btn-secondary"
+          onClick={() => window.location.reload()}
+          style={styles.refreshButton}
+        >
+          تحديث الصفحة
+        </button>
       </div>
     );
   }
@@ -448,6 +503,22 @@ export default function AdminDashboard() {
 }
 
 const styles = {
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: '60vh',
+    gap: '20px'
+  },
+  loadingText: {
+    fontSize: '18px',
+    color: '#6b7280',
+    marginTop: '16px'
+  },
+  refreshButton: {
+    marginTop: '12px'
+  },
   title: {
     fontSize: '32px',
     color: '#10b981',

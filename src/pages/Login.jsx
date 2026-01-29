@@ -16,11 +16,16 @@ export default function Login() {
     setLoading(true);
 
     try {
-      await signIn(username, password);
-      navigate('/');
+      const result = await signIn(username, password);
+      console.log('Login result:', result);
+      
+      // Wait a bit for state to update
+      setTimeout(() => {
+        window.location.href = '/bekya2.1/#/';
+      }, 500);
     } catch (err) {
+      console.error('Login error:', err);
       setError(err.message || 'خطأ في تسجيل الدخول');
-    } finally {
       setLoading(false);
     }
   };

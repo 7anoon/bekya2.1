@@ -110,7 +110,7 @@ import Navbar from './components/Navbar';
 
 function App() {
   const { user, profile, loading, loadUser } = useAuthStore();
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
@@ -118,7 +118,8 @@ function App() {
       try {
         await loadUser();
         const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
-        if (!hasSeenOnboarding) {
+        // Show onboarding only for new users who haven't seen it
+        if (!hasSeenOnboarding && !user) {
           setShowOnboarding(true);
         }
       } catch (error) {
@@ -134,7 +135,7 @@ function App() {
     });
 
     return () => subscription.unsubscribe();
-  }, [loadUser]);
+  }, [loadUser, user]);
 
   if (showSplash) {
     return <SplashScreen onComplete={() => setShowSplash(false)} />;
@@ -146,10 +147,38 @@ function App() {
 
   if (loading) {
     return (
-      <div className="loading">
+      <div className="loading" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
         <div className="netflix-loading"></div>
+        <p style={{ color: '#6b7c59', marginTop: '20px', fontSize: '18px' }}>جاري التحميل...</p>
+        <button 
+          onClick={() => {
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.reload();
+          }}
+          style={{
+            marginTop: '20px',
+            padding: '10px 20px',
+            background: '#6b7c59',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer'
+          }}
+        >
+          تحديث الصفحة
+        </button>
       </div>
     );
+  }
+
+  // Debug info
+  console.log('App State:', { user: !!user, profile: !!profile, loading, showSplash, showOnboarding });
+  
+  // If user is logged in but we're still showing login page, force redirect
+  if (user && window.location.hash === '#/login') {
+    console.log('User logged in but on login page, redirecting...');
+    window.location.hash = '#/';
   }
 
   return (

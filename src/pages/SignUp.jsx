@@ -25,17 +25,22 @@ export default function SignUp() {
     setLoading(true);
 
     try {
-      await signUp(
+      const result = await signUp(
         formData.username,
         formData.email,
         formData.password,
         formData.location,
         formData.phone
       );
-      navigate('/');
+      console.log('Signup result:', result);
+      
+      // Wait a bit for state to update
+      setTimeout(() => {
+        window.location.href = '/bekya2.1/#/';
+      }, 500);
     } catch (err) {
+      console.error('Signup error:', err);
       setError(err.message || 'خطأ في التسجيل');
-    } finally {
       setLoading(false);
     }
   };

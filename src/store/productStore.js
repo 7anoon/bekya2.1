@@ -426,13 +426,22 @@ export const useProductStore = create((set, get) => ({
   },
 
   fetchPendingProducts: async () => {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*, profiles(username, email, phone, location)')
-      .eq('status', 'pending')
-      .order('created_at', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*, profiles(username, email, phone, location)')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
 
-    if (error) throw error;
-    return data;
+      if (error) {
+        console.error('fetchPendingProducts error:', error);
+        throw error;
+      }
+      
+      return data || [];
+    } catch (error) {
+      console.error('fetchPendingProducts catch:', error);
+      return []; // نرجع array فاضي بدل ما نرمي error
+    }
   }
 }));

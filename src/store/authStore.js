@@ -63,6 +63,16 @@ export const useAuthStore = create((set) => ({
 
   signIn: async (username, password) => {
     try {
+      console.log('Attempting login for username:', username);
+      
+      // Check Supabase connection first
+      const { data: health } = await supabase
+        .from('profiles')
+        .select('id')
+        .limit(1);
+      
+      console.log('Database connection test:', health);
+      
       // جرب تجيب الـ email من profiles
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
@@ -72,13 +82,15 @@ export const useAuthStore = create((set) => ({
 
       if (profileError) {
         console.error('Profile error:', profileError);
-        throw new Error('خطأ في الاتصال بقاعدة البيانات');
+        throw new Error('خطأ في الاتصال بقاعدة البيانات: ' + profileError.message);
       }
 
       if (!profile) {
         throw new Error('اسم المستخدم غير موجود');
       }
 
+      console.log('Found email:', profile.email);
+      
       // جرب تسجل الدخول
       const { data, error } = await supabase.auth.signInWithPassword({
         email: profile.email,
@@ -86,12 +98,14 @@ export const useAuthStore = create((set) => ({
       });
 
       if (error) {
+        console.error('Auth error:', error);
         if (error.message.includes('Invalid')) {
           throw new Error('كلمة المرور غير صحيحة');
         }
-        throw error;
+        throw new Error('خطأ في تسجيل الدخول: ' + error.message);
       }
 
+      console.log('Login successful:', data);
       return data;
     } catch (err) {
       console.error('Sign in error:', err);
@@ -106,33 +120,102 @@ export const useAuthStore = create((set) => ({
   },
 
   loadUser: async () => {
+    const startTime = Date.now();
+    console.log('Starting loadUser...');
+    
     try {
       set({ loading: true });
-      const { data: { user } } = await supabase.auth.getUser();
       
-      console.log('Current user:', user);
+      // Set max 5 second timeout for entire process
+      const overallTimeout = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Overall timeout (5s)')), 5000)
+      );
       
-      if (user) {
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-
-        console.log('Profile data:', profile);
-        console.log('Profile error:', error);
-
-        if (profile) {
-          set({ user, profile, loading: false });
-        } else {
-          console.error('No profile found for user');
-          set({ user: null, profile: null, loading: false });
+      const loadProcess = async () => {
+        // Check session (2s timeout)
+        console.log('Checking session...');
+        const sessionPromise = supabase.auth.getSession();
+        const sessionTimeout = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Session timeout')), 2000)
+        );
+        
+        const { data: { session } } = await Promise.race([sessionPromise, sessionTimeout]);
+        console.log('Current session:', session);
+        
+        if (!session) {
+          console.log('No session found');
+          return { user: null, profile: null };
         }
-      } else {
-        set({ user: null, profile: null, loading: false });
-      }
+        
+        // Get user (2s timeout)
+        console.log('Getting user info...');
+        const userPromise = supabase.auth.getUser();
+        const userTimeout = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('User timeout')), 2000)
+        );
+        
+        const { data: { user } } = await Promise.race([userPromise, userTimeout]);
+        console.log('Current user:', user);
+        
+        if (user) {
+          console.log('Getting profile...');
+          // Profile request (2s timeout)
+          const profilePromise = supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+          
+          const profileTimeout = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Profile timeout')), 2000)
+          );
+          
+          try {
+            const result = await Promise.race([profilePromise, profileTimeout]);
+            const profile = result.data;
+            const error = result.error;
+
+            console.log('Profile data:', profile);
+            console.log('Profile error:', error);
+
+            if (profile) {
+              return { user, profile };
+            } else {
+              console.warn('No profile found, creating minimal profile');
+              const minimalProfile = {
+                id: user.id,
+                username: user.email.split('@')[0],
+                email: user.email,
+                role: 'user'
+              };
+              return { user, profile: minimalProfile };
+            }
+          } catch (profileError) {
+            console.warn('Profile timeout, creating minimal profile');
+            const minimalProfile = {
+              id: user.id,
+              username: user.email.split('@')[0],
+              email: user.email,
+              role: 'user'
+            };
+            return { user, profile: minimalProfile };
+          }
+        }
+        
+        return { user: null, profile: null };
+      };
+      
+      // Race between load process and overall timeout
+      const { user, profile } = await Promise.race([loadProcess(), overallTimeout]);
+      
+      const loadTime = Date.now() - startTime;
+      console.log(`Load completed in ${loadTime}ms`);
+      
+      set({ user, profile, loading: false });
+      
     } catch (error) {
-      console.error('Load user error:', error);
+      const loadTime = Date.now() - startTime;
+      console.error(`Load failed after ${loadTime}ms:`, error.message || error);
       set({ user: null, profile: null, loading: false });
     }
   }
