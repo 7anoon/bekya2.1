@@ -7,74 +7,26 @@ import ProductCard from '../components/ProductCard';
 
 export default function Home() {
   const navigate = useNavigate();
-  const [products, setProducts] = useState([]);
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [productsCount, setProductsCount] = useState(0);
   const { fetchProducts } = useProductStore();
   const { profile } = useAuthStore();
 
   useEffect(() => {
     loadOffers();
-    
-    const channel = supabase
-      .channel('products-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'products',
-          filter: 'status=eq.approved'
-        },
-        (payload) => {
-          console.log('Product changed:', payload);
-          loadProducts();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    loadProductsCount();
   }, []);
 
-  useEffect(() => {
-    if (offers.length >= 0) {
-      loadProducts();
-    }
-  }, [offers]);
-
-  const loadProducts = async () => {
+  const loadProductsCount = async () => {
     try {
       const data = await fetchProducts(profile?.location);
       const sellProducts = data.filter(product => 
         !product.choice_type || product.choice_type === 'sell'
       );
-      
-      const productsWithDiscounts = sellProducts.map(product => {
-        const activeOffer = offers.find(offer => 
-          offer.is_active && 
-          offer.discount_percentage && 
-          offer.category === product.category &&
-          (!offer.end_date || new Date(offer.end_date) > new Date())
-        );
-
-        if (activeOffer) {
-          const discountAmount = Math.round(product.final_price * (activeOffer.discount_percentage / 100));
-          return {
-            ...product,
-            original_final_price: product.final_price,
-            final_price: product.final_price - discountAmount,
-            active_offer: activeOffer
-          };
-        }
-        
-        return product;
-      });
-      
-      setProducts(productsWithDiscounts);
+      setProductsCount(sellProducts.length);
     } catch (err) {
-      console.error('Error loading products:', err);
+      console.error('Error loading products count:', err);
     } finally {
       setLoading(false);
     }
@@ -128,7 +80,11 @@ export default function Home() {
             <button className="morph-button" onClick={() => navigate('/add-product')}>
               🎯 ابدأ البيع الآن
             </button>
-            <button className="morph-button" style={{background: 'linear-gradient(135deg, #8b7355 0%, #6d5a42 100%)'}}>
+            <button 
+              className="morph-button" 
+              style={{background: 'linear-gradient(135deg, #8b7355 0%, #6d5a42 100%)'}}
+              onClick={() => navigate('/browse')}
+            >
               🔍 تصفح المنتجات
             </button>
           </div>
@@ -138,7 +94,7 @@ export default function Home() {
         <div style={styles.statsRow}>
           <div className="stats-card" style={styles.statCard}>
             <div className="icon-3d">📦</div>
-            <div className="stats-number">{products.length}+</div>
+            <div className="stats-number">{productsCount}+</div>
             <div className="stats-label">منتج متاح</div>
           </div>
           <div className="stats-card" style={styles.statCard}>
@@ -160,7 +116,7 @@ export default function Home() {
       <div style={styles.categoriesSection}>
         <h2 style={styles.sectionTitle}>
           <span className="icon-3d" style={{marginLeft: '16px'}}>🏷️</span>
-          تصفح حسب الفئة
+          فئاتنا الموجودة
         </h2>
         <div style={styles.categoriesGrid}>
           {[
@@ -229,7 +185,7 @@ export default function Home() {
         <div style={styles.stepsGrid}>
           {[
             {icon: '📸', title: 'صور منتجك', desc: 'التقط صور واضحة للمنتج'},
-            {icon: '💰', title: 'حدد السعر', desc: 'اقترح سعر مناسب أو دعنا نساعدك'},
+            {icon: '💰', title: 'حدد السعر', desc: 'السعر يحدده المدير'},
             {icon: '✅', title: 'انتظر الموافقة', desc: 'سنراجع منتجك ونوافق عليه'},
             {icon: '🎉', title: 'ابدأ البيع', desc: 'منتجك متاح للبيع الآن!'}
           ].map((step, i) => (
@@ -243,28 +199,6 @@ export default function Home() {
             </div>
           ))}
         </div>
-      </div>
-
-      <div className="glow-divider"></div>
-
-      {/* قسم المنتجات */}
-      <div style={styles.productsSection}>
-        <h2 style={styles.sectionTitle}>
-          <span className="icon-3d" style={{marginLeft: '16px'}}>🛍️</span>
-          المنتجات المتاحة
-        </h2>
-        {products.length === 0 ? (
-          <div style={styles.empty}>
-            <div className="icon-3d" style={{fontSize: '80px', marginBottom: '24px'}}>📦</div>
-            <p>لا توجد منتجات متاحة حالياً</p>
-          </div>
-        ) : (
-          <div style={styles.grid}>
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        )}
       </div>
 
       {/* 🎯 Final CTA */}

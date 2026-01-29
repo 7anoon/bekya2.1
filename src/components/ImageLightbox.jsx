@@ -24,7 +24,11 @@ export default function ImageLightbox({ images, initialIndex = 0, onClose }) {
       onKeyDown={handleKeyDown}
       tabIndex={0}
     >
-      <button style={styles.closeBtn} onClick={onClose}>
+      <button 
+        className="lightbox-close-btn"
+        style={styles.closeBtn} 
+        onClick={onClose}
+      >
         ✕
       </button>
 
@@ -33,24 +37,27 @@ export default function ImageLightbox({ images, initialIndex = 0, onClose }) {
           src={images[currentIndex]} 
           alt={`صورة ${currentIndex + 1}`}
           style={styles.image}
+          className="lightbox-image"
         />
 
         {images.length > 1 && (
           <>
             <button 
+              className="lightbox-nav-btn"
               style={{...styles.navBtn, ...styles.prevBtn}} 
               onClick={handlePrev}
             >
               ❮
             </button>
             <button 
+              className="lightbox-nav-btn"
               style={{...styles.navBtn, ...styles.nextBtn}} 
               onClick={handleNext}
             >
               ❯
             </button>
 
-            <div style={styles.counter}>
+            <div className="lightbox-counter" style={styles.counter}>
               {currentIndex + 1} / {images.length}
             </div>
           </>
@@ -67,75 +74,97 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'rgba(0, 0, 0, 0.9)',
+    background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(10, 14, 39, 0.98) 100%)',
+    backdropFilter: 'blur(20px)',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 9999,
     cursor: 'pointer',
-    animation: 'fadeIn 0.3s ease'
+    animation: 'fadeIn 0.4s ease',
+    padding: '20px'
   },
   content: {
     position: 'relative',
-    maxWidth: '90vw',
-    maxHeight: '90vh',
+    maxWidth: '95vw',
+    maxHeight: '95vh',
     cursor: 'default',
-    animation: 'zoomIn 0.3s ease'
+    animation: 'zoomIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   image: {
-    maxWidth: '90vw',
+    maxWidth: '100%',
     maxHeight: '90vh',
+    width: 'auto',
+    height: 'auto',
     objectFit: 'contain',
-    borderRadius: '8px'
+    borderRadius: '20px',
+    boxShadow: '0 30px 90px rgba(0, 0, 0, 0.8), 0 0 60px rgba(107, 124, 89, 0.3)',
+    border: '3px solid rgba(107, 124, 89, 0.3)',
+    transition: 'transform 0.3s ease'
   },
   closeBtn: {
-    position: 'absolute',
-    top: '20px',
-    right: '20px',
-    background: 'rgba(255, 255, 255, 0.9)',
+    position: 'fixed',
+    top: '30px',
+    right: '30px',
+    background: 'linear-gradient(135deg, rgba(107, 124, 89, 0.9) 0%, rgba(85, 107, 47, 0.9) 100%)',
     border: 'none',
     borderRadius: '50%',
-    width: '40px',
-    height: '40px',
-    fontSize: '24px',
+    width: '56px',
+    height: '56px',
+    fontSize: '28px',
+    color: 'white',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10000,
-    transition: 'background 0.3s'
+    transition: 'all 0.3s ease',
+    boxShadow: '0 8px 25px rgba(107, 124, 89, 0.5)',
+    fontWeight: '300'
   },
   navBtn: {
     position: 'absolute',
     top: '50%',
     transform: 'translateY(-50%)',
-    background: 'rgba(255, 255, 255, 0.9)',
+    background: 'linear-gradient(135deg, rgba(107, 124, 89, 0.9) 0%, rgba(85, 107, 47, 0.9) 100%)',
     border: 'none',
     borderRadius: '50%',
-    width: '50px',
-    height: '50px',
-    fontSize: '24px',
+    width: '64px',
+    height: '64px',
+    fontSize: '32px',
+    color: 'white',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    transition: 'background 0.3s'
+    transition: 'all 0.3s ease',
+    boxShadow: '0 8px 25px rgba(107, 124, 89, 0.5)',
+    fontWeight: '700',
+    zIndex: 10001
   },
   prevBtn: {
-    right: '-60px'
+    right: '-80px'
   },
   nextBtn: {
-    left: '-60px'
+    left: '-80px'
   },
   counter: {
-    position: 'absolute',
-    bottom: '-40px',
+    position: 'fixed',
+    bottom: '40px',
     left: '50%',
     transform: 'translateX(-50%)',
-    background: 'rgba(255, 255, 255, 0.9)',
-    padding: '8px 16px',
-    borderRadius: '20px',
-    fontSize: '14px',
-    fontWeight: '600'
+    background: 'linear-gradient(135deg, rgba(107, 124, 89, 0.95) 0%, rgba(85, 107, 47, 0.95) 100%)',
+    backdropFilter: 'blur(10px)',
+    padding: '12px 32px',
+    borderRadius: '30px',
+    fontSize: '16px',
+    fontWeight: '700',
+    color: 'white',
+    boxShadow: '0 8px 25px rgba(107, 124, 89, 0.5)',
+    border: '2px solid rgba(107, 124, 89, 0.3)',
+    zIndex: 10000
   }
 };
