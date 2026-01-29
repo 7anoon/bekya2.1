@@ -99,7 +99,7 @@ export default function AdminDashboard() {
     const statusStyles = {
       pending: {
         background: '#fef3c7',
-        color: '#92400e',
+        color: '#000000',
         border: '2px solid #f59e0b'
       },
       approved: {
@@ -114,7 +114,7 @@ export default function AdminDashboard() {
       },
       awaiting_seller: {
         background: '#eff6ff',
-        color: '#1e40af',
+        color: '#000000',
         border: '2px solid #3b82f6'
       }
     };
@@ -268,19 +268,19 @@ export default function AdminDashboard() {
                     {product.category && (
                       <div style={styles.detailRow}>
                         <span style={styles.detailLabel}>الفئة:</span>
-                        <span>{getCategoryName(product.category)}</span>
+                        <span style={styles.sellerData}>{getCategoryName(product.category)}</span>
                       </div>
                     )}
                     {product.weight && (
                       <div style={styles.detailRow}>
                         <span style={styles.detailLabel}>الوزن:</span>
-                        <span>{product.weight} كجم</span>
+                        <span style={styles.sellerData}>{product.weight} كجم</span>
                       </div>
                     )}
                     {product.condition && (
                       <div style={styles.detailRow}>
                         <span style={styles.detailLabel}>الحالة:</span>
-                        <span>{product.condition}</span>
+                        <span style={styles.sellerData}>{product.condition}</span>
                       </div>
                     )}
                     {product.original_price && (
@@ -313,19 +313,19 @@ export default function AdminDashboard() {
                     <h4 style={styles.sellerTitle}>معلومات البائع</h4>
                     <div style={styles.detailRow}>
                       <span style={styles.detailLabel}>الاسم:</span>
-                      <span>{product.profiles?.username}</span>
+                      <span style={styles.sellerData}>{product.profiles?.username}</span>
                     </div>
                     <div style={styles.detailRow}>
                       <span style={styles.detailLabel}>البريد:</span>
-                      <span>{product.profiles?.email}</span>
+                      <span style={styles.sellerData}>{product.profiles?.email}</span>
                     </div>
                     <div style={styles.detailRow}>
                       <span style={styles.detailLabel}>الهاتف:</span>
-                      <span>{product.profiles?.phone}</span>
+                      <span style={styles.sellerData}>{product.profiles?.phone}</span>
                     </div>
                     <div style={styles.detailRow}>
                       <span style={styles.detailLabel}>الموقع:</span>
-                      <span>{product.profiles?.location}</span>
+                      <span style={styles.sellerData}>{product.profiles?.location}</span>
                     </div>
                   </div>
 
@@ -586,7 +586,7 @@ const styles = {
   },
   detailLabel: {
     fontWeight: '600',
-    color: '#374151'
+    color: '#000000'
   },
   priceHighlight: {
     fontSize: '18px',
@@ -611,7 +611,11 @@ const styles = {
     fontSize: '16px',
     fontWeight: '600',
     marginBottom: '12px',
-    color: '#1e40af'
+    color: '#000000'
+  },
+  sellerData: {
+    color: '#000000',
+    fontWeight: '500'
   },
   actions: {
     display: 'flex',

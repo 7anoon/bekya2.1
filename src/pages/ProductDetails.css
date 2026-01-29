@@ -1,0 +1,51 @@
+/* Product Details Styles - Override */
+
+.product-details-text {
+  color: #000000 !important;
+}
+
+.seller-label {
+  font-size: 14px;
+  color: #000000 !important;
+  font-weight: 600;
+}
+
+.seller-value {
+  font-size: 15px;
+  color: #000000 !important;
+  font-weight: 600;
+}
+
+.info-label {
+  font-size: 13px;
+  color: #000000 !important;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: 17px;
+  color: #000000 !important;
+  font-weight: 600;
+}
+
+.price-label {
+  font-size: 18px;
+  color: #000000 !important;
+  font-weight: 600;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #000000 !important;
+  margin-bottom: 20px;
+}
+
+.product-description {
+  font-size: 17px;
+  line-height: 1.8;
+  color: #000000 !important;
+  font-weight: 500;
+}

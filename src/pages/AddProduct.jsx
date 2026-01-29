@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { supabase } from '../lib/supabase';
+import ImageLightbox from '../components/ImageLightbox';
 
 export default function AddProduct() {
   const [formData, setFormData] = useState({
@@ -11,20 +12,102 @@ export default function AddProduct() {
     weight: ''
   });
   const [images, setImages] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState('');
+  const [showLightbox, setShowLightbox] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+  const fileInputRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
   
   const { user } = useAuthStore();
   const navigate = useNavigate();
 
+  const validateImage = (file) => {
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    
+    if (!validTypes.includes(file.type)) {
+      return 'الصورة يجب أن تكون من نوع JPG, PNG, أو WebP';
+    }
+    
+    if (file.size > maxSize) {
+      return 'حجم الصورة يجب أن يكون أقل من 5 ميجابايت';
+    }
+    
+    return null;
+  };
+
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    if (files.length > 10) {
+    processImageFiles(files);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const files = Array.from(e.dataTransfer.files);
+    processImageFiles(files);
+  };
+
+  const processImageFiles = (files) => {
+    if (files.length + images.length > 10) {
       setError('يمكنك رفع 10 صور كحد أقصى');
       return;
     }
-    setImages(files);
-    setError('');
+
+    const validFiles = [];
+    const previews = [];
+    let hasError = false;
+
+    files.forEach(file => {
+      const error = validateImage(file);
+      if (error) {
+        setError(error);
+        hasError = true;
+        return;
+      }
+      
+      validFiles.push(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previews.push({ file, preview: e.target.result });
+        if (previews.length === validFiles.length) {
+          setImages(prev => [...prev, ...validFiles]);
+          setImagePreviews(prev => [...prev, ...previews]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+
+    if (!hasError) {
+      setError('');
+    }
+  };
+
+  const removeImage = (index) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const openLightbox = (index) => {
+    setLightboxIndex(index);
+    setShowLightbox(true);
+  };
+
+  const closeLightbox = () => {
+    setShowLightbox(false);
   };
 
   const uploadImages = async () => {
@@ -32,11 +115,14 @@ export default function AddProduct() {
     
     for (let i = 0; i < images.length; i++) {
       const file = images[i];
-      const fileName = `${user.id}/${Date.now()}_${i}.jpg`;
+      const fileName = `${user.id}/${Date.now()}_${i}_${file.name}`;
       
       const { error: uploadError } = await supabase.storage
         .from('products')
-        .upload(fileName, file);
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (uploadError) {
         console.error('Upload error:', uploadError);
@@ -48,6 +134,9 @@ export default function AddProduct() {
         .getPublicUrl(fileName);
 
       uploadedUrls.push(publicUrl);
+      
+      // Update progress
+      setUploadProgress(Math.round(((i + 1) / images.length) * 100));
     }
 
     return uploadedUrls;
@@ -193,17 +282,78 @@ export default function AddProduct() {
 
           <div style={styles.field}>
             <label style={styles.label}>صور المنتج * (حتى 10 صور)</label>
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleImageChange}
-              style={styles.fileInput}
-              required
-            />
-            {images.length > 0 && (
-              <p style={styles.imageCount}>تم اختيار {images.length} صورة</p>
+                  
+            {/* Drag and Drop Area */}
+            <div 
+              style={{
+                ...styles.dropZone,
+                ...(isDragging ? styles.dropZoneDragging : {})
+              }}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <div style={styles.dropZoneContent}>
+                <div style={styles.uploadIcon}>📷</div>
+                <p style={styles.dropZoneText}>
+                  {isDragging ? 'أفلت الصور هنا' : 'اسحب وأفلت الصور هنا أو انقر للاختيار'}
+                </p>
+                <p style={styles.dropZoneSubtext}>
+                  JPG, PNG, WebP حتى 5MB لكل صورة
+                </p>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageChange}
+                style={{ display: 'none' }}
+              />
+            </div>
+          
+            {/* Image Previews */}
+            {imagePreviews.length > 0 && (
+              <div style={styles.imagePreviewContainer}>
+                <div style={styles.imagePreviewGrid}>
+                  {imagePreviews.map((preview, index) => (
+                    <div key={index} style={styles.imagePreviewItem}>
+                      <img 
+                        src={preview.preview} 
+                        alt={`معاينة ${index + 1}`}
+                        style={styles.imagePreviewThumb}
+                        onClick={() => openLightbox(index)}
+                      />
+                      <button
+                        type="button"
+                        style={styles.removeImageBtn}
+                        onClick={() => removeImage(index)}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <p style={styles.imageCount}>{imagePreviews.length} صورة محددة</p>
+              </div>
             )}
+          
+            {/* Upload Progress */}
+            {uploadProgress > 0 && uploadProgress < 100 && (
+              <div style={styles.progressContainer}>
+                <div style={styles.progressBar}> 
+                  <div 
+                    style={{
+                      ...styles.progressFill,
+                      width: `${uploadProgress}%`
+                    }}
+                  />
+                </div>
+                <p style={styles.progressText}>جاري رفع الصور... {uploadProgress}%</p>
+              </div>
+            )}
+          
             <small style={styles.hint}>التقط صور واضحة من جميع الجوانب</small>
           </div>
 
@@ -220,6 +370,15 @@ export default function AddProduct() {
         <div style={styles.note}>
           <p>📝 ملاحظة: سيتم مراجعة المنتج من قبل الإدارة وتحديد السعر المناسب</p>
         </div>
+
+        {/* Lightbox Modal */}
+        {showLightbox && (
+          <ImageLightbox
+            images={imagePreviews.map(p => p.preview)}
+            initialIndex={lightboxIndex}
+            onClose={closeLightbox}
+          />
+        )}
       </div>
     </div>
   );
@@ -291,5 +450,102 @@ const styles = {
     textAlign: 'center',
     color: '#d1d5db',
     fontSize: '14px'
+  },
+  dropZone: {
+    border: '2px dashed #d1d5db',
+    borderRadius: '12px',
+    padding: '40px 20px',
+    textAlign: 'center',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    backgroundColor: 'rgba(31, 41, 55, 0.5)',
+    marginBottom: '20px'
+  },
+  dropZoneDragging: {
+    borderColor: '#6b7c59',
+    backgroundColor: 'rgba(107, 124, 89, 0.1)',
+    transform: 'scale(1.02)'
+  },
+  dropZoneContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '12px'
+  },
+  uploadIcon: {
+    fontSize: '48px',
+    opacity: '0.7'
+  },
+  dropZoneText: {
+    fontSize: '18px',
+    fontWeight: '600',
+    color: '#e5e7eb',
+    margin: '0'
+  },
+  dropZoneSubtext: {
+    fontSize: '14px',
+    color: '#9ca3af',
+    margin: '0'
+  },
+  imagePreviewContainer: {
+    marginTop: '20px'
+  },
+  imagePreviewGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+    gap: '12px',
+    marginBottom: '12px'
+  },
+  imagePreviewItem: {
+    position: 'relative',
+    borderRadius: '8px',
+    overflow: 'hidden',
+    border: '2px solid rgba(107, 124, 89, 0.3)',
+    transition: 'all 0.2s ease'
+  },
+  imagePreviewThumb: {
+    width: '100%',
+    height: '120px',
+    objectFit: 'cover',
+    cursor: 'pointer',
+    display: 'block'
+  },
+  removeImageBtn: {
+    position: 'absolute',
+    top: '8px',
+    left: '8px',
+    background: 'rgba(239, 68, 68, 0.9)',
+    border: 'none',
+    borderRadius: '50%',
+    width: '28px',
+    height: '28px',
+    color: 'white',
+    fontSize: '16px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.2s ease'
+  },
+  progressContainer: {
+    marginTop: '20px'
+  },
+  progressBar: {
+    height: '8px',
+    backgroundColor: 'rgba(31, 41, 55, 0.5)',
+    borderRadius: '4px',
+    overflow: 'hidden',
+    marginBottom: '8px'
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#6b7c59',
+    transition: 'width 0.3s ease'
+  },
+  progressText: {
+    textAlign: 'center',
+    color: '#6b7c59',
+    fontWeight: '600',
+    margin: '0'
   }
 };

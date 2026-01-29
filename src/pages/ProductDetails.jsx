@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
 import { useProductStore } from '../store/productStore';
 import ImageLightbox from '../components/ImageLightbox';
+import './ProductDetails.css';
 
 export default function ProductDetails() {
   const { id } = useParams();
@@ -235,7 +236,7 @@ export default function ProductDetails() {
             </span>
           </div>
 
-          <p style={styles.description}>{product.description}</p>
+          <p className="product-description">{product.description}</p>
 
           {/* معلومات السعر */}
           <div style={styles.priceSection}>
@@ -280,7 +281,7 @@ export default function ProductDetails() {
                   </div>
                 ) : product.final_price ? (
                   <div style={styles.priceBox}>
-                    <span style={styles.priceLabel}>السعر النهائي:</span>
+                    <span style={styles.priceLabel} className="price-label">السعر النهائي:</span>
                     <span style={styles.finalPrice}>{product.final_price} جنيه</span>
                   </div>
                 ) : product.negotiated_price ? (
@@ -301,12 +302,12 @@ export default function ProductDetails() {
           {/* معلومات إضافية */}
           <div style={styles.infoGrid}>
             <div style={styles.infoItem}>
-              <span style={styles.infoLabel}>الحالة:</span>
-              <span style={styles.infoValue}>{product.condition}</span>
+              <span className="info-label">الحالة:</span>
+              <span className="info-value">{product.condition}</span>
             </div>
             <div style={styles.infoItem}>
-              <span style={styles.infoLabel}>الفئة:</span>
-              <span style={styles.infoValue}>
+              <span className="info-label">الفئة:</span>
+              <span className="info-value">
                 {product.category === 'electronics' && 'إلكترونيات'}
                 {product.category === 'furniture' && 'أثاث'}
                 {product.category === 'clothes' && 'ملابس'}
@@ -332,27 +333,27 @@ export default function ProductDetails() {
           {/* معلومات التواصل */}
           {seller && (
             <div style={styles.sellerSection}>
-              <h3 style={styles.sectionTitle}>
+              <h3 className="section-title">
                 {profile?.role === 'admin' ? 'معلومات البائع' : 'معلومات التواصل (بيكيا)'}
               </h3>
               <div style={styles.sellerInfo}>
                 <div style={styles.sellerItem}>
-                  <span style={styles.sellerLabel}>👤 الاسم:</span>
-                  <span style={styles.sellerValue}>{seller.username}</span>
+                  <span className="seller-label">👤 الاسم:</span>
+                  <span className="seller-value">{seller.username}</span>
                 </div>
                 <div style={styles.sellerItem}>
-                  <span style={styles.sellerLabel}>📍 الموقع:</span>
-                  <span style={styles.sellerValue}>{seller.location}</span>
+                  <span className="seller-label">📍 الموقع:</span>
+                  <span className="seller-value">{seller.location}</span>
                 </div>
                 {product.status === 'approved' && (
                   <>
                     <div style={styles.sellerItem}>
-                      <span style={styles.sellerLabel}>📞 الهاتف:</span>
-                      <span style={styles.sellerValue}>{seller.phone}</span>
+                      <span className="seller-label">📞 الهاتف:</span>
+                      <span className="seller-value">{seller.phone}</span>
                     </div>
                     <div style={styles.sellerItem}>
-                      <span style={styles.sellerLabel}>📧 البريد:</span>
-                      <span style={styles.sellerValue}>{seller.email}</span>
+                      <span className="seller-label">📧 البريد:</span>
+                      <span className="seller-value">{seller.email}</span>
                     </div>
                   </>
                 )}
@@ -363,7 +364,7 @@ export default function ProductDetails() {
           {/* ملاحظات التفاوض */}
           {product.negotiation_note && (
             <div style={styles.noteSection}>
-              <h3 style={styles.sectionTitle}>ملاحظة الإدارة</h3>
+              <h3 className="section-title">ملاحظة الإدارة</h3>
               <p style={styles.note}>{product.negotiation_note}</p>
             </div>
           )}
@@ -371,7 +372,7 @@ export default function ProductDetails() {
           {/* سبب الرفض */}
           {product.rejection_reason && (
             <div style={styles.rejectionSection}>
-              <h3 style={styles.sectionTitle}>سبب الرفض</h3>
+              <h3 className="section-title">سبب الرفض</h3>
               <p style={styles.rejection}>{product.rejection_reason}</p>
             </div>
           )}
@@ -379,7 +380,7 @@ export default function ProductDetails() {
           {/* أزرار التفاوض للأدمن فقط */}
           {profile?.role === 'admin' && product.status === 'pending' && product.choice_type === 'sell' && (
             <div style={styles.adminActions}>
-              <h3 style={styles.sectionTitle}>إجراءات الإدارة</h3>
+              <h3 className="section-title">إجراءات الإدارة</h3>
               <div style={styles.actionButtons}>
                 <button
                   className="btn btn-primary"
@@ -550,7 +551,8 @@ const styles = {
   description: {
     fontSize: '17px',
     lineHeight: '1.8',
-    color: '#7a7a7a'
+    color: '#000000',
+    fontWeight: '500'
   },
   priceSection: {
     padding: '32px',
@@ -565,7 +567,8 @@ const styles = {
   },
   priceLabel: {
     fontSize: '18px',
-    color: '#6b7280'
+    color: '#000000',
+    fontWeight: '600'
   },
   finalPrice: {
     fontSize: '32px',
@@ -679,35 +682,35 @@ const styles = {
   },
   infoItem: {
     padding: '20px',
-    background: 'rgba(107, 124, 89, 0.04)',
+    background: 'rgba(107, 124, 89, 0.15)',
     borderRadius: '20px',
     display: 'flex',
     flexDirection: 'column',
     gap: '10px',
-    border: '1px solid rgba(107, 124, 89, 0.08)'
+    border: '1px solid rgba(107, 124, 89, 0.2)'
   },
   infoLabel: {
     fontSize: '13px',
-    color: '#999',
-    fontWeight: '500',
+    color: '#000000',
+    fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: '0.5px'
   },
   infoValue: {
     fontSize: '17px',
-    color: '#2d2d2d',
-    fontWeight: '500'
+    color: '#000000',
+    fontWeight: '600'
   },
   sellerSection: {
     padding: '28px',
-    background: 'rgba(107, 124, 89, 0.06)',
+    background: 'rgba(107, 124, 89, 0.15)',
     borderRadius: '24px',
-    border: '1px solid rgba(107, 124, 89, 0.15)'
+    border: '1px solid rgba(107, 124, 89, 0.25)'
   },
   sectionTitle: {
     fontSize: '20px',
     fontWeight: '600',
-    color: '#2d2d2d',
+    color: '#000000',
     marginBottom: '20px'
   },
   sellerInfo: {
@@ -719,18 +722,18 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     padding: '14px',
-    background: 'white',
+    background: 'rgba(255, 255, 255, 0.8)',
     borderRadius: '16px'
   },
   sellerLabel: {
     fontSize: '14px',
-    color: '#999',
-    fontWeight: '500'
+    color: '#000000',
+    fontWeight: '600'
   },
   sellerValue: {
     fontSize: '15px',
-    color: '#2d2d2d',
-    fontWeight: '500'
+    color: '#000000',
+    fontWeight: '600'
   },
   noteSection: {
     padding: '28px',
