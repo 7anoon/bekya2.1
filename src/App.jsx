@@ -173,16 +173,31 @@ function App() {
     return <Onboarding onComplete={() => { localStorage.setItem('hasSeenOnboarding', 'true'); setShowOnboarding(false); }} />;
   }
 
-  // Remove loading screen entirely - show app content immediately
-  // The app will handle loading states internally if needed
-
   // Debug info
   console.log('App State:', { user: !!user, profile: !!profile, loading, showSplash, showOnboarding });
   
-  // If user is logged in but we're still showing login page, force redirect
-  if (user && window.location.hash === '#/login') {
-    console.log('User logged in but on login page, redirecting...');
-    window.location.hash = '#/';
+  // Show loading screen while checking authentication
+  // This prevents the flash of login page when user is actually logged in
+  if (loading && !initialLoadDone) {
+    return (
+      <div style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        bottom: 0, 
+        background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%)', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        zIndex: 9999 
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div className="spinner" style={{ margin: '0 auto 20px' }}></div>
+          <p style={{ color: '#d1d5db', fontSize: '16px' }}>جاري التحميل...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
