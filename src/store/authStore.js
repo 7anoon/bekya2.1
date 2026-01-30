@@ -120,103 +120,71 @@ export const useAuthStore = create((set) => ({
   },
 
   loadUser: async () => {
-    const startTime = Date.now();
-    console.log('Starting loadUser...');
+    console.log('authStore: Quick load starting...');
     
     try {
-      set({ loading: true });
+      // Don't set loading state to avoid UI blocking
+      // set({ loading: true });
       
-      // Set max 5 second timeout for entire process
-      const overallTimeout = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Overall timeout (5s)')), 5000)
-      );
+      // Quick load without timeouts for immediate response
+      console.log('authStore: Checking session...');
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('authStore: Session:', session ? 'FOUND' : 'NOT FOUND');
       
-      const loadProcess = async () => {
-        // Check session (2s timeout)
-        console.log('Checking session...');
-        const sessionPromise = supabase.auth.getSession();
-        const sessionTimeout = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Session timeout')), 2000)
-        );
-        
-        const { data: { session } } = await Promise.race([sessionPromise, sessionTimeout]);
-        console.log('Current session:', session);
-        
-        if (!session) {
-          console.log('No session found');
-          return { user: null, profile: null };
-        }
-        
-        // Get user (2s timeout)
-        console.log('Getting user info...');
-        const userPromise = supabase.auth.getUser();
-        const userTimeout = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('User timeout')), 2000)
-        );
-        
-        const { data: { user } } = await Promise.race([userPromise, userTimeout]);
-        console.log('Current user:', user);
-        
-        if (user) {
-          console.log('Getting profile...');
-          // Profile request (2s timeout)
-          const profilePromise = supabase
+      if (!session) {
+        console.log('authStore: No session, setting null user');
+        set({ user: null, profile: null });
+        return;
+      }
+      
+      console.log('authStore: Getting user...');
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('authStore: User:', user ? user.id : 'NULL');
+      
+      if (user) {
+        console.log('authStore: Getting profile...');
+        try {
+          const { data: profile, error } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', user.id)
             .single();
           
-          const profileTimeout = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Profile timeout')), 2000)
-          );
+          console.log('authStore: Profile:', profile ? 'FOUND' : 'NOT FOUND');
           
-          try {
-            const result = await Promise.race([profilePromise, profileTimeout]);
-            const profile = result.data;
-            const error = result.error;
-
-            console.log('Profile data:', profile);
-            console.log('Profile error:', error);
-
-            if (profile) {
-              return { user, profile };
-            } else {
-              console.warn('No profile found, creating minimal profile');
-              const minimalProfile = {
-                id: user.id,
-                username: user.email.split('@')[0],
-                email: user.email,
-                role: 'user'
-              };
-              return { user, profile: minimalProfile };
-            }
-          } catch (profileError) {
-            console.warn('Profile timeout, creating minimal profile');
+          if (profile) {
+            console.log('authStore: Setting user and profile');
+            set({ user, profile });
+          } else {
+            console.log('authStore: Creating minimal profile');
             const minimalProfile = {
               id: user.id,
               username: user.email.split('@')[0],
               email: user.email,
               role: 'user'
             };
-            return { user, profile: minimalProfile };
+            set({ user, profile: minimalProfile });
           }
+        } catch (profileError) {
+          console.log('authStore: Profile error, creating minimal profile');
+          const minimalProfile = {
+            id: user.id,
+            username: user.email.split('@')[0],
+            email: user.email,
+            role: 'user'
+          };
+          set({ user, profile: minimalProfile });
         }
-        
-        return { user: null, profile: null };
-      };
-      
-      // Race between load process and overall timeout
-      const { user, profile } = await Promise.race([loadProcess(), overallTimeout]);
-      
-      const loadTime = Date.now() - startTime;
-      console.log(`Load completed in ${loadTime}ms`);
-      
-      set({ user, profile, loading: false });
+      } else {
+        console.log('authStore: No user found');
+        set({ user: null, profile: null });
+      }
       
     } catch (error) {
-      const loadTime = Date.now() - startTime;
-      console.error(`Load failed after ${loadTime}ms:`, error.message || error);
-      set({ user: null, profile: null, loading: false });
+      console.error('authStore: Quick load error:', error.message);
+      set({ user: null, profile: null });
+    } finally {
+      console.log('authStore: Quick load complete');
     }
   }
 }));

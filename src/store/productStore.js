@@ -427,17 +427,22 @@ export const useProductStore = create((set, get) => ({
 
   fetchPendingProducts: async () => {
     try {
+      console.log('fetchPendingProducts: Starting query...');
+      
       const { data, error } = await supabase
         .from('products')
         .select('*, profiles(username, email, phone, location)')
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
+      console.log('fetchPendingProducts: Query completed', { data, error });
+
       if (error) {
         console.error('fetchPendingProducts error:', error);
         throw error;
       }
       
+      console.log('fetchPendingProducts: Returning data', data);
       return data || [];
     } catch (error) {
       console.error('fetchPendingProducts catch:', error);

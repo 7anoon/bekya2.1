@@ -112,29 +112,57 @@ function App() {
   const { user, profile, loading, loadUser } = useAuthStore();
   const [showSplash, setShowSplash] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
+    console.log('App: Component mounted, initializing...');
+    
     const initApp = async () => {
       try {
+        console.log('App: Loading user data...');
         await loadUser();
-        const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
-        // Show onboarding only for new users who haven't seen it
-        if (!hasSeenOnboarding && !user) {
-          setShowOnboarding(true);
+        console.log('App: User data loaded');
+        
+        if (mounted) {
+          const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
+          console.log('App: Onboarding status:', hasSeenOnboarding);
+          // Show onboarding only for new users who haven't seen it
+          if (!hasSeenOnboarding && !user) {
+            console.log('App: Showing onboarding');
+            setShowOnboarding(true);
+          }
+          // Mark initial load as done immediately
+          setInitialLoadDone(true);
         }
       } catch (error) {
-        console.error('Init app error:', error);
+        console.error('App: Init error:', error);
+        // Even on error, mark as loaded to avoid infinite loading
+        if (mounted) {
+          setInitialLoadDone(true);
+        }
+      } finally {
+        if (mounted) {
+          console.log('App: Initialization complete');
+          setInitialLoadDone(true);
+        }
       }
     };
 
     initApp();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log('Auth state changed:', _event, session?.user);
-      loadUser();
+      console.log('App: Auth state changed:', _event, session?.user?.id);
+      if (mounted) {
+        loadUser();
+      }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('App: Component unmounting, cleaning up...');
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [loadUser, user]);
 
   if (showSplash) {
@@ -145,32 +173,8 @@ function App() {
     return <Onboarding onComplete={() => { localStorage.setItem('hasSeenOnboarding', 'true'); setShowOnboarding(false); }} />;
   }
 
-  if (loading) {
-    return (
-      <div className="loading" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-        <div className="netflix-loading"></div>
-        <p style={{ color: '#6b7c59', marginTop: '20px', fontSize: '18px' }}>جاري التحميل...</p>
-        <button 
-          onClick={() => {
-            localStorage.clear();
-            sessionStorage.clear();
-            window.location.reload();
-          }}
-          style={{
-            marginTop: '20px',
-            padding: '10px 20px',
-            background: '#6b7c59',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer'
-          }}
-        >
-          تحديث الصفحة
-        </button>
-      </div>
-    );
-  }
+  // Remove loading screen entirely - show app content immediately
+  // The app will handle loading states internally if needed
 
   // Debug info
   console.log('App State:', { user: !!user, profile: !!profile, loading, showSplash, showOnboarding });

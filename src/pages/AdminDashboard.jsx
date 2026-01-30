@@ -124,18 +124,44 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
-    loadData();
+    let mounted = true;
+    let timeoutId = null;
     
-    // Timeout fallback - إذا التحميل أخذ أكثر من 10 ثواني، نوقفه
-    const timeout = setTimeout(() => {
-      if (loading) {
-        console.error('Loading timeout - forcing stop');
-        setLoading(false);
-        alert('انتهت مهلة التحميل. يرجى التحقق من الاتصال بالإنترنت والمحاولة مرة أخرى.');
+    const loadDataSafely = async () => {
+      try {
+        // Timeout fallback - إذا التحميل أخذ أكثر من 15 ثانية، نوقفه
+        timeoutId = setTimeout(() => {
+          if (mounted && loading) {
+            console.error('Loading timeout - forcing stop');
+            setLoading(false);
+            setPendingProducts([]);
+            setAllUsers([]);
+          }
+        }, 15000);
+        
+        if (mounted) {
+          await loadData();
+        }
+      } catch (error) {
+        console.error('Error in loadDataSafely:', error);
+        if (mounted) {
+          setLoading(false);
+        }
+      } finally {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
       }
-    }, 10000);
+    };
     
-    return () => clearTimeout(timeout);
+    loadDataSafely();
+    
+    return () => {
+      mounted = false;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, []);
 
   const loadData = async () => {
@@ -143,32 +169,51 @@ export default function AdminDashboard() {
       console.log('Starting to load data...');
       
       // التحقق من دور المستخدم
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) {
+        console.error('Error getting user:', userError);
+        throw userError;
+      }
+      
       if (!user) {
+        console.error('No user found');
+        setLoading(false);
         alert('يجب تسجيل الدخول أولاً');
         window.location.href = '/login';
         return;
       }
       
-      const { data: profile } = await supabase
+      console.log('User found:', user.id);
+      
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
         .single();
       
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+        throw profileError;
+      }
+      
       console.log('User role:', profile?.role);
       setUserRole(profile?.role);
       
       if (profile?.role !== 'admin') {
+        console.error('User is not admin');
+        setLoading(false);
         alert('ليس لديك صلاحية الوصول لهذه الصفحة');
         window.location.href = '/';
         return;
       }
       
+      console.log('User is admin, fetching products...');
       const products = await fetchPendingProducts();
-      console.log('Fetched products:', products);
+      console.log('Fetched products:', products?.length || 0, 'products');
       setPendingProducts(products || []);
 
+      console.log('Fetching users...');
       const { data: users, error: usersError } = await supabase
         .from('profiles')
         .select('*')
@@ -176,17 +221,30 @@ export default function AdminDashboard() {
       
       if (usersError) {
         console.error('Error fetching users:', usersError);
+      } else {
+        console.log('Fetched users:', users?.length || 0, 'users');
+        setAllUsers(users || []);
       }
       
-      setAllUsers(users || []);
       console.log('Data loaded successfully');
     } catch (err) {
+      // تجاهل AbortError لأنه طبيعي لما الـ component يختفي
+      if (err.name === 'AbortError') {
+        console.log('Request was aborted (component unmounted)');
+        return;
+      }
+      
       console.error('Error loading data:', err);
-      alert('حدث خطأ في تحميل البيانات: ' + err.message);
-      // حتى لو في خطأ، نوقف التحميل
+      
+      // عرض رسالة خطأ واضحة للمستخدم
+      const errorMessage = err.message || 'حدث خطأ غير معروف';
+      alert('حدث خطأ في تحميل البيانات: ' + errorMessage);
+      
+      // تعيين قيم فارغة
       setPendingProducts([]);
       setAllUsers([]);
     } finally {
+      console.log('Setting loading to false');
       setLoading(false);
     }
   };
