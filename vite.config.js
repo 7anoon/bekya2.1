@@ -3,7 +3,8 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
-  base: '/bekya2.1/',
+  // استخدام base path بس في production (GitHub Pages)
+  base: process.env.NODE_ENV === 'production' ? '/bekya2.1/' : '/',
   plugins: [
     react(),
     VitePWA({

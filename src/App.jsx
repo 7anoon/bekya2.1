@@ -182,7 +182,7 @@ function App() {
   }
 
   return (
-    <BrowserRouter basename="/bekya2.1">
+    <BrowserRouter basename={import.meta.env.PROD ? '/bekya2.1' : '/'}>
       {user && <Navbar />}
       <Routes>
         <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
