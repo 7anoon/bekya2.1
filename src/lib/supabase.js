@@ -23,5 +23,17 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: true,
     // مدة الـ session (30 يوم)
     storageKey: 'bekya-auth-token'
+  },
+  global: {
+    headers: {
+      'x-client-info': 'bekya-app'
+    }
+  },
+  db: {
+    schema: 'public'
+  },
+  // زيادة الـ timeout للـ requests
+  realtime: {
+    timeout: 30000
   }
 });
