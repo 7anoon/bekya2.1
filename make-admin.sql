@@ -5,7 +5,14 @@ UPDATE profiles
 SET role = 'admin' 
 WHERE username = 'hanoon';
 
--- أو لو عايزة تستخدمي الـ email:
--- UPDATE profiles 
--- SET role = 'admin' 
--- WHERE email = 'haneen.soliman17@gmail.com';
+-- تحديث البيانات الناقصة (اختياري)
+UPDATE profiles 
+SET 
+  location = 'awsim',
+  phone = '01002284046'
+WHERE username = 'hanoon';
+
+-- تحقق من النتيجة
+SELECT username, email, role, location, phone 
+FROM profiles 
+WHERE username = 'hanoon';

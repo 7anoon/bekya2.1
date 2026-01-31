@@ -108,6 +108,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import ManageOffers from './pages/ManageOffers';
 import Notifications from './pages/Notifications';
 import ProductDetails from './pages/ProductDetails';
+import SetAdminRole from './pages/SetAdminRole';
 import Navbar from './components/Navbar';
 
 function App() {
@@ -200,6 +201,10 @@ function App() {
         <Route 
           path="/admin/offers" 
           element={user && profile?.role === 'admin' ? <ManageOffers /> : <Navigate to="/" />} 
+        />
+        <Route 
+          path="/set-admin" 
+          element={user ? <SetAdminRole /> : <Navigate to="/login" />} 
         />
       </Routes>
     </BrowserRouter>
