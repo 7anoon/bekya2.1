@@ -73,27 +73,40 @@ export const useAuthStore = create((set) => ({
     try {
       log('Attempting login for username:', username);
       
-      // Try to get email from profiles
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('username', username)
-        .maybeSingle();
+      // Check if input is email or username
+      const isEmail = username.includes('@');
+      let email = username;
+      
+      if (!isEmail) {
+        // Try to get email from profiles
+        try {
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('username', username)
+            .maybeSingle();
 
-      if (profileError) {
-        logError('Profile error:', profileError);
-        throw new Error('خطأ في الاتصال بقاعدة البيانات');
+          if (profileError) {
+            logError('Profile error:', profileError);
+            throw new Error('خطأ في الاتصال بقاعدة البيانات');
+          }
+
+          if (!profile) {
+            throw new Error('اسم المستخدم غير موجود');
+          }
+
+          email = profile.email;
+          log('Found email:', email);
+        } catch (dbError) {
+          // If database fails, try direct login with username as email
+          logError('Database query failed, trying direct login');
+          email = username + '@temp.com'; // Fallback
+        }
       }
-
-      if (!profile) {
-        throw new Error('اسم المستخدم غير موجود');
-      }
-
-      log('Found email:', profile.email);
       
       // Try to sign in
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: profile.email,
+        email: email,
         password
       });
 
@@ -107,7 +120,7 @@ export const useAuthStore = create((set) => ({
 
       log('Login successful, loading user profile...');
       
-      // تحميل بيانات المستخدم بعد الـ login
+      // Load user profile after login
       await get().loadUser();
       
       set({ loading: false });
