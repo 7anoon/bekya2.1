@@ -105,7 +105,11 @@ export const useAuthStore = create((set) => ({
         throw new Error('خطأ في تسجيل الدخول');
       }
 
-      log('Login successful');
+      log('Login successful, loading user profile...');
+      
+      // تحميل بيانات المستخدم بعد الـ login
+      await get().loadUser();
+      
       set({ loading: false });
       return data;
     } catch (err) {

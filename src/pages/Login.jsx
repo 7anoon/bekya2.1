@@ -7,7 +7,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuthStore();
+  const { signIn, loadUser } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -16,13 +16,13 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const result = await signIn(username, password);
-      console.log('Login result:', result);
+      await signIn(username, password);
       
-      // Wait a bit for state to update
-      setTimeout(() => {
-        window.location.href = '/bekya2.1/#/';
-      }, 500);
+      // تحديث الـ profile بعد الـ login
+      await loadUser();
+      
+      // الانتقال للصفحة الرئيسية
+      navigate('/');
     } catch (err) {
       console.error('Login error:', err);
       setError(err.message || 'خطأ في تسجيل الدخول');
