@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
-import { log, logError, isAbortError, retryRequest } from '../lib/utils';
+import { log, logError } from '../lib/utils';
 
 export const useAuthStore = create((set) => ({
   user: null,
@@ -16,14 +16,12 @@ export const useAuthStore = create((set) => ({
   signUp: async (username, email, password, location, phone) => {
     set({ loading: true, error: null });
     try {
-      // تحقق إن الـ username مش مستخدم
-      const { data: existingUser } = await retryRequest(() =>
-        supabase
-          .from('profiles')
-          .select('username')
-          .eq('username', username)
-          .maybeSingle()
-      );
+      // Check if username is already taken
+      const { data: existingUser } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('username', username)
+        .maybeSingle();
 
       if (existingUser) {
         throw new Error('اسم المستخدم موجود بالفعل');
@@ -43,7 +41,7 @@ export const useAuthStore = create((set) => ({
 
       if (error) throw error;
 
-      // لو الـ trigger مشتغلش، اعمل profile يدوي
+      // Create profile manually if trigger doesn't work
       if (data.user) {
         const { error: profileError } = await supabase
           .from('profiles')
@@ -75,20 +73,15 @@ export const useAuthStore = create((set) => ({
     try {
       log('Attempting login for username:', username);
       
-      // جرب تجيب الـ email من profiles مع retry
-      const { data: profile, error: profileError } = await retryRequest(() =>
-        supabase
-          .from('profiles')
-          .select('email')
-          .eq('username', username)
-          .maybeSingle()
-      );
+      // Try to get email from profiles
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('username', username)
+        .maybeSingle();
 
       if (profileError) {
         logError('Profile error:', profileError);
-        if (isAbortError(profileError)) {
-          throw new Error('انتهت مهلة الاتصال. حاول مرة أخرى');
-        }
         throw new Error('خطأ في الاتصال بقاعدة البيانات');
       }
 
@@ -98,7 +91,7 @@ export const useAuthStore = create((set) => ({
 
       log('Found email:', profile.email);
       
-      // جرب تسجل الدخول
+      // Try to sign in
       const { data, error } = await supabase.auth.signInWithPassword({
         email: profile.email,
         password
@@ -108,9 +101,6 @@ export const useAuthStore = create((set) => ({
         logError('Auth error:', error);
         if (error.message.includes('Invalid')) {
           throw new Error('كلمة المرور غير صحيحة');
-        }
-        if (isAbortError(error)) {
-          throw new Error('انتهت مهلة تسجيل الدخول. حاول مرة أخرى');
         }
         throw new Error('خطأ في تسجيل الدخول');
       }
@@ -206,12 +196,8 @@ export const useAuthStore = create((set) => ({
             set({ user, profile: minimalProfile, loading: false });
           }
         } catch (profileError) {
-          if (isAbortError(profileError)) {
-            log('Profile fetch aborted');
-            set({ user: null, profile: null, loading: false });
-            return;
-          }
           log('Profile error, creating minimal profile');
+          logError('Profile fetch error:', profileError);
           const minimalProfile = {
             id: user.id,
             username: user.email.split('@')[0],
@@ -226,11 +212,6 @@ export const useAuthStore = create((set) => ({
       }
       
     } catch (error) {
-      if (isAbortError(error)) {
-        log('Request aborted');
-        set({ user: null, profile: null, loading: false });
-        return;
-      }
       logError('Load error:', error);
       set({ user: null, profile: null, loading: false, error: error.message });
     }

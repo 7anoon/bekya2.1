@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
-import { log, logError, isAbortError, retryRequest } from '../lib/utils';
+import { log, logError, isAbortError } from '../lib/utils';
 import cacheManager, { cacheUtils } from '../lib/cache';
 
 export const useProductStore = create((set, get) => ({
@@ -519,13 +519,11 @@ export const useProductStore = create((set, get) => ({
     try {
       log('fetchPendingProducts: Starting query...');
       
-      const { data, error } = await retryRequest(() =>
-        supabase
-          .from('products')
-          .select('*, profiles(username, email, phone, location)')
-          .eq('status', 'pending')
-          .order('created_at', { ascending: false })
-      );
+      const { data, error } = await supabase
+        .from('products')
+        .select('*, profiles(username, email, phone, location)')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
 
       log('fetchPendingProducts: Query completed', { count: data?.length || 0 });
 
