@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useProductStore } from '../store/productStore';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 export default function Profile() {
-  const { profile } = useAuthStore();
+  const { profile, signOut } = useAuthStore();
   const { fetchUserProducts, acceptNegotiation, rejectNegotiation } = useProductStore();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const getCategoryName = (category) => {
     const categories = {
@@ -23,20 +25,27 @@ export default function Profile() {
     return categories[category] || category;
   };
 
-  useEffect(() => {
-    loadUserProducts();
-  }, []);
-
   const loadUserProducts = async () => {
     try {
+      setError(null);
       const data = await fetchUserProducts(profile.id);
       setProducts(data);
     } catch (err) {
       console.error('Error loading products:', err);
+      setError(err.message || 'فشل في تحميل المنتجات');
     } finally {
       setLoading(false);
     }
   };
+
+  const handleRetry = () => {
+    setLoading(true);
+    loadUserProducts();
+  };
+
+  useEffect(() => {
+    loadUserProducts();
+  }, [profile.id]);
 
   const handleAcceptNegotiation = async (productId) => {
     if (confirm('هل تريد قبول عرض السعر الجديد؟')) {
@@ -87,177 +96,200 @@ export default function Profile() {
     return (
       <div className="loading">
         <div className="spinner"></div>
+        <p style={{ marginTop: '16px', color: '#9ca3af' }}>جارٍ تحميل الملف الشخصي...</p>
       </div>
     );
   }
 
   return (
-    <div className="container">
-      {/* Premium Stats Cards */}
-      <div style={styles.statsGrid}>
-        <div className="stats-card">
-          <div className="icon-3d">👤</div>
-          <div style={{marginTop: '16px'}}>
-            <div className="stats-number">{products.length}</div>
-            <div className="stats-label">منتجاتي</div>
+    <ErrorBoundary onRetry={handleRetry}>
+      <div className="container">
+        {/* Premium Stats Cards */}
+        <div style={styles.statsGrid}>
+          <div className="stats-card">
+            <div className="icon-3d">👤</div>
+            <div style={{marginTop: '16px'}}>
+              <div className="stats-number">{products.length}</div>
+              <div className="stats-label">منتجاتي</div>
+            </div>
+          </div>
+          
+          <div className="stats-card">
+            <div className="icon-3d">✅</div>
+            <div style={{marginTop: '16px'}}>
+              <div className="stats-number">{products.filter(p => p.status === 'approved').length}</div>
+              <div className="stats-label">تم الموافقة</div>
+            </div>
+          </div>
+          
+          <div className="stats-card">
+            <div className="icon-3d">⏳</div>
+            <div style={{marginTop: '16px'}}>
+              <div className="stats-number">{products.filter(p => p.status === 'pending').length}</div>
+              <div className="stats-label">قيد المراجعة</div>
+            </div>
           </div>
         </div>
-        
-        <div className="stats-card">
-          <div className="icon-3d">✅</div>
-          <div style={{marginTop: '16px'}}>
-            <div className="stats-number">{products.filter(p => p.status === 'approved').length}</div>
-            <div className="stats-label">تم الموافقة</div>
-          </div>
-        </div>
-        
-        <div className="stats-card">
-          <div className="icon-3d">⏳</div>
-          <div style={{marginTop: '16px'}}>
-            <div className="stats-number">{products.filter(p => p.status === 'pending').length}</div>
-            <div className="stats-label">قيد المراجعة</div>
-          </div>
-        </div>
-      </div>
 
-      <div className="glow-divider"></div>
+        <div className="glow-divider"></div>
 
-      <div className="card" style={styles.profileCard}>
-        <h1 style={styles.title} className="netflix-shimmer">
-          <span className="icon-3d" style={{marginLeft: '16px'}}>👤</span>
-          الملف الشخصي
-        </h1>
-        
-        <div style={styles.info}>
-          <div style={styles.infoRow}>
-            <span style={styles.label}>اسم المستخدم:</span>
-            <span style={styles.value}>{profile.username}</span>
+        <div className="card" style={styles.profileCard}>
+          <div style={styles.profileHeader}>
+            <h1 style={styles.title} className="netflix-shimmer">
+              <span className="icon-3d" style={{marginLeft: '16px'}}>👤</span>
+              الملف الشخصي
+            </h1>
+            <button className="btn btn-danger" onClick={signOut} style={styles.logoutBtn}>
+              تسجيل خروج
+            </button>
           </div>
-          <div style={styles.infoRow}>
-            <span style={styles.label}>البريد الإلكتروني:</span>
-            <span style={styles.value}>{profile.email}</span>
-          </div>
-          <div style={styles.infoRow}>
-            <span style={styles.label}>الموقع:</span>
-            <span style={styles.value}>{profile.location}</span>
-          </div>
-          <div style={styles.infoRow}>
-            <span style={styles.label}>رقم الهاتف:</span>
-            <span style={styles.value}>{profile.phone}</span>
+          
+          <div style={styles.info}>
+            <div style={styles.infoRow}>
+              <span style={styles.label}>اسم المستخدم:</span>
+              <span style={styles.value}>{profile.username}</span>
+            </div>
+            <div style={styles.infoRow}>
+              <span style={styles.label}>البريد الإلكتروني:</span>
+              <span style={styles.value}>{profile.email}</span>
+            </div>
+            <div style={styles.infoRow}>
+              <span style={styles.label}>الموقع:</span>
+              <span style={styles.value}>{profile.location}</span>
+            </div>
+            <div style={styles.infoRow}>
+              <span style={styles.label}>رقم الهاتف:</span>
+              <span style={styles.value}>{profile.phone}</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div style={styles.productsSection}>
-        <h2 style={styles.subtitle}>منتجاتي ({products.length})</h2>
-        
-        {products.length === 0 ? (
-          <div style={styles.empty}>
-            <p>لم تقم بإضافة أي منتجات بعد</p>
+        {error ? (
+          <div className="card" style={styles.errorCard}>
+            <div style={styles.errorIcon}>⚠️</div>
+            <h3 style={styles.errorTitle}>خطأ في تحميل المنتجات</h3>
+            <p style={styles.errorMessage}>{error}</p>
+            <button className="btn btn-primary" onClick={handleRetry}>
+              إعادة المحاولة
+            </button>
           </div>
         ) : (
-          <div style={styles.productsList}>
-            {products.map((product) => (
-              <div key={product.id} className="card" style={styles.productCard}>
-                <div style={styles.productLayout}>
-                  {/* صور المنتج */}
-                  {product.images && product.images.length > 0 && (
-                    <div style={styles.productImages}>
-                      <img 
-                        src={product.images[0]} 
-                        alt={product.title}
-                        style={styles.productImage}
-                      />
-                      {product.images.length > 1 && (
-                        <div style={styles.imageCount}>
-                          +{product.images.length - 1}
+          <div style={styles.productsSection}>
+            <h2 style={styles.subtitle}>منتجاتي ({products.length})</h2>
+            
+            {products.length === 0 ? (
+              <div style={styles.empty}>
+                <p>لم تقم بإضافة أي منتجات بعد</p>
+              </div>
+            ) : (
+              <div style={styles.productsList}>
+                {products.map((product) => (
+                  <div key={product.id} className="card" style={styles.productCard}>
+                    <div style={styles.productLayout}>
+                      {/* صور المنتج */}
+                      {product.images && product.images.length > 0 && (
+                        <div style={styles.productImages}>
+                          <img 
+                            src={product.images[0]} 
+                            alt={product.title}
+                            style={styles.productImage}
+                            loading="lazy"
+                            onError={(e) => {
+                              e.target.src = 'https://placehold.co/180x180/e2e8f0/64748b?text=Image+Not+Found';
+                            }}
+                          />
+                          {product.images.length > 1 && (
+                            <div style={styles.imageCount}>
+                              +{product.images.length - 1}
+                            </div>
+                          )}
                         </div>
                       )}
-                    </div>
-                  )}
 
-                  {/* معلومات المنتج */}
-                  <div style={styles.productInfo}>
-                    <div style={styles.productHeader}>
-                      <h3 style={styles.productTitle}>{product.title}</h3>
-                      <span 
-                        style={{
-                          ...styles.status,
-                          background: getStatusColor(product.status) + '20',
-                          color: getStatusColor(product.status)
-                        }}
-                      >
-                        {getStatusText(product.status)}
-                      </span>
-                    </div>
-                    
-                    <p style={styles.productDesc}>{product.description}</p>
-                    
-                    <div style={styles.productDetails}>
-                      {product.category && <span>الفئة: {getCategoryName(product.category)}</span>}
-                      {product.weight && <span>الوزن: {product.weight} كجم</span>}
-                      {product.condition && <span>الحالة: {product.condition}</span>}
-                      <span>
-                        {product.choice_type === 'recycle' ? 'إعادة تدوير' : product.suggested_price ? `${product.suggested_price} جنيه` : 'في انتظار التسعير'}
-                      </span>
-                    </div>
-
-                    {product.choice_type === 'recycle' && product.recycle_idea && (
-                      <div style={styles.recycleInfo}>
-                        <strong>💡 فكرة إعادة التدوير:</strong>
-                        <p>{product.recycle_idea}</p>
-                      </div>
-                    )}
-
-                    {/* عرض التفاوض */}
-                    {product.status === 'awaiting_seller' && product.negotiated_price && (
-                      <div style={styles.negotiationOffer}>
-                        <h4 style={styles.negotiationTitle}>🤝 عرض سعر جديد من الإدارة</h4>
-                        <div style={styles.priceComparison}>
-                          <div>
-                            <span style={styles.priceLabel}>السعر المقترح منك:</span>
-                            <span style={styles.oldPrice}>{product.suggested_price} جنيه</span>
-                          </div>
-                          <div>
-                            <span style={styles.priceLabel}>العرض الجديد:</span>
-                            <span style={styles.newPrice}>{product.negotiated_price} جنيه</span>
-                          </div>
+                      {/* معلومات المنتج */}
+                      <div style={styles.productInfo}>
+                        <div style={styles.productHeader}>
+                          <h3 style={styles.productTitle}>{product.title}</h3>
+                          <span 
+                            style={{
+                              ...styles.status,
+                              background: getStatusColor(product.status) + '20',
+                              color: getStatusColor(product.status)
+                            }}
+                          >
+                            {getStatusText(product.status)}
+                          </span>
                         </div>
-                        {product.negotiation_note && (
-                          <p style={styles.negotiationNote}>
-                            <strong>ملاحظة:</strong> {product.negotiation_note}
-                          </p>
+                        
+                        <p style={styles.productDesc}>{product.description}</p>
+                        
+                        <div style={styles.productDetails}>
+                          {product.category && <span>الفئة: {getCategoryName(product.category)}</span>}
+                          {product.weight && <span>الوزن: {product.weight} كجم</span>}
+                          {product.condition && <span>الحالة: {product.condition}</span>}
+                          <span>
+                            {product.choice_type === 'recycle' ? 'إعادة تدوير' : product.suggested_price ? `${product.suggested_price} جنيه` : 'في انتظار التسعير'}
+                          </span>
+                        </div>
+
+                        {product.choice_type === 'recycle' && product.recycle_idea && (
+                          <div style={styles.recycleInfo}>
+                            <strong>💡 فكرة إعادة التدوير:</strong>
+                            <p>{product.recycle_idea}</p>
+                          </div>
                         )}
-                        <div style={styles.negotiationActions}>
-                          <button
-                            className="btn btn-primary"
-                            onClick={() => handleAcceptNegotiation(product.id)}
-                          >
-                            قبول العرض
-                          </button>
-                          <button
-                            className="btn btn-danger"
-                            onClick={() => handleRejectNegotiation(product.id)}
-                          >
-                            رفض العرض
-                          </button>
-                        </div>
-                      </div>
-                    )}
 
-                    {product.rejection_reason && (
-                      <div style={styles.rejection}>
-                        <strong>سبب الرفض:</strong> {product.rejection_reason}
+                        {/* عرض التفاوض */}
+                        {product.status === 'awaiting_seller' && product.negotiated_price && (
+                          <div style={styles.negotiationOffer}>
+                            <h4 style={styles.negotiationTitle}>🤝 عرض سعر جديد من الإدارة</h4>
+                            <div style={styles.priceComparison}>
+                              <div>
+                                <span style={styles.priceLabel}>السعر المقترح منك:</span>
+                                <span style={styles.oldPrice}>{product.suggested_price} جنيه</span>
+                              </div>
+                              <div>
+                                <span style={styles.priceLabel}>العرض الجديد:</span>
+                                <span style={styles.newPrice}>{product.negotiated_price} جنيه</span>
+                              </div>
+                            </div>
+                            {product.negotiation_note && (
+                              <p style={styles.negotiationNote}>
+                                <strong>ملاحظة:</strong> {product.negotiation_note}
+                              </p>
+                            )}
+                            <div style={styles.negotiationActions}>
+                              <button
+                                className="btn btn-primary"
+                                onClick={() => handleAcceptNegotiation(product.id)}
+                              >
+                                قبول العرض
+                              </button>
+                              <button
+                                className="btn btn-danger"
+                                onClick={() => handleRejectNegotiation(product.id)}
+                              >
+                                رفض العرض
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {product.rejection_reason && (
+                          <div style={styles.rejection}>
+                            <strong>سبب الرفض:</strong> {product.rejection_reason}
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
         )}
       </div>
-    </div>
+    </ErrorBoundary>
   );
 }
 
@@ -272,13 +304,24 @@ const styles = {
     marginBottom: '40px',
     padding: '40px'
   },
+  profileHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '32px',
+    flexWrap: 'wrap',
+    gap: '16px'
+  },
   title: {
     fontSize: '36px',
     color: '#f9fafb',
-    marginBottom: '32px',
     fontWeight: '800',
     display: 'flex',
     alignItems: 'center'
+  },
+  logoutBtn: {
+    fontSize: '14px',
+    padding: '10px 20px'
   },
   info: {
     display: 'flex',
@@ -316,6 +359,24 @@ const styles = {
     padding: '60px',
     color: '#999',
     fontSize: '16px'
+  },
+  errorCard: {
+    textAlign: 'center',
+    padding: '40px',
+    background: 'rgba(220, 38, 38, 0.05)',
+    border: '1px solid rgba(220, 38, 38, 0.2)'
+  },
+  errorIcon: {
+    fontSize: '48px',
+    marginBottom: '16px'
+  },
+  errorTitle: {
+    color: '#dc2626',
+    marginBottom: '8px'
+  },
+  errorMessage: {
+    color: '#9ca3af',
+    marginBottom: '24px'
   },
   productsList: {
     display: 'flex',

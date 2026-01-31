@@ -3,6 +3,7 @@ import { useProductStore } from '../store/productStore';
 import { useAuthStore } from '../store/authStore';
 import { supabase } from '../lib/supabase';
 import ProductCard from '../components/ProductCard';
+import { BrowseSkeleton } from '../components/Skeletons';
 
 export default function Browse() {
   const [products, setProducts] = useState([]);
@@ -10,6 +11,9 @@ export default function Browse() {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const { fetchProducts } = useProductStore();
   const { profile } = useAuthStore();
 
@@ -21,7 +25,7 @@ export default function Browse() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'products', filter: 'status=eq.approved' }, 
         (payload) => {
           console.log('Product changed:', payload);
-          loadProducts();
+          loadProducts(currentPage);
         }
       )
       .subscribe();
@@ -39,18 +43,18 @@ export default function Browse() {
       supabase.removeChannel(channel);
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isDropdownOpen]);
+  }, [isDropdownOpen, currentPage]);
 
   useEffect(() => {
     if (offers.length >= 0) {
-      loadProducts();
+      loadProducts(currentPage);
     }
-  }, [offers]);
+  }, [offers, currentPage]);
 
-  const loadProducts = async () => {
+  const loadProducts = async (page = 1) => {
     try {
-      const data = await fetchProducts(profile?.location);
-      const sellProducts = data.filter(product => 
+      const result = await fetchProducts(profile?.location, page, 20);
+      const sellProducts = result.data.filter(product => 
         !product.choice_type || product.choice_type === 'sell'
       );
       
@@ -76,10 +80,19 @@ export default function Browse() {
       });
       
       setProducts(productsWithDiscounts);
+      setTotalPages(result.totalPages || 1);
+      setTotalItems(result.count || 0);
     } catch (err) {
       console.error('Error loading products:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+      setLoading(true);
     }
   };
 
@@ -122,11 +135,7 @@ export default function Browse() {
     : products.filter(p => p.category === selectedCategory);
 
   if (loading) {
-    return (
-      <div className="loading">
-        <div className="netflix-loading"></div>
-      </div>
-    );
+    return <BrowseSkeleton />;
   }
 
   return (
@@ -180,7 +189,7 @@ export default function Browse() {
 
       <div style={styles.productsInfo}>
         <p style={styles.count}>
-          {filteredProducts.length} منتج متاح
+          {totalItems} منتج متاح - الصفحة {currentPage} من {totalPages}
         </p>
       </div>
 
@@ -191,11 +200,63 @@ export default function Browse() {
           <p style={styles.emptyText}>لا توجد منتجات في هذه الفئة حالياً</p>
         </div>
       ) : (
-        <div style={styles.grid}>
-          {filteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        <>
+          <div style={styles.grid}>
+            {filteredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+          
+          {totalPages > 1 && (
+            <div style={styles.pagination}>
+              <button 
+                className="btn btn-secondary"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                style={{...styles.pageButton, ...(currentPage === 1 ? styles.disabledButton : {})}}
+              >
+                السابق
+              </button>
+              
+              <div style={styles.pageNumbers}>
+                {[...Array(totalPages)].map((_, index) => {
+                  const pageNum = index + 1;
+                  if (
+                    pageNum === 1 || 
+                    pageNum === totalPages || 
+                    (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                  ) {
+                    return (
+                      <button
+                        key={pageNum}
+                        className="btn"
+                        onClick={() => handlePageChange(pageNum)}
+                        style={{
+                          ...styles.pageNumber,
+                          ...(currentPage === pageNum ? styles.activePage : {})
+                        }}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
+                    return <span key={pageNum} style={styles.ellipsis}>...</span>;
+                  }
+                  return null;
+                })}
+              </div>
+              
+              <button 
+                className="btn btn-secondary"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                style={{...styles.pageButton, ...(currentPage === totalPages ? styles.disabledButton : {})}}
+              >
+                التالي
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -319,5 +380,41 @@ const styles = {
     gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
     gap: '40px',
     marginBottom: '60px'
+  },
+  pagination: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: '16px',
+    marginTop: '40px',
+    padding: '20px',
+    flexWrap: 'wrap'
+  },
+  pageButton: {
+    minWidth: '120px',
+    padding: '12px 24px'
+  },
+  disabledButton: {
+    opacity: 0.5,
+    cursor: 'not-allowed'
+  },
+  pageNumbers: {
+    display: 'flex',
+    gap: '8px',
+    alignItems: 'center',
+    flexWrap: 'wrap'
+  },
+  pageNumber: {
+    minWidth: '40px',
+    padding: '8px 12px',
+    borderRadius: '8px'
+  },
+  activePage: {
+    background: 'linear-gradient(135deg, #6b7c59 0%, #556b2f 100%)',
+    color: 'white'
+  },
+  ellipsis: {
+    padding: '8px',
+    color: '#9ca3af'
   }
 };

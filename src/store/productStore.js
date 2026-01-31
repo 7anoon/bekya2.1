@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
+import { log, logError, isAbortError, retryRequest } from '../lib/utils';
+import cacheManager, { cacheUtils } from '../lib/cache';
 
 export const useProductStore = create((set, get) => ({
   products: [],
@@ -395,58 +397,151 @@ export const useProductStore = create((set, get) => ({
     }
   },
 
-  fetchProducts: async (location = null) => {
+  fetchProducts: async (location = null, page = 1, limit = 20) => {
     set({ loading: true });
-    let query = supabase
-      .from('products')
-      .select('*, profiles(username, location)')
-      .eq('status', 'approved')
-      .order('created_at', { ascending: false });
+    
+    try {
+      // Check cache first
+      const cacheKey = `products_${location || 'all'}_page_${page}`;
+      const cachedData = cacheManager.get(cacheKey);
+      
+      if (cachedData) {
+        set({ 
+          products: cachedData.data, 
+          loading: false,
+          totalPages: cachedData.totalPages,
+          currentPage: page,
+          totalItems: cachedData.count
+        });
+        return cachedData;
+      }
+      
+      // Create abort controller for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
+      let query = supabase
+        .from('products')
+        .select('*, profiles(username, location)', { count: 'exact' })
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false })
+        .range((page - 1) * limit, page * limit - 1);
 
-    const { data, error } = await query;
+      // Add location filter if specified
+      if (location) {
+        query = query.eq('profiles.location', location);
+      }
 
-    if (error) {
+      const { data, error, count } = await query;
+
+      // Clear timeout since operation completed
+      clearTimeout(timeoutId);
+
+      if (error) {
+        set({ loading: false });
+        throw error;
+      }
+
+      const result = { 
+        data: data || [], 
+        count, 
+        totalPages: Math.ceil(count / limit) 
+      };
+      
+      // Cache the result
+      cacheManager.set(cacheKey, result);
+      
+      set({ 
+        products: data || [], 
+        loading: false,
+        totalPages: Math.ceil(count / limit),
+        currentPage: page,
+        totalItems: count
+      });
+      
+      return result;
+    } catch (error) {
+      // Clear loading state
       set({ loading: false });
+      
+      // Handle timeout specifically
+      if (error.name === 'AbortError' || error.message.includes('timeout')) {
+        console.error('Request timed out:', error);
+        throw new Error('Request timed out. Please try again.');
+      }
+      
+      console.error('Error fetching products:', error);
       throw error;
     }
-
-    set({ products: data || [], loading: false });
-    return data;
   },
 
   fetchUserProducts: async (userId) => {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+    // Check cache first
+    const cacheKey = `user_products_${userId}`;
+    const cachedData = cacheManager.get(cacheKey);
+    
+    if (cachedData) {
+      return cachedData;
+    }
+    
+    // Create abort controller for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
 
-    if (error) throw error;
-    return data;
+      // Clear timeout since operation completed
+      clearTimeout(timeoutId);
+
+      if (error) throw error;
+      
+      // Cache the result
+      cacheManager.set(cacheKey, data, 3 * 60 * 1000); // 3 minutes for user products
+      return data;
+    } catch (error) {
+      // Handle timeout specifically
+      if (error.name === 'AbortError' || error.message.includes('timeout')) {
+        console.error('Request timed out:', error);
+        throw new Error('Request timed out. Please try again.');
+      }
+      
+      console.error('Error fetching user products:', error);
+      throw error;
+    }
   },
 
   fetchPendingProducts: async () => {
     try {
-      console.log('fetchPendingProducts: Starting query...');
+      log('fetchPendingProducts: Starting query...');
       
-      const { data, error } = await supabase
-        .from('products')
-        .select('*, profiles(username, email, phone, location)')
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false });
+      const { data, error } = await retryRequest(() =>
+        supabase
+          .from('products')
+          .select('*, profiles(username, email, phone, location)')
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false })
+      );
 
-      console.log('fetchPendingProducts: Query completed', { data, error });
+      log('fetchPendingProducts: Query completed', { count: data?.length || 0 });
 
       if (error) {
-        console.error('fetchPendingProducts error:', error);
+        logError('fetchPendingProducts error:', error);
         throw error;
       }
       
-      console.log('fetchPendingProducts: Returning data', data);
       return data || [];
     } catch (error) {
-      console.error('fetchPendingProducts catch:', error);
-      return []; // نرجع array فاضي بدل ما نرمي error
+      if (isAbortError(error)) {
+        log('fetchPendingProducts: Request aborted');
+        return [];
+      }
+      logError('fetchPendingProducts catch:', error);
+      return [];
     }
   }
 }));

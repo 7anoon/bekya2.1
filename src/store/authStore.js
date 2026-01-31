@@ -1,22 +1,29 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
+import { log, logError, isAbortError, retryRequest } from '../lib/utils';
 
 export const useAuthStore = create((set) => ({
   user: null,
   profile: null,
   loading: true,
+  error: null,
 
   setUser: (user) => set({ user }),
   setProfile: (profile) => set({ profile }),
+  setLoading: (loading) => set({ loading }),
+  setError: (error) => set({ error }),
 
   signUp: async (username, email, password, location, phone) => {
+    set({ loading: true, error: null });
     try {
       // تحقق إن الـ username مش مستخدم
-      const { data: existingUser } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('username', username)
-        .maybeSingle();
+      const { data: existingUser } = await retryRequest(() =>
+        supabase
+          .from('profiles')
+          .select('username')
+          .eq('username', username)
+          .maybeSingle()
+      );
 
       if (existingUser) {
         throw new Error('اسم المستخدم موجود بالفعل');
@@ -50,46 +57,46 @@ export const useAuthStore = create((set) => ({
           }, { onConflict: 'id' });
 
         if (profileError) {
-          console.error('Profile creation error:', profileError);
+          logError('Profile creation error:', profileError);
         }
       }
 
+      set({ loading: false });
       return data;
     } catch (err) {
-      console.error('Sign up error:', err);
+      logError('Sign up error:', err);
+      set({ loading: false, error: err.message });
       throw err;
     }
   },
 
   signIn: async (username, password) => {
+    set({ loading: true, error: null });
     try {
-      console.log('Attempting login for username:', username);
+      log('Attempting login for username:', username);
       
-      // Check Supabase connection first
-      const { data: health } = await supabase
-        .from('profiles')
-        .select('id')
-        .limit(1);
-      
-      console.log('Database connection test:', health);
-      
-      // جرب تجيب الـ email من profiles
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('username', username)
-        .maybeSingle();
+      // جرب تجيب الـ email من profiles مع retry
+      const { data: profile, error: profileError } = await retryRequest(() =>
+        supabase
+          .from('profiles')
+          .select('email')
+          .eq('username', username)
+          .maybeSingle()
+      );
 
       if (profileError) {
-        console.error('Profile error:', profileError);
-        throw new Error('خطأ في الاتصال بقاعدة البيانات: ' + profileError.message);
+        logError('Profile error:', profileError);
+        if (isAbortError(profileError)) {
+          throw new Error('انتهت مهلة الاتصال. حاول مرة أخرى');
+        }
+        throw new Error('خطأ في الاتصال بقاعدة البيانات');
       }
 
       if (!profile) {
         throw new Error('اسم المستخدم غير موجود');
       }
 
-      console.log('Found email:', profile.email);
+      log('Found email:', profile.email);
       
       // جرب تسجل الدخول
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -98,93 +105,134 @@ export const useAuthStore = create((set) => ({
       });
 
       if (error) {
-        console.error('Auth error:', error);
+        logError('Auth error:', error);
         if (error.message.includes('Invalid')) {
           throw new Error('كلمة المرور غير صحيحة');
         }
-        throw new Error('خطأ في تسجيل الدخول: ' + error.message);
+        if (isAbortError(error)) {
+          throw new Error('انتهت مهلة تسجيل الدخول. حاول مرة أخرى');
+        }
+        throw new Error('خطأ في تسجيل الدخول');
       }
 
-      console.log('Login successful:', data);
+      log('Login successful');
+      set({ loading: false });
       return data;
     } catch (err) {
-      console.error('Sign in error:', err);
+      logError('Sign in error:', err);
+      set({ loading: false, error: err.message });
       throw err;
     }
   },
 
   signOut: async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-    set({ user: null, profile: null });
+    set({ loading: true, error: null });
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      set({ user: null, profile: null, loading: false });
+    } catch (err) {
+      logError('Sign out error:', err);
+      set({ loading: false, error: err.message });
+      throw err;
+    }
   },
 
   loadUser: async () => {
-    console.log('authStore: Quick load starting...');
+    log('Starting loadUser...');
+    set({ loading: true, error: null });
     
     try {
-      // Don't set loading state to avoid UI blocking
-      // set({ loading: true });
+      log('Checking session...');
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      // Quick load without timeouts for immediate response
-      console.log('authStore: Checking session...');
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log('authStore: Session:', session ? 'FOUND' : 'NOT FOUND');
+      if (sessionError) {
+        if (isAbortError(sessionError)) {
+          log('Session check aborted');
+          set({ user: null, profile: null, loading: false });
+          return;
+        }
+        throw sessionError;
+      }
+      
+      log('Session:', session ? 'FOUND' : 'NOT FOUND');
       
       if (!session) {
-        console.log('authStore: No session, setting null user');
-        set({ user: null, profile: null });
+        log('No session, setting null user');
+        set({ user: null, profile: null, loading: false });
         return;
       }
       
-      console.log('authStore: Getting user...');
-      const { data: { user } } = await supabase.auth.getUser();
-      console.log('authStore: User:', user ? user.id : 'NULL');
+      log('Getting user...');
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) {
+        if (isAbortError(userError)) {
+          log('User check aborted');
+          set({ user: null, profile: null, loading: false });
+          return;
+        }
+        throw userError;
+      }
+      
+      log('User:', user ? user.id : 'NULL');
       
       if (user) {
-        console.log('authStore: Getting profile...');
+        log('Getting profile...');
         try {
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single();
+          const { data: profile, error: profileError } = await retryRequest(() =>
+            supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', user.id)
+              .single()
+          );
           
-          console.log('authStore: Profile:', profile ? 'FOUND' : 'NOT FOUND');
+          if (profileError) throw profileError;
+          
+          log('Profile:', profile ? 'FOUND' : 'NOT FOUND');
           
           if (profile) {
-            console.log('authStore: Setting user and profile');
-            set({ user, profile });
+            log('Setting user and profile');
+            set({ user, profile, loading: false });
           } else {
-            console.log('authStore: Creating minimal profile');
+            log('Creating minimal profile');
             const minimalProfile = {
               id: user.id,
               username: user.email.split('@')[0],
               email: user.email,
               role: 'user'
             };
-            set({ user, profile: minimalProfile });
+            set({ user, profile: minimalProfile, loading: false });
           }
         } catch (profileError) {
-          console.log('authStore: Profile error, creating minimal profile');
+          if (isAbortError(profileError)) {
+            log('Profile fetch aborted');
+            set({ user: null, profile: null, loading: false });
+            return;
+          }
+          log('Profile error, creating minimal profile');
           const minimalProfile = {
             id: user.id,
             username: user.email.split('@')[0],
             email: user.email,
             role: 'user'
           };
-          set({ user, profile: minimalProfile });
+          set({ user, profile: minimalProfile, loading: false });
         }
       } else {
-        console.log('authStore: No user found');
-        set({ user: null, profile: null });
+        log('No user found');
+        set({ user: null, profile: null, loading: false });
       }
       
     } catch (error) {
-      console.error('authStore: Quick load error:', error.message);
-      set({ user: null, profile: null });
-    } finally {
-      console.log('authStore: Quick load complete');
+      if (isAbortError(error)) {
+        log('Request aborted');
+        set({ user: null, profile: null, loading: false });
+        return;
+      }
+      logError('Load error:', error);
+      set({ user: null, profile: null, loading: false, error: error.message });
     }
   }
 }));

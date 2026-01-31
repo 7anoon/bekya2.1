@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import { supabase } from './lib/supabase';
+import { log, logError } from './lib/utils';
+import ErrorBoundary from './components/ErrorBoundary';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
 import Home from './pages/Home';
@@ -109,10 +111,27 @@ import ProductDetails from './pages/ProductDetails';
 import Navbar from './components/Navbar';
 
 function App() {
-  const { user, profile, loading, loadUser } = useAuthStore();
+  const { user, profile, loadUser } = useAuthStore();
   const [showSplash, setShowSplash] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [initialLoadDone, setInitialLoadDone] = useState(false);
+
+  // Save current route to localStorage on route change
+  useEffect(() => {
+    const saveCurrentRoute = () => {
+      const currentPath = window.location.pathname;
+      if (currentPath !== '/login' && currentPath !== '/signup') {
+        localStorage.setItem('lastVisitedPage', currentPath);
+      }
+    };
+
+    // Save route when component mounts and on popstate events
+    saveCurrentRoute();
+    window.addEventListener('popstate', saveCurrentRoute);
+    
+    return () => {
+      window.removeEventListener('popstate', saveCurrentRoute);
+    };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -132,20 +151,9 @@ function App() {
             console.log('App: Showing onboarding');
             setShowOnboarding(true);
           }
-          // Mark initial load as done immediately
-          setInitialLoadDone(true);
         }
       } catch (error) {
         console.error('App: Init error:', error);
-        // Even on error, mark as loaded to avoid infinite loading
-        if (mounted) {
-          setInitialLoadDone(true);
-        }
-      } finally {
-        if (mounted) {
-          console.log('App: Initialization complete');
-          setInitialLoadDone(true);
-        }
       }
     };
 
@@ -171,33 +179,6 @@ function App() {
 
   if (showOnboarding) {
     return <Onboarding onComplete={() => { localStorage.setItem('hasSeenOnboarding', 'true'); setShowOnboarding(false); }} />;
-  }
-
-  // Debug info
-  console.log('App State:', { user: !!user, profile: !!profile, loading, showSplash, showOnboarding });
-  
-  // Show loading screen while checking authentication
-  // This prevents the flash of login page when user is actually logged in
-  if (loading && !initialLoadDone) {
-    return (
-      <div style={{ 
-        position: 'fixed', 
-        top: 0, 
-        left: 0, 
-        right: 0, 
-        bottom: 0, 
-        background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%)', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        zIndex: 9999 
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div className="spinner" style={{ margin: '0 auto 20px' }}></div>
-          <p style={{ color: '#d1d5db', fontSize: '16px' }}>جاري التحميل...</p>
-        </div>
-      </div>
-    );
   }
 
   return (

@@ -26,6 +26,10 @@ export default function ProductCard({ product }) {
             src={product.images[0]} 
             alt={product.title}
             style={styles.image}
+            loading="lazy"
+            onError={(e) => {
+              e.target.src = 'https://placehold.co/300x200/e2e8f0/64748b?text=Image+Not+Found';
+            }}
           />
           {product.images.length > 1 && (
             <div style={styles.imageCount} className="netflix-badge">

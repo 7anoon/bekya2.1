@@ -11,10 +11,40 @@ export default function Notifications() {
 
   useEffect(() => {
     loadNotifications();
-    // تحديث الإشعارات كل 30 ثانية
-    const interval = setInterval(loadNotifications, 30000);
-    return () => clearInterval(interval);
+    
+    // الاستماع للإشعارات الجديدة باستخدام Supabase Realtime
+    const channel = supabase
+      .channel('notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${profile.id}`
+        },
+        (payload) => {
+          // إضافة الإشعار الجديد إلى القائمة
+          setNotifications(prev => [payload.new, ...prev]);
+          // تشغيل صوت الإشعار
+          playNotificationSound();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
+
+  const playNotificationSound = () => {
+    try {
+      const audio = new Audio('/notification-sound.mp3');
+      audio.play().catch(e => console.log('Sound play failed:', e));
+    } catch (e) {
+      console.log('Sound playback error:', e);
+    }
+  };
 
   const loadNotifications = async () => {
     try {

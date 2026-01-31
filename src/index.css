@@ -430,8 +430,90 @@ nav .notificationLink:hover {
 }
 
 /* ============================================
-   🎨 PREMIUM 2026 DESIGN SYSTEM
+   PERFORMANCE OPTIMIZATIONS
    ============================================ */
+
+/* Optimize heavy animations */
+.card {
+  /* Reduce backdrop filter intensity for better performance */
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  /* Optimize transitions */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Hardware acceleration */
+  will-change: transform, box-shadow;
+  transform: translateZ(0);
+}
+
+/* Reduce expensive effects on scroll */
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    transition: none;
+  }
+  
+  .card img {
+    transition: none;
+  }
+}
+
+/* Optimize image loading */
+.card img {
+  transition: opacity 0.3s ease;
+  opacity: 1;
+  will-change: opacity;
+  /* Hardware acceleration for images */
+  transform: translateZ(0);
+}
+
+.card img[data-loaded="false"] {
+  opacity: 0;
+}
+
+/* Optimize loading spinner */
+.spinner {
+  /* Reduce animation duration for better performance */
+  animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  /* Hardware acceleration */
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* Optimize hover effects */
+.card:hover {
+  /* Reduce transform amount for better performance */
+  transform: translateY(-2px);
+  will-change: transform, box-shadow;
+}
+
+/* Contain expensive painting operations */
+.loading {
+  contain: layout style paint;
+}
+
+/* Optimize scrollbar performance */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  /* Reduce gradient complexity */
+  background: #6b7c59;
+}
+
+/* Optimize text rendering */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Reduce repaints on scroll */
+body {
+  /* Create a new stacking context to isolate repaints */
+  isolation: isolate;
+}
 
 /* Floating Animation */
 @keyframes float {

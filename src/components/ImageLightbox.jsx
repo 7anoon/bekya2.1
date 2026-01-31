@@ -38,6 +38,9 @@ export default function ImageLightbox({ images, initialIndex = 0, onClose }) {
           alt={`صورة ${currentIndex + 1}`}
           style={styles.image}
           className="lightbox-image"
+          onError={(e) => {
+            e.target.src = 'https://placehold.co/600x400/e2e8f0/64748b?text=Image+Load+Failed';
+          }}
         />
 
         {images.length > 1 && (

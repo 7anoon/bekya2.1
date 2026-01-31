@@ -203,6 +203,10 @@ export default function ProductDetails() {
                 alt={product.title}
                 style={styles.mainImg}
                 onClick={() => openLightbox(0)}
+                loading="lazy"
+                onError={(e) => {
+                  e.target.src = 'https://placehold.co/400x300/e2e8f0/64748b?text=Main+Image+Not+Found';
+                }}
               />
             </div>
             {product.images.length > 1 && (
@@ -214,6 +218,10 @@ export default function ProductDetails() {
                     alt={`${product.title} ${index + 1}`}
                     style={styles.thumbnail}
                     onClick={() => openLightbox(index)}
+                    loading="lazy"
+                    onError={(e) => {
+                      e.target.src = 'https://placehold.co/100x100/e2e8f0/64748b?text=Thumb+Not+Found';
+                    }}
                   />
                 ))}
               </div>
