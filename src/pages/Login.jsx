@@ -18,10 +18,7 @@ export default function Login() {
     try {
       await signIn(username, password);
       
-      // تحديث الـ profile بعد الـ login
-      await loadUser();
-      
-      // الانتقال للصفحة الرئيسية
+      // الانتقال للصفحة الرئيسية مباشرة
       navigate('/');
     } catch (err) {
       console.error('Login error:', err);

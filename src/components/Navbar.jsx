@@ -9,6 +9,15 @@ export default function Navbar() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Debug: طباعة معلومات الـ profile
+  useEffect(() => {
+    console.log('=== Navbar Profile Debug ===');
+    console.log('Profile:', profile);
+    console.log('Profile Role:', profile?.role);
+    console.log('Is Admin?', profile?.role === 'admin');
+    console.log('========================');
+  }, [profile]);
+
   useEffect(() => {
     if (profile?.id) {
       // طلب إذن الإشعارات من المتصفح

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
-import { log, logError } from '../lib/utils';
+import { log, logError, retryRequest, isAbortError } from '../lib/utils';
 
 export const useAuthStore = create((set) => ({
   user: null,
@@ -118,12 +118,39 @@ export const useAuthStore = create((set) => ({
         throw new Error('خطأ في تسجيل الدخول');
       }
 
-      log('Login successful, loading user profile...');
+      log('Login successful, setting user...');
       
-      // Load user profile after login
-      await get().loadUser();
+      // Set user immediately
+      set({ user: data.user, loading: false });
       
-      set({ loading: false });
+      log('User set, loading profile...');
+      
+      // Load profile in background
+      setTimeout(async () => {
+        try {
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', data.user.id)
+            .single();
+          
+          if (profileError) {
+            logError('Profile fetch error:', profileError);
+            return;
+          }
+          
+          if (profile) {
+            log('Profile loaded successfully:', profile);
+            log('Profile role:', profile.role);
+            set({ profile });
+          } else {
+            log('No profile found');
+          }
+        } catch (err) {
+          logError('Profile load error:', err);
+        }
+      }, 100);
+      
       return data;
     } catch (err) {
       logError('Sign in error:', err);
