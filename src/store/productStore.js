@@ -509,7 +509,8 @@ export const useProductStore = create((set, get) => ({
     const cachedData = cacheManager.get(cacheKey);
     
     if (cachedData) {
-      return cachedData;
+      // فلترة المنتجات الإلكترونية من الـ cache
+      return cachedData.filter(product => product.category !== 'electronics');
     }
     
     // Create abort controller for timeout
@@ -528,9 +529,12 @@ export const useProductStore = create((set, get) => ({
 
       if (error) throw error;
       
+      // فلترة المنتجات الإلكترونية
+      const filteredData = data.filter(product => product.category !== 'electronics');
+      
       // Cache the result
-      cacheManager.set(cacheKey, data, 3 * 60 * 1000); // 3 minutes for user products
-      return data;
+      cacheManager.set(cacheKey, filteredData, 3 * 60 * 1000); // 3 minutes for user products
+      return filteredData;
     } catch (error) {
       // Handle timeout specifically
       if (error.name === 'AbortError' || error.message.includes('timeout')) {
@@ -560,7 +564,10 @@ export const useProductStore = create((set, get) => ({
         throw error;
       }
       
-      return data || [];
+      // فلترة المنتجات الإلكترونية
+      const filteredData = (data || []).filter(product => product.category !== 'electronics');
+      
+      return filteredData;
     } catch (error) {
       if (isAbortError(error)) {
         log('fetchPendingProducts: Request aborted');

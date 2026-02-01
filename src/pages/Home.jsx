@@ -21,7 +21,8 @@ export default function Home() {
     try {
       const data = await fetchProducts(profile?.location);
       const sellProducts = data.filter(product => 
-        !product.choice_type || product.choice_type === 'sell'
+        (!product.choice_type || product.choice_type === 'sell') &&
+        product.category !== 'electronics' // إخفاء المنتجات الإلكترونية
       );
       setProductsCount(sellProducts.length);
     } catch (err) {
