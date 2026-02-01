@@ -182,7 +182,8 @@ export default function Navbar() {
       navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
-      alert('حدث خطأ في تسجيل الخروج');
+      // Don't show alert, just navigate to login anyway
+      navigate('/login');
     }
   };
 
