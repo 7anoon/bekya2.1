@@ -4,6 +4,7 @@ import { useAuthStore } from './store/authStore';
 import { supabase } from './lib/supabase';
 import { log, logError } from './lib/utils';
 import ErrorBoundary from './components/ErrorBoundary';
+import OfflineDetector from './components/OfflineDetector';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
 import Home from './pages/Home';
@@ -52,11 +53,21 @@ function App() {
 
   // Wait for initial load before showing routes
   if (isLoading) {
-    return null;
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div className="spinner"></div>
+      </div>
+    );
   }
 
   return (
     <BrowserRouter basename={import.meta.env.PROD ? '/bekya2.1' : '/'}>
+      <OfflineDetector />
       {user && <Navbar />}
       <Routes>
         <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />

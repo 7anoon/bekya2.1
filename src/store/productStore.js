@@ -176,7 +176,26 @@ export const useProductStore = create((set, get) => ({
 
   createProduct: async (productData, images, analysis) => {
     try {
-      const { data, error } = await supabase
+      // Validate data
+      if (!productData.title || productData.title.trim().length < 3) {
+        throw new Error('عنوان المنتج يجب أن يكون 3 أحرف على الأقل');
+      }
+      if (!productData.description || productData.description.trim().length < 10) {
+        throw new Error('وصف المنتج يجب أن يكون 10 أحرف على الأقل');
+      }
+      if (!images || images.length === 0) {
+        throw new Error('يجب إضافة صورة واحدة على الأقل');
+      }
+      if (analysis.originalPrice > 500) {
+        throw new Error('السعر الأصلي يجب ألا يتجاوز 500 جنيه (حد بيكيا)');
+      }
+
+      // Timeout handler
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('انتهت مهلة رفع المنتج. تأكد من اتصالك بالإنترنت')), 30000)
+      );
+
+      const uploadPromise = supabase
         .from('products')
         .insert({
           ...productData,
@@ -192,15 +211,20 @@ export const useProductStore = create((set, get) => ({
         .select()
         .single();
 
+      const { data, error } = await Promise.race([uploadPromise, timeoutPromise]);
+
       if (error) {
         console.error('Database error:', error);
+        if (error.message.includes('violates foreign key')) {
+          throw new Error('خطأ في ربط المنتج بحسابك. حاول تسجيل الدخول مرة أخرى');
+        }
         throw new Error(`خطأ في حفظ المنتج: ${error.message}`);
       }
       
       return data;
     } catch (err) {
       console.error('Create product error:', err);
-      throw err;
+      throw new Error(err.message || 'حدث خطأ غير متوقع. حاول مرة أخرى');
     }
   },
 
@@ -416,9 +440,10 @@ export const useProductStore = create((set, get) => ({
         return cachedData;
       }
       
-      // Create abort controller for timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      // Create timeout promise
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('timeout')), 20000)
+      );
       
       let query = supabase
         .from('products')
@@ -432,14 +457,12 @@ export const useProductStore = create((set, get) => ({
         query = query.eq('profiles.location', location);
       }
 
-      const { data, error, count } = await query;
-
-      // Clear timeout since operation completed
-      clearTimeout(timeoutId);
+      const queryPromise = query;
+      const { data, error, count } = await Promise.race([queryPromise, timeoutPromise]);
 
       if (error) {
         set({ loading: false });
-        throw error;
+        throw new Error('خطأ في تحميل المنتجات. تأكد من اتصالك بالإنترنت');
       }
 
       const result = { 
@@ -461,17 +484,15 @@ export const useProductStore = create((set, get) => ({
       
       return result;
     } catch (error) {
-      // Clear loading state
       set({ loading: false });
       
-      // Handle timeout specifically
-      if (error.name === 'AbortError' || error.message.includes('timeout')) {
+      if (error.message === 'timeout') {
         console.error('Request timed out:', error);
-        throw new Error('Request timed out. Please try again.');
+        throw new Error('انتهت مهلة التحميل. تأكد من اتصالك بالإنترنت وحاول مرة أخرى');
       }
       
       console.error('Error fetching products:', error);
-      throw error;
+      throw new Error(error.message || 'حدث خطأ في تحميل المنتجات');
     }
   },
 

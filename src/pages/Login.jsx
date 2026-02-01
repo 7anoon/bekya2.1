@@ -1,17 +1,20 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import ErrorMessage from '../components/ErrorMessage';
 
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     try {
       console.log('=== LOGIN ATTEMPT ===');
@@ -31,6 +34,8 @@ export default function Login() {
       console.error('Error:', err);
       
       setError(err.message || 'خطأ في تسجيل الدخول');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -45,9 +50,11 @@ export default function Login() {
 
           <h2 style={styles.title}>تسجيل الدخول</h2>
 
-          {error && (
-            <div style={styles.error}>{error}</div>
-          )}
+          <ErrorMessage 
+            error={error} 
+            onRetry={() => handleSubmit({ preventDefault: () => {} })}
+            onDismiss={() => setError('')}
+          />
 
           <form onSubmit={handleSubmit} style={styles.form}>
             <div style={styles.field}>
@@ -61,6 +68,7 @@ export default function Login() {
                 placeholder=""
                 autoComplete="off"
                 required
+                disabled={isLoading}
               />
             </div>
 
@@ -73,6 +81,7 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={isLoading}
               />
             </div>
 
@@ -80,8 +89,9 @@ export default function Login() {
               type="submit" 
               className="btn btn-primary"
               style={styles.button}
+              disabled={isLoading}
             >
-              {'تسجيل الدخول'}
+              {isLoading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
             </button>
           </form>
 
