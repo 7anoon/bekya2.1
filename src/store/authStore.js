@@ -124,6 +124,16 @@ export const useAuthStore = create((set) => ({
       // Clear local state first
       set({ user: null, profile: null });
       
+      // Clear all Supabase data from localStorage
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('sb-')) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      
       // Try to sign out from Supabase (ignore errors if session missing)
       await supabase.auth.signOut().catch(() => {
         // Ignore session missing errors
