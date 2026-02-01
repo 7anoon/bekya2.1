@@ -2,10 +2,16 @@
 <html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#10b981" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+    <meta name="theme-color" content="#0a0e27" />
     <meta name="description" content="بيكيا - منصة لبيع وشراء المنتجات" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <title>بيكيا - بيع واشتري</title>
+    
+    <!-- Preload critical resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
     
     <!-- GitHub Pages SPA redirect script -->
     <script>
@@ -20,10 +26,147 @@
         }
       }(window.location))
     </script>
-    <script type="module" crossorigin src="/bekya2.1/assets/index-1XXhpvYM.js"></script>
+    <script type="module" crossorigin src="/bekya2.1/assets/index-BfOnRhEn.js"></script>
     <link rel="stylesheet" crossorigin href="/bekya2.1/assets/index-BIt1uhbl.css">
   <link rel="manifest" href="/bekya2.1/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/bekya2.1/registerSW.js"></script></head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Splash Screen -->
+      <div id="splash-screen" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+        z-index: 9999;
+      ">
+        <!-- Animated Loader -->
+        <div style="position: relative; margin-bottom: 32px;">
+          <!-- Outer Ring -->
+          <div style="
+            width: 100px;
+            height: 100px;
+            border: 4px solid rgba(107, 124, 89, 0.2);
+            border-top: 4px solid #6b7c59;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            box-shadow: 0 4px 20px rgba(107, 124, 89, 0.3);
+          "></div>
+          
+          <!-- Inner Pulse -->
+          <div style="
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #6b7c59 0%, #556b2f 100%);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+            box-shadow: 0 0 30px rgba(107, 124, 89, 0.5);
+          "></div>
+        </div>
+
+        <!-- App Name -->
+        <h2 style="
+          color: #e5e7eb;
+          font-size: 32px;
+          font-weight: 700;
+          margin: 0 0 12px 0;
+          text-align: center;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          letter-spacing: 1px;
+          text-shadow: 0 2px 10px rgba(107, 124, 89, 0.3);
+        ">بيكيا</h2>
+
+        <!-- Loading Message -->
+        <p style="
+          color: #9ca3af;
+          font-size: 16px;
+          margin: 0 0 24px 0;
+          text-align: center;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        ">جاري التحميل...</p>
+
+        <!-- Loading Dots -->
+        <div style="display: flex; gap: 8px;">
+          <div style="
+            width: 8px;
+            height: 8px;
+            background: #6b7c59;
+            border-radius: 50%;
+            animation: bounce 1.4s ease-in-out 0s infinite;
+            box-shadow: 0 2px 8px rgba(107, 124, 89, 0.4);
+          "></div>
+          <div style="
+            width: 8px;
+            height: 8px;
+            background: #6b7c59;
+            border-radius: 50%;
+            animation: bounce 1.4s ease-in-out 0.2s infinite;
+            box-shadow: 0 2px 8px rgba(107, 124, 89, 0.4);
+          "></div>
+          <div style="
+            width: 8px;
+            height: 8px;
+            background: #6b7c59;
+            border-radius: 50%;
+            animation: bounce 1.4s ease-in-out 0.4s infinite;
+            box-shadow: 0 2px 8px rgba(107, 124, 89, 0.4);
+          "></div>
+        </div>
+      </div>
+
+      <style>
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+          0%, 100% {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+          }
+          50% {
+            transform: translate(-50%, -50%) scale(0.9);
+            opacity: 0.7;
+          }
+        }
+
+        @keyframes bounce {
+          0%, 80%, 100% {
+            transform: translateY(0);
+          }
+          40% {
+            transform: translateY(-12px);
+          }
+        }
+
+        #splash-screen {
+          transition: opacity 0.5s ease-out;
+        }
+      </style>
+    </div>
+    <script>
+      // Remove splash screen when React loads
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          const splash = document.getElementById('splash-screen');
+          if (splash) {
+            splash.style.opacity = '0';
+            setTimeout(function() {
+              splash.remove();
+            }, 500);
+          }
+        }, 300);
+      });
+    </script>
   </body>
 </html>
