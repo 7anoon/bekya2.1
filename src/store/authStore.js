@@ -121,13 +121,18 @@ export const useAuthStore = create((set) => ({
   signOut: async () => {
     set({ error: null });
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      // Clear local state first
       set({ user: null, profile: null });
+      
+      // Try to sign out from Supabase (ignore errors if session missing)
+      await supabase.auth.signOut().catch(() => {
+        // Ignore session missing errors
+      });
+      
     } catch (err) {
       logError('Sign out error:', err);
-      set({ error: err.message });
-      throw err;
+      // Still clear local state even if Supabase signOut fails
+      set({ user: null, profile: null });
     }
   },
 
