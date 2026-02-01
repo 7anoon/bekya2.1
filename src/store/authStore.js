@@ -71,7 +71,8 @@ export const useAuthStore = create((set) => ({
   signIn: async (username, password) => {
     set({ loading: true, error: null });
     try {
-      log('Attempting login for username:', username);
+      log('=== SIGN IN START ===');
+      log('Username:', username);
       
       // Check if input is email or username
       const isEmail = username.includes('@');
@@ -80,24 +81,29 @@ export const useAuthStore = create((set) => ({
       if (!isEmail) {
         // Try to get email from profiles
         log('Looking up email for username:', username);
+        
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('email')
           .eq('username', username)
           .maybeSingle();
 
+        log('Profile lookup result:', { profile, error: profileError });
+
         if (profileError) {
           logError('Profile query error:', profileError);
+          set({ loading: false, error: 'خطأ في الاتصال بقاعدة البيانات' });
           throw new Error('خطأ في الاتصال بقاعدة البيانات: ' + profileError.message);
         }
 
         if (!profile) {
           logError('No profile found for username:', username);
+          set({ loading: false, error: 'اسم المستخدم غير موجود' });
           throw new Error('اسم المستخدم غير موجود');
         }
 
         email = profile.email;
-        log('Found email for username:', email);
+        log('Found email:', email);
       }
       
       // Try to sign in
@@ -107,8 +113,11 @@ export const useAuthStore = create((set) => ({
         password
       });
 
+      log('Auth result:', { data: data?.user?.id, error });
+
       if (error) {
         logError('Auth error:', error);
+        set({ loading: false, error: error.message });
         if (error.message.includes('Invalid')) {
           throw new Error('كلمة المرور غير صحيحة');
         }
@@ -125,20 +134,24 @@ export const useAuthStore = create((set) => ({
         .eq('id', data.user.id)
         .single();
       
+      log('Profile fetch result:', { profile: profile?.username, error: profileError });
+      
       if (profileError) {
         logError('Profile fetch error:', profileError);
         // Set user without profile
         set({ user: data.user, profile: null, loading: false });
       } else {
-        log('Profile loaded successfully:', profile);
+        log('Profile loaded successfully:', profile.username);
         log('User role:', profile.role);
         // Set both user and profile
         set({ user: data.user, profile, loading: false });
       }
       
+      log('=== SIGN IN COMPLETE ===');
       return data;
     } catch (err) {
-      logError('Sign in error:', err);
+      logError('=== SIGN IN ERROR ===');
+      logError('Error:', err);
       set({ loading: false, error: err.message });
       throw err;
     }

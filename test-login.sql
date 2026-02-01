@@ -7,22 +7,18 @@ FROM profiles
 WHERE username = 'hanoon';
 
 -- 2. شوف السياسات على جدول profiles
-SELECT policyname, cmd, qual 
+SELECT policyname, cmd 
 FROM pg_policies 
 WHERE tablename = 'profiles';
 
--- 3. اختبار القراءة من profiles (كأنك anonymous user)
-SET ROLE anon;
-SELECT username, email FROM profiles WHERE username = 'hanoon';
-RESET ROLE;
+-- 3. امسح السياسة القديمة لو موجودة
+DROP POLICY IF EXISTS "Allow anonymous read for login" ON profiles;
 
--- 4. لو الاختبار فشل، نضيف السياسة دي
-CREATE POLICY IF NOT EXISTS "Allow anonymous read for login" 
+-- 4. اعمل السياسة الجديدة
+CREATE POLICY "Allow anonymous read for login" 
 ON profiles FOR SELECT 
 TO anon
 USING (true);
 
--- 5. اختبار تاني
-SET ROLE anon;
+-- 5. اختبار القراءة
 SELECT username, email FROM profiles WHERE username = 'hanoon';
-RESET ROLE;

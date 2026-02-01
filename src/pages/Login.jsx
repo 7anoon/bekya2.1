@@ -16,17 +16,28 @@ export default function Login() {
     setLoading(true);
 
     try {
-      console.log('Attempting login with:', username);
-      await signIn(username, password);
-      console.log('Login successful, navigating...');
+      console.log('=== LOGIN ATTEMPT ===');
+      console.log('Username:', username);
+      console.log('Password length:', password.length);
       
-      // الانتقال للصفحة الرئيسية مباشرة
-      navigate('/');
+      const result = await signIn(username, password);
+      
+      console.log('=== LOGIN SUCCESS ===');
+      console.log('Result:', result);
+      console.log('Navigating to home...');
+      
+      // Wait a bit before navigating to ensure state is updated
+      setTimeout(() => {
+        navigate('/');
+      }, 500);
+      
     } catch (err) {
-      console.error('Login error:', err);
+      console.error('=== LOGIN ERROR ===');
+      console.error('Error:', err);
+      console.error('Error message:', err.message);
+      console.error('Error stack:', err.stack);
+      
       setError(err.message || 'خطأ في تسجيل الدخول');
-    } finally {
-      // Always reset loading state
       setLoading(false);
     }
   };
