@@ -7,7 +7,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, loadUser } = useAuthStore();
+  const { signIn } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -18,24 +18,21 @@ export default function Login() {
     try {
       console.log('=== LOGIN ATTEMPT ===');
       console.log('Username:', username);
-      console.log('Password length:', password.length);
       
+      // Try login
       const result = await signIn(username, password);
       
       console.log('=== LOGIN SUCCESS ===');
-      console.log('Result:', result);
-      console.log('Navigating to home...');
+      console.log('User ID:', result?.user?.id);
       
-      // Wait a bit before navigating to ensure state is updated
+      // Navigate after short delay
       setTimeout(() => {
         navigate('/');
-      }, 500);
+      }, 100);
       
     } catch (err) {
       console.error('=== LOGIN ERROR ===');
       console.error('Error:', err);
-      console.error('Error message:', err.message);
-      console.error('Error stack:', err.stack);
       
       setError(err.message || 'خطأ في تسجيل الدخول');
       setLoading(false);
@@ -59,13 +56,14 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} style={styles.form}>
             <div style={styles.field}>
-              <label style={styles.label}>اسم المستخدم</label>
+              <label style={styles.label}>اسم المستخدم أو البريد الإلكتروني</label>
               <input
                 type="text"
                 className="input"
                 style={styles.input}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                placeholder="hanoon أو haneen.soliman17@gmail.com"
                 required
               />
             </div>
