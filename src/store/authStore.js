@@ -134,27 +134,25 @@ export const useAuthStore = create((set) => ({
     set({ error: null });
     
     try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      // Use getSession instead of getUser for faster response
+      const { data: { session } } = await supabase.auth.getSession();
       
-      if (sessionError || !session) {
+      if (!session?.user) {
         set({ user: null, profile: null });
         return;
       }
       
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      // Set user immediately from session
+      set({ user: session.user });
       
-      if (userError || !user) {
-        set({ user: null, profile: null });
-        return;
-      }
-      
+      // Load profile in background
       const { data: profile } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
+        .eq('id', session.user.id)
         .single();
       
-      set({ user, profile: profile || { id: user.id, email: user.email, role: 'user' } });
+      set({ profile: profile || { id: session.user.id, email: session.user.email, role: 'user' } });
       
     } catch (error) {
       set({ user: null, profile: null });
