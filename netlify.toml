@@ -9,3 +9,7 @@
 
 [build.environment]
   NODE_VERSION = "18"
+
+# Environment variables (يفضل تضيفيهم من Dashboard)
+# VITE_SUPABASE_URL = "https://kxuvovqvwtwhtxjnnboo.supabase.co"
+# VITE_SUPABASE_ANON_KEY = "your-key-here"

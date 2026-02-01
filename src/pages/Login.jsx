@@ -19,30 +19,42 @@ export default function Login() {
     try {
       console.log('=== LOGIN ATTEMPT ===');
       console.log('Username:', username);
-      console.log('Environment:', import.meta.env.MODE);
-      console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+      console.log('Window location:', window.location.href);
+      
+      // Check if Supabase is configured
+      if (!import.meta.env.VITE_SUPABASE_URL && !window.location.href.includes('localhost')) {
+        throw new Error('خطأ في إعدادات الموقع. تواصل مع الدعم الفني');
+      }
       
       // Try login
       const result = await signIn(username, password);
       
       console.log('=== LOGIN SUCCESS ===');
       console.log('User ID:', result?.user?.id);
-      console.log('Session:', result?.session);
       
       // Small delay to ensure state is updated
       await new Promise(resolve => setTimeout(resolve, 500));
       
       // Navigate to home
       console.log('Navigating to home...');
-      navigate('/', { replace: true });
+      window.location.href = '/';
       
     } catch (err) {
       console.error('=== LOGIN ERROR ===');
       console.error('Error:', err);
       console.error('Error message:', err.message);
-      console.error('Error stack:', err.stack);
       
-      setError(err.message || 'خطأ في تسجيل الدخول');
+      // Show user-friendly error
+      let errorMsg = err.message || 'خطأ في تسجيل الدخول';
+      
+      // Check for common issues
+      if (err.message?.includes('fetch')) {
+        errorMsg = 'مشكلة في الاتصال بالخادم. تأكد من اتصالك بالإنترنت';
+      } else if (err.message?.includes('network')) {
+        errorMsg = 'خطأ في الشبكة. حاول مرة أخرى';
+      }
+      
+      setError(errorMsg);
       setIsLoading(false);
     }
   };
