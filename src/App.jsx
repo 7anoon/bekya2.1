@@ -112,10 +112,9 @@ import SetAdminRole from './pages/SetAdminRole';
 import Navbar from './components/Navbar';
 
 function App() {
-  const { user, profile, loadUser, loading } = useAuthStore();
-  const [showSplash, setShowSplash] = useState(true);
+  const { user, profile, loadUser } = useAuthStore();
+  const [showSplash, setShowSplash] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [initializing, setInitializing] = useState(true);
 
   // Save current route to localStorage on route change
   useEffect(() => {
@@ -137,43 +136,19 @@ function App() {
 
   useEffect(() => {
     let mounted = true;
-    log('App: Component mounted, initializing...');
     
     const initApp = async () => {
       try {
-        log('App: Loading user data...');
-        
-        // Add timeout to prevent hanging
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Initialization timeout')), 15000)
-        );
-        
-        await Promise.race([
-          loadUser(),
-          timeoutPromise
-        ]);
-        
-        log('App: User data loaded');
+        await loadUser();
         
         if (mounted) {
-          setInitializing(false);
           const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
-          log('App: Onboarding status:', hasSeenOnboarding);
-          // Show onboarding only for new users who haven't seen it
           if (!hasSeenOnboarding && !user) {
-            log('App: Showing onboarding');
             setShowOnboarding(true);
           }
         }
       } catch (error) {
-        logError('App: Init error:', error);
-        if (mounted) {
-          setInitializing(false);
-          // Show error message to user
-          if (error.message.includes('timeout')) {
-            alert('خطأ في الاتصال بالخادم. يرجى التحقق من الاتصال بالإنترنت وإعادة تحميل الصفحة');
-          }
-        }
+        // Silent fail - user will see login page
       }
     };
 
@@ -205,11 +180,6 @@ function App() {
       }
     };
   }, [loadUser, user]);
-
-  // Skip loading screen entirely, show content immediately
-  if (initializing) {
-    return null;
-  }
 
   if (showSplash) {
     return <SplashScreen onComplete={() => setShowSplash(false)} />;

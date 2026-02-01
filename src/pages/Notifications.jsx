@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 export default function Notifications() {
   const { profile } = useAuthStore();
   const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -59,8 +58,6 @@ export default function Notifications() {
       setNotifications(data || []);
     } catch (err) {
       console.error('Error loading notifications:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -161,14 +158,6 @@ export default function Notifications() {
     if (diffHours < 24) return `منذ ${diffHours} ساعة`;
     return `منذ ${diffDays} يوم`;
   };
-
-  if (loading) {
-    return (
-      <div className="loading">
-        <div className="spinner"></div>
-      </div>
-    );
-  }
 
   const unreadCount = notifications.filter(n => !n.read).length;
 

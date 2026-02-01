@@ -14,7 +14,6 @@ export default function ProductDetails() {
   const [product, setProduct] = useState(null);
   const [seller, setSeller] = useState(null);
   const [activeOffer, setActiveOffer] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showNegotiationModal, setShowNegotiationModal] = useState(false);
@@ -85,8 +84,6 @@ export default function ProductDetails() {
     } catch (err) {
       console.error('Error loading product:', err);
       alert('خطأ في تحميل تفاصيل المنتج');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -161,14 +158,6 @@ export default function ProductDetails() {
     };
     return colorMap[status] || '#6b7280';
   };
-
-  if (loading) {
-    return (
-      <div className="loading">
-        <div className="spinner"></div>
-      </div>
-    );
-  }
 
   if (!product) {
     return (

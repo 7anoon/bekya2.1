@@ -7,7 +7,6 @@ export default function Profile() {
   const { profile, signOut } = useAuthStore();
   const { fetchUserProducts, acceptNegotiation, rejectNegotiation } = useProductStore();
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const getCategoryName = (category) => {
@@ -33,8 +32,6 @@ export default function Profile() {
     } catch (err) {
       console.error('Error loading products:', err);
       setError(err.message || 'فشل في تحميل المنتجات');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -92,15 +89,6 @@ export default function Profile() {
     };
     return colorMap[status] || '#6b7280';
   };
-
-  if (loading) {
-    return (
-      <div className="loading">
-        <div className="spinner"></div>
-        <p style={{ marginTop: '16px', color: '#9ca3af' }}>جارٍ تحميل الملف الشخصي...</p>
-      </div>
-    );
-  }
 
   if (error) {
     return (

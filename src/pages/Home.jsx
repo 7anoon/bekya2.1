@@ -8,7 +8,6 @@ import ProductCard from '../components/ProductCard';
 export default function Home() {
   const navigate = useNavigate();
   const [offers, setOffers] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [productsCount, setProductsCount] = useState(0);
   const { fetchProducts } = useProductStore();
   const { profile } = useAuthStore();
@@ -27,8 +26,6 @@ export default function Home() {
       setProductsCount(sellProducts.length);
     } catch (err) {
       console.error('Error loading products count:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -53,19 +50,6 @@ export default function Home() {
       console.error('Error loading offers:', err);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="container">
-        <div className="netflix-hero" style={styles.heroSection}>
-          <div style={styles.heroContent}>
-            <div className="skeleton" style={{ width: '300px', height: '60px', margin: '0 auto 20px' }}></div>
-            <div className="skeleton" style={{ width: '400px', height: '24px', margin: '0 auto' }}></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="container">

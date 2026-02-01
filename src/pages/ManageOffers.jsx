@@ -7,7 +7,6 @@ export default function ManageOffers() {
   const { profile } = useAuthStore();
   const navigate = useNavigate();
   const [offers, setOffers] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -50,8 +49,6 @@ export default function ManageOffers() {
       setOffers(data || []);
     } catch (err) {
       console.error('Error loading offers:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -162,14 +159,6 @@ export default function ManageOffers() {
       alert('حدث خطأ في حذف العرض');
     }
   };
-
-  if (loading) {
-    return (
-      <div className="loading">
-        <div className="spinner"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="container">

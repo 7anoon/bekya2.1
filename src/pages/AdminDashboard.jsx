@@ -6,7 +6,6 @@ import ImageLightbox from '../components/ImageLightbox';
 export default function AdminDashboard() {
   const [pendingProducts, setPendingProducts] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [negotiationPrice, setNegotiationPrice] = useState('');
   const [negotiationNote, setNegotiationNote] = useState('');
@@ -129,11 +128,10 @@ export default function AdminDashboard() {
     
     const loadDataSafely = async () => {
       try {
-        // Timeout fallback - إذا التحميل أخذ أكثر من 15 ثانية، نوقفه
+        // Timeout fallback
         timeoutId = setTimeout(() => {
-          if (mounted && loading) {
+          if (mounted) {
             console.error('Loading timeout - forcing stop');
-            setLoading(false);
             setPendingProducts([]);
             setAllUsers([]);
           }
@@ -144,9 +142,6 @@ export default function AdminDashboard() {
         }
       } catch (error) {
         console.error('Error in loadDataSafely:', error);
-        if (mounted) {
-          setLoading(false);
-        }
       } finally {
         if (timeoutId) {
           clearTimeout(timeoutId);
@@ -178,7 +173,6 @@ export default function AdminDashboard() {
       
       if (!user) {
         console.error('No user found');
-        setLoading(false);
         alert('يجب تسجيل الدخول أولاً');
         window.location.href = '/login';
         return;
@@ -202,7 +196,6 @@ export default function AdminDashboard() {
       
       if (profile?.role !== 'admin') {
         console.error('User is not admin');
-        setLoading(false);
         alert('ليس لديك صلاحية الوصول لهذه الصفحة');
         window.location.href = '/';
         return;
@@ -244,7 +237,6 @@ export default function AdminDashboard() {
       setPendingProducts([]);
       setAllUsers([]);
     } finally {
-      setLoading(false);
     }
   };
 

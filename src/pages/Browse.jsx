@@ -8,7 +8,6 @@ import { BrowseSkeleton } from '../components/Skeletons';
 export default function Browse() {
   const [products, setProducts] = useState([]);
   const [offers, setOffers] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -84,15 +83,12 @@ export default function Browse() {
       setTotalItems(result.count || 0);
     } catch (err) {
       console.error('Error loading products:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
-      setLoading(true);
     }
   };
 
@@ -133,10 +129,6 @@ export default function Browse() {
   const filteredProducts = selectedCategory === 'all' 
     ? products 
     : products.filter(p => p.category === selectedCategory);
-
-  if (loading) {
-    return <BrowseSkeleton />;
-  }
 
   return (
     <div className="container">
