@@ -16,13 +16,17 @@ export default function Login() {
     setLoading(true);
 
     try {
+      console.log('Attempting login with:', username);
       await signIn(username, password);
+      console.log('Login successful, navigating...');
       
       // الانتقال للصفحة الرئيسية مباشرة
       navigate('/');
     } catch (err) {
       console.error('Login error:', err);
       setError(err.message || 'خطأ في تسجيل الدخول');
+    } finally {
+      // Always reset loading state
       setLoading(false);
     }
   };
