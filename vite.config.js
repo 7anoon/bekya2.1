@@ -35,5 +35,30 @@ export default defineConfig({
         ]
       }
     })
-  ]
+  ],
+  build: {
+    // Optimize for mobile performance
+    target: 'es2015',
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'supabase': ['@supabase/supabase-js']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000
+  },
+  server: {
+    hmr: {
+      overlay: false
+    }
+  }
 });

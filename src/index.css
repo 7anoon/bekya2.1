@@ -433,6 +433,54 @@ nav .notificationLink:hover {
    PERFORMANCE OPTIMIZATIONS
    ============================================ */
 
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  /* Disable expensive effects on mobile */
+  .card {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.95);
+    transition: none;
+    will-change: auto;
+  }
+  
+  .card:hover {
+    transform: none;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+  }
+  
+  .card img {
+    transition: none;
+    will-change: auto;
+  }
+  
+  .card:hover img {
+    transform: none;
+  }
+  
+  /* Disable animations on mobile */
+  .btn-primary::before,
+  .btn-secondary::before {
+    display: none;
+  }
+  
+  .btn-primary:hover,
+  .btn-secondary:hover {
+    transform: none;
+  }
+  
+  /* Simplify background on mobile */
+  body::before {
+    opacity: 0.02;
+    background-size: 200px 200px;
+  }
+  
+  /* Disable hover effects on mobile */
+  nav a::after {
+    display: none;
+  }
+}
+
 /* Optimize heavy animations */
 .card {
   /* Reduce backdrop filter intensity for better performance */
