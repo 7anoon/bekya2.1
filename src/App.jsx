@@ -142,7 +142,18 @@ function App() {
     const initApp = async () => {
       try {
         log('App: Loading user data...');
+        
+        // Add timeout to prevent hanging on initialization
+        const loadTimeout = setTimeout(() => {
+          if (mounted && initializing) {
+            logError('App: Initialization timeout, proceeding anyway');
+            setInitializing(false);
+          }
+        }, 3000); // Max 3 seconds for initialization
+        
         await loadUser();
+        clearTimeout(loadTimeout);
+        
         log('App: User data loaded');
         
         if (mounted) {
@@ -195,7 +206,11 @@ function App() {
         zIndex: 9999
       }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '60px', marginBottom: '24px' }}>🛒</div>
+          <div style={{ 
+            fontSize: '60px', 
+            marginBottom: '24px',
+            animation: 'bounce 1s ease-in-out infinite'
+          }}>🛒</div>
           <h1 style={{ 
             fontSize: '48px', 
             fontWeight: '900', 
@@ -205,8 +220,26 @@ function App() {
             backgroundClip: 'text',
             marginBottom: '16px'
           }}>بيكيا</h1>
-          <p style={{ fontSize: '16px', color: '#9ca3af' }}>جاري التحميل...</p>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            border: '4px solid rgba(107, 124, 89, 0.2)',
+            borderTop: '4px solid #6b7c59',
+            borderRadius: '50%',
+            margin: '0 auto',
+            animation: 'spin 1s linear infinite'
+          }} />
         </div>
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+          }
+        `}</style>
       </div>
     );
   }

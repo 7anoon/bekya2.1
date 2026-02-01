@@ -162,8 +162,21 @@ export const useAuthStore = create((set) => ({
     set({ loading: true, error: null });
     
     try {
-      log('Checking session...');
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Session check timeout')), 5000)
+      );
+      
+      const sessionPromise = supabase.auth.getSession();
+      
+      log('Checking session with timeout...');
+      const { data: { session }, error: sessionError } = await Promise.race([
+        sessionPromise,
+        timeoutPromise
+      ]).catch(err => {
+        log('Session check failed or timed out:', err);
+        return { data: { session: null }, error: null };
+      });
       
       if (sessionError) {
         if (isAbortError(sessionError)) {
@@ -199,26 +212,39 @@ export const useAuthStore = create((set) => ({
       if (user) {
         log('Getting profile...');
         try {
-          const { data: profile, error: profileError } = await retryRequest(() =>
-            supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', user.id)
-              .single()
-          );
+          const { data: profile, error: profileError } = await Promise.race([
+            supabase.from('profiles').select('*').eq('id', user.id).single(),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Profile fetch timeout')), 3000)
+            )
+          ]).catch(err => {
+            log('Profile fetch failed or timed out:', err);
+            return { data: null, error: err };
+          });
           
-          if (profileError) throw profileError;
+          if (profileError) {
+            logError('Profile error:', profileError);
+            // Create minimal profile as fallback
+            const minimalProfile = {
+              id: user.id,
+              username: user.email?.split('@')[0] || 'user',
+              email: user.email,
+              role: 'user'
+            };
+            set({ user, profile: minimalProfile, loading: false });
+            return;
+          }
           
-          log('Profile:', profile ? 'FOUND' : 'NOT FOUND');
+          log('Profile loaded:', profile ? 'FOUND' : 'NOT FOUND');
           
           if (profile) {
-            log('Setting user and profile');
+            log('Profile role:', profile.role);
             set({ user, profile, loading: false });
           } else {
             log('Creating minimal profile');
             const minimalProfile = {
               id: user.id,
-              username: user.email.split('@')[0],
+              username: user.email?.split('@')[0] || 'user',
               email: user.email,
               role: 'user'
             };
@@ -229,7 +255,7 @@ export const useAuthStore = create((set) => ({
           logError('Profile fetch error:', profileError);
           const minimalProfile = {
             id: user.id,
-            username: user.email.split('@')[0],
+            username: user.email?.split('@')[0] || 'user',
             email: user.email,
             role: 'user'
           };
