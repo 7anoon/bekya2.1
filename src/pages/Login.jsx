@@ -58,7 +58,8 @@ export default function Login() {
                 style={styles.input}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="hanoon أو haneen.soliman17@gmail.com"
+                placeholder=""
+                autoComplete="off"
                 required
               />
             </div>
