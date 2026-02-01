@@ -79,32 +79,29 @@ export const useAuthStore = create((set) => ({
       
       if (!isEmail) {
         // Try to get email from profiles
-        try {
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('email')
-            .eq('username', username)
-            .maybeSingle();
+        log('Looking up email for username:', username);
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('username', username)
+          .maybeSingle();
 
-          if (profileError) {
-            logError('Profile error:', profileError);
-            throw new Error('خطأ في الاتصال بقاعدة البيانات');
-          }
-
-          if (!profile) {
-            throw new Error('اسم المستخدم غير موجود');
-          }
-
-          email = profile.email;
-          log('Found email:', email);
-        } catch (dbError) {
-          // If database fails, try direct login with username as email
-          logError('Database query failed, trying direct login');
-          email = username + '@temp.com'; // Fallback
+        if (profileError) {
+          logError('Profile query error:', profileError);
+          throw new Error('خطأ في الاتصال بقاعدة البيانات: ' + profileError.message);
         }
+
+        if (!profile) {
+          logError('No profile found for username:', username);
+          throw new Error('اسم المستخدم غير موجود');
+        }
+
+        email = profile.email;
+        log('Found email for username:', email);
       }
       
       // Try to sign in
+      log('Attempting auth with email:', email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email,
         password
@@ -115,41 +112,29 @@ export const useAuthStore = create((set) => ({
         if (error.message.includes('Invalid')) {
           throw new Error('كلمة المرور غير صحيحة');
         }
-        throw new Error('خطأ في تسجيل الدخول');
+        throw new Error('خطأ في تسجيل الدخول: ' + error.message);
       }
 
-      log('Login successful, setting user...');
+      log('Login successful! User ID:', data.user.id);
       
-      // Set user immediately
-      set({ user: data.user, loading: false });
+      // Load profile immediately
+      log('Loading profile...');
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', data.user.id)
+        .single();
       
-      log('User set, loading profile...');
-      
-      // Load profile in background
-      setTimeout(async () => {
-        try {
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', data.user.id)
-            .single();
-          
-          if (profileError) {
-            logError('Profile fetch error:', profileError);
-            return;
-          }
-          
-          if (profile) {
-            log('Profile loaded successfully:', profile);
-            log('Profile role:', profile.role);
-            set({ profile });
-          } else {
-            log('No profile found');
-          }
-        } catch (err) {
-          logError('Profile load error:', err);
-        }
-      }, 100);
+      if (profileError) {
+        logError('Profile fetch error:', profileError);
+        // Set user without profile
+        set({ user: data.user, profile: null, loading: false });
+      } else {
+        log('Profile loaded successfully:', profile);
+        log('User role:', profile.role);
+        // Set both user and profile
+        set({ user: data.user, profile, loading: false });
+      }
       
       return data;
     } catch (err) {
