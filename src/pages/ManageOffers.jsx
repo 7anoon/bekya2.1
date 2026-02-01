@@ -20,7 +20,6 @@ export default function ManageOffers() {
 
   const getCategoryName = (category) => {
     const names = {
-      electronics: 'إلكترونيات',
       furniture: 'أثاث',
       clothes: 'ملابس',
       books: 'كتب',
@@ -233,7 +232,6 @@ export default function ManageOffers() {
                   onChange={(e) => setFormData({...formData, category: e.target.value})}
                 >
                   <option value="">كل الفئات</option>
-                  <option value="electronics">إلكترونيات</option>
                   <option value="furniture">أثاث</option>
                   <option value="clothes">ملابس</option>
                   <option value="books">كتب</option>

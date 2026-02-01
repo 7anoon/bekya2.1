@@ -116,7 +116,6 @@ export default function Browse() {
 
   const categories = [
     { id: 'all', name: 'الكل', icon: '🛍️' },
-    { id: 'electronics', name: 'إلكترونيات', icon: '💻' },
     { id: 'furniture', name: 'أثاث', icon: '🪑' },
     { id: 'clothes', name: 'ملابس', icon: '👕' },
     { id: 'books', name: 'كتب', icon: '📚' },

@@ -115,9 +115,13 @@ export const useAuthStore = create((set) => ({
     try {
       // Validate inputs
       if (!username || username.trim().length === 0) {
+        clearTimeout(timeoutId);
+        set({ isLoading: false });
         throw new Error('أدخل اسم المستخدم أو البريد الإلكتروني');
       }
       if (!password || password.length === 0) {
+        clearTimeout(timeoutId);
+        set({ isLoading: false });
         throw new Error('أدخل كلمة المرور');
       }
 
@@ -129,18 +133,34 @@ export const useAuthStore = create((set) => ({
       
       if (!isEmail) {
         console.log('authStore.signIn: Looking up email for username:', username);
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('email')
-          .eq('username', username.trim())
-          .single();
+        
+        try {
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('username', username.trim())
+            .single();
 
-        console.log('authStore.signIn: Profile lookup result:', { profile, error: profileError });
+          console.log('authStore.signIn: Profile lookup result:', { profile, error: profileError });
 
-        if (profileError || !profile) {
-          throw new Error('اسم المستخدم غير موجود. تأكد من كتابته بشكل صحيح');
+          if (profileError) {
+            console.error('Profile lookup error:', profileError);
+            if (profileError.message?.includes('fetch')) {
+              throw new Error('مشكلة في الاتصال بالخادم. تأكد من اتصالك بالإنترنت');
+            }
+            throw new Error('اسم المستخدم غير موجود. تأكد من كتابته بشكل صحيح');
+          }
+          
+          if (!profile) {
+            throw new Error('اسم المستخدم غير موجود. تأكد من كتابته بشكل صحيح');
+          }
+          
+          email = profile.email;
+        } catch (lookupError) {
+          clearTimeout(timeoutId);
+          set({ isLoading: false });
+          throw lookupError;
         }
-        email = profile.email;
       }
       
       console.log('authStore.signIn: Attempting sign in with email:', email);
@@ -158,16 +178,24 @@ export const useAuthStore = create((set) => ({
 
       if (authError) {
         console.error('authStore.signIn: Auth error:', authError);
+        clearTimeout(timeoutId);
+        set({ isLoading: false });
+        
         if (authError.message?.includes('Invalid login credentials')) {
           throw new Error('كلمة المرور غير صحيحة');
         }
         if (authError.message?.includes('Email not confirmed')) {
           throw new Error('يجب تأكيد البريد الإلكتروني أولاً');
         }
+        if (authError.message?.includes('fetch') || authError.message?.includes('network')) {
+          throw new Error('مشكلة في الاتصال بالخادم. تأكد من اتصالك بالإنترنت');
+        }
         throw new Error('خطأ في تسجيل الدخول. حاول مرة أخرى');
       }
 
       if (!authData?.user) {
+        clearTimeout(timeoutId);
+        set({ isLoading: false });
         throw new Error('فشل تسجيل الدخول. حاول مرة أخرى');
       }
       
@@ -202,7 +230,7 @@ export const useAuthStore = create((set) => ({
       console.error('authStore.signIn: Caught error:', err);
       const errorMessage = err.message || 'حدث خطأ غير متوقع. حاول مرة أخرى';
       set({ error: errorMessage, isLoading: false });
-      throw new Error(errorMessage);
+      throw err;
     }
   },
 

@@ -109,7 +109,6 @@ export default function Home() {
         </h2>
         <div style={styles.categoriesGrid}>
           {[
-            {icon: '💻', name: 'إلكترونيات', count: '50+'},
             {icon: '🪑', name: 'أثاث', count: '30+'},
             {icon: '👕', name: 'ملابس', count: '40+'},
             {icon: '📚', name: 'كتب', count: '25+'},

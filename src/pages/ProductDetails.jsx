@@ -305,7 +305,6 @@ export default function ProductDetails() {
             <div style={styles.infoItem}>
               <span className="info-label">الفئة:</span>
               <span className="info-value">
-                {product.category === 'electronics' && 'إلكترونيات'}
                 {product.category === 'furniture' && 'أثاث'}
                 {product.category === 'clothes' && 'ملابس'}
                 {product.category === 'books' && 'كتب'}

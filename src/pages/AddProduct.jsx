@@ -242,7 +242,6 @@ export default function AddProduct() {
               required
             >
               <option value="">اختر نوع المنتج</option>
-              <option value="electronics">إلكترونيات</option>
               <option value="furniture">أثاث</option>
               <option value="clothes">ملابس</option>
               <option value="books">كتب</option>

@@ -32,7 +32,7 @@ export default function Login() {
       
       // Navigate to home
       console.log('Navigating to home...');
-      window.location.href = '/';
+      navigate('/');
       
     } catch (err) {
       console.error('=== LOGIN ERROR ===');

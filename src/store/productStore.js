@@ -47,7 +47,6 @@ export const useProductStore = create((set, get) => ({
     if (!selectedCondition) {
       // تحليل افتراضي بناءً على الفئة
       const categoryDefaults = {
-        'electronics': 'جيدة',      // الإلكترونيات عادة حالتها جيدة
         'furniture': 'جيدة جداً',   // الأثاث يحتفظ بحالته
         'books': 'جيدة',            // الكتب حالتها جيدة
         'clothes': 'متوسطة',        // الملابس تتأثر بالاستخدام
@@ -64,7 +63,6 @@ export const useProductStore = create((set, get) => ({
     
     // تطبيق عوامل إضافية حسب الفئة
     const categoryFactors = {
-      'electronics': 0.9,  // الإلكترونيات تفقد قيمتها أسرع
       'furniture': 1.0,    // الأثاث يحتفظ بقيمته
       'books': 0.7,        // الكتب قيمتها أقل
       'clothes': 0.6,      // الملابس تفقد قيمتها بسرعة
@@ -86,7 +84,6 @@ export const useProductStore = create((set, get) => ({
       'furniture': true,
       'toys': true,
       'other': true,
-      'electronics': false,
       'clothes': false,
       'books': false
     };
@@ -124,10 +121,6 @@ export const useProductStore = create((set, get) => ({
         'فستان|dress': 'يمكن تحويله إلى ملابس للأطفال أو وسائد ديكور',
         'جاكيت|jacket|معطف|coat': 'يمكن التبرع به أو تحويله إلى بطانية صغيرة',
         
-        // إلكترونيات (نادراً)
-        'شاحن|charger|كابل|cable': 'يمكن استخدام الأسلاك في مشاريع إلكترونية تعليمية',
-        'سماعة|headphone|earphone': 'يمكن استخدام القطع في مشاريع DIY إلكترونية',
-        
         // أخرى
         'صندوق|box|علبة': 'يمكن تزيينه واستخدامه كصندوق تخزين أنيق',
         'إطار|frame': 'يمكن إعادة طلائه واستخدامه لصور أو مرايا جديدة',
@@ -154,7 +147,6 @@ export const useProductStore = create((set, get) => ({
         'toys': 'يمكن التبرع بها لدور الأيتام أو استخدامها في الحضانات',
         'books': 'يمكن التبرع بها للمكتبات العامة أو المدارس',
         'clothes': 'يمكن التبرع بها أو تحويلها إلى قطع قماشية مفيدة',
-        'electronics': 'يمكن استخدام القطع في مشاريع تعليمية أو إعادة تدويرها بشكل آمن',
         'other': 'يمكن استخدامها في مشاريع DIY إبداعية أو التبرع بها'
       };
       

@@ -11,7 +11,6 @@ export default function Profile() {
 
   const getCategoryName = (category) => {
     const categories = {
-      electronics: 'إلكترونيات',
       furniture: 'أثاث',
       clothes: 'ملابس',
       books: 'كتب',

@@ -16,7 +16,6 @@ export default function AdminDashboard() {
 
   const getCategoryName = (category) => {
     const categories = {
-      electronics: 'إلكترونيات',
       furniture: 'أثاث',
       clothes: 'ملابس',
       books: 'كتب',
