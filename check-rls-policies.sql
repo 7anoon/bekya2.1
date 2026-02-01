@@ -8,15 +8,14 @@ SELECT
   policyname,
   permissive,
   roles,
-  cmd,
-  qual,
-  with_check
+  cmd
 FROM pg_policies
 WHERE tablename = 'profiles';
 
--- 2. لو مفيش سياسة للقراءة، نضيفها
--- هذا يسمح لأي حد يقرأ من جدول profiles (مهم للـ login)
-CREATE POLICY IF NOT EXISTS "Enable read access for all users" 
+-- 2. لو مفيش سياسة للقراءة، نضيفها (نفذي كل سطر لوحده)
+DROP POLICY IF EXISTS "Enable read access for all users" ON profiles;
+
+CREATE POLICY "Enable read access for all users" 
 ON profiles FOR SELECT 
 USING (true);
 

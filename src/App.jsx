@@ -112,9 +112,10 @@ import SetAdminRole from './pages/SetAdminRole';
 import Navbar from './components/Navbar';
 
 function App() {
-  const { user, profile, loadUser } = useAuthStore();
+  const { user, profile, loadUser, loading } = useAuthStore();
   const [showSplash, setShowSplash] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [initializing, setInitializing] = useState(true);
 
   // Save current route to localStorage on route change
   useEffect(() => {
@@ -136,43 +137,79 @@ function App() {
 
   useEffect(() => {
     let mounted = true;
-    console.log('App: Component mounted, initializing...');
+    log('App: Component mounted, initializing...');
     
     const initApp = async () => {
       try {
-        console.log('App: Loading user data...');
+        log('App: Loading user data...');
         await loadUser();
-        console.log('App: User data loaded');
+        log('App: User data loaded');
         
         if (mounted) {
+          setInitializing(false);
           const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
-          console.log('App: Onboarding status:', hasSeenOnboarding);
+          log('App: Onboarding status:', hasSeenOnboarding);
           // Show onboarding only for new users who haven't seen it
           if (!hasSeenOnboarding && !user) {
-            console.log('App: Showing onboarding');
+            log('App: Showing onboarding');
             setShowOnboarding(true);
           }
         }
       } catch (error) {
-        console.error('App: Init error:', error);
+        logError('App: Init error:', error);
+        if (mounted) {
+          setInitializing(false);
+        }
       }
     };
 
     initApp();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log('App: Auth state changed:', _event, session?.user?.id);
+      log('App: Auth state changed:', _event, session?.user?.id);
       if (mounted) {
         loadUser();
       }
     });
 
     return () => {
-      console.log('App: Component unmounting, cleaning up...');
+      log('App: Component unmounting, cleaning up...');
       mounted = false;
       subscription.unsubscribe();
     };
   }, [loadUser, user]);
+
+  // Show loading screen while checking session
+  if (initializing || loading) {
+    return (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 9999
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '60px', marginBottom: '24px' }}>🛒</div>
+          <h1 style={{ 
+            fontSize: '48px', 
+            fontWeight: '900', 
+            background: 'linear-gradient(135deg, #6b7c59 0%, #8b7355 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            marginBottom: '16px'
+          }}>بيكيا</h1>
+          <p style={{ fontSize: '16px', color: '#9ca3af' }}>جاري التحميل...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (showSplash) {
     return <SplashScreen onComplete={() => setShowSplash(false)} />;
