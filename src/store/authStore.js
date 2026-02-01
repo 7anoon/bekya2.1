@@ -135,6 +135,12 @@ export const useAuthStore = create((set) => ({
     set({ error: null });
     
     try {
+      // Add small delay on mobile for session to load properly
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (isMobile) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+      
       // Use getSession instead of getUser for faster response
       const { data: { session } } = await supabase.auth.getSession();
       
