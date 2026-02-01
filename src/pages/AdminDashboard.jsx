@@ -285,22 +285,6 @@ export default function AdminDashboard() {
     }
   };
 
-  if (loading) {
-    return (
-      <div style={styles.loadingContainer}>
-        <div className="spinner"></div>
-        <p style={styles.loadingText}>جاري التحميل...</p>
-        <button 
-          className="btn btn-secondary"
-          onClick={() => window.location.reload()}
-          style={styles.refreshButton}
-        >
-          تحديث الصفحة
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div className="container">
       <h1 style={styles.title}>لوحة الإدارة</h1>
