@@ -18,7 +18,7 @@ import SetAdminRole from './pages/SetAdminRole';
 import Navbar from './components/Navbar';
 
 function App() {
-  const { user, profile, loadUser } = useAuthStore();
+  const { user, profile, loadUser, isLoading } = useAuthStore();
 
   // Save current route to localStorage on route change
   useEffect(() => {
@@ -49,6 +49,11 @@ function App() {
       subscription?.unsubscribe();
     };
   }, [loadUser]);
+
+  // Wait for initial load before showing routes
+  if (isLoading) {
+    return null;
+  }
 
   return (
     <BrowserRouter basename={import.meta.env.PROD ? '/bekya2.1' : '/'}>

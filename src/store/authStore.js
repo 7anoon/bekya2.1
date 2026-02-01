@@ -6,6 +6,7 @@ export const useAuthStore = create((set) => ({
   user: null,
   profile: null,
   error: null,
+  isLoading: true, // Add loading state
 
   setUser: (user) => set({ user }),
   setProfile: (profile) => set({ profile }),
@@ -112,7 +113,7 @@ export const useAuthStore = create((set) => ({
       return authData;
       
     } catch (err) {
-      set({ error: err.message });
+      set({ error: err.message, isLoading: false });
       throw err;
     }
   },
@@ -138,12 +139,12 @@ export const useAuthStore = create((set) => ({
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session?.user) {
-        set({ user: null, profile: null });
+        set({ user: null, profile: null, isLoading: false });
         return;
       }
       
       // Set user immediately from session
-      set({ user: session.user });
+      set({ user: session.user, isLoading: false });
       
       // Load profile in background
       const { data: profile } = await supabase
@@ -155,7 +156,7 @@ export const useAuthStore = create((set) => ({
       set({ profile: profile || { id: session.user.id, email: session.user.email, role: 'user' } });
       
     } catch (error) {
-      set({ user: null, profile: null });
+      set({ user: null, profile: null, isLoading: false });
     }
   }
 }));
