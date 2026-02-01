@@ -21,11 +21,6 @@ export default function Login() {
       console.log('Username:', username);
       console.log('Window location:', window.location.href);
       
-      // Check if Supabase is configured
-      if (!import.meta.env.VITE_SUPABASE_URL && !window.location.href.includes('localhost')) {
-        throw new Error('خطأ في إعدادات الموقع. تواصل مع الدعم الفني');
-      }
-      
       // Try login
       const result = await signIn(username, password);
       
