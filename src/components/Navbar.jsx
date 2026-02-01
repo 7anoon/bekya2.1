@@ -175,8 +175,15 @@ export default function Navbar() {
   };
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate('/login');
+    console.log('Logout button clicked!');
+    try {
+      await signOut();
+      console.log('Logout successful, navigating to login...');
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      alert('حدث خطأ في تسجيل الخروج');
+    }
   };
 
   const toggleMenu = () => {
@@ -223,7 +230,11 @@ export default function Navbar() {
               <Link to="/admin/offers" style={styles.link} onClick={() => setMenuOpen(false)}>إدارة العروض</Link>
             </>
           )}
-          <button onClick={handleSignOut} style={styles.logoutBtn}>
+          <button 
+            onClick={handleSignOut} 
+            style={styles.logoutBtn}
+            type="button"
+          >
             تسجيل خروج
           </button>
         </div>
