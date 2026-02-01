@@ -103,8 +103,11 @@ export const useAuthStore = create((set) => ({
   signIn: async (username, password) => {
     set({ error: null, isLoading: true });
     
+    console.log('authStore.signIn: Starting...');
+    
     // Timeout handler
     const timeoutId = setTimeout(() => {
+      console.error('authStore.signIn: Timeout!');
       set({ isLoading: false });
       throw new Error('انتهت مهلة الاتصال. تأكد من اتصالك بالإنترنت');
     }, 15000);
@@ -118,16 +121,21 @@ export const useAuthStore = create((set) => ({
         throw new Error('أدخل كلمة المرور');
       }
 
+      console.log('authStore.signIn: Checking if email or username...');
+      
       // Check if input is email or username
       const isEmail = username.includes('@');
       let email = username;
       
       if (!isEmail) {
+        console.log('authStore.signIn: Looking up email for username:', username);
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('email')
           .eq('username', username.trim())
           .single();
+
+        console.log('authStore.signIn: Profile lookup result:', { profile, error: profileError });
 
         if (profileError || !profile) {
           throw new Error('اسم المستخدم غير موجود. تأكد من كتابته بشكل صحيح');
@@ -135,12 +143,21 @@ export const useAuthStore = create((set) => ({
         email = profile.email;
       }
       
+      console.log('authStore.signIn: Attempting sign in with email:', email);
+      
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password
       });
 
+      console.log('authStore.signIn: Auth result:', { 
+        hasUser: !!authData?.user, 
+        hasSession: !!authData?.session,
+        error: authError 
+      });
+
       if (authError) {
+        console.error('authStore.signIn: Auth error:', authError);
         if (authError.message?.includes('Invalid login credentials')) {
           throw new Error('كلمة المرور غير صحيحة');
         }
@@ -154,11 +171,18 @@ export const useAuthStore = create((set) => ({
         throw new Error('فشل تسجيل الدخول. حاول مرة أخرى');
       }
       
+      console.log('authStore.signIn: Fetching user profile...');
+      
       const { data: userProfile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', authData.user.id)
         .single();
+
+      console.log('authStore.signIn: Profile fetch result:', { 
+        hasProfile: !!userProfile, 
+        error: profileError 
+      });
 
       if (profileError) {
         logError('Profile fetch error:', profileError);
@@ -166,11 +190,16 @@ export const useAuthStore = create((set) => ({
       }
       
       clearTimeout(timeoutId);
+      
+      console.log('authStore.signIn: Setting user state...');
       set({ user: authData.user, profile: userProfile, isLoading: false });
+      
+      console.log('authStore.signIn: Success! User:', authData.user.id);
       return authData;
       
     } catch (err) {
       clearTimeout(timeoutId);
+      console.error('authStore.signIn: Caught error:', err);
       const errorMessage = err.message || 'حدث خطأ غير متوقع. حاول مرة أخرى';
       set({ error: errorMessage, isLoading: false });
       throw new Error(errorMessage);

@@ -19,22 +19,30 @@ export default function Login() {
     try {
       console.log('=== LOGIN ATTEMPT ===');
       console.log('Username:', username);
+      console.log('Environment:', import.meta.env.MODE);
+      console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
       
       // Try login
       const result = await signIn(username, password);
       
       console.log('=== LOGIN SUCCESS ===');
       console.log('User ID:', result?.user?.id);
+      console.log('Session:', result?.session);
       
-      // Navigate immediately without delay
-      navigate('/');
+      // Small delay to ensure state is updated
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Navigate to home
+      console.log('Navigating to home...');
+      navigate('/', { replace: true });
       
     } catch (err) {
       console.error('=== LOGIN ERROR ===');
       console.error('Error:', err);
+      console.error('Error message:', err.message);
+      console.error('Error stack:', err.stack);
       
       setError(err.message || 'خطأ في تسجيل الدخول');
-    } finally {
       setIsLoading(false);
     }
   };
