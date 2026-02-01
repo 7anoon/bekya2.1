@@ -6,14 +6,12 @@ export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
   const { signIn } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
 
     try {
       console.log('=== LOGIN ATTEMPT ===');
@@ -25,17 +23,14 @@ export default function Login() {
       console.log('=== LOGIN SUCCESS ===');
       console.log('User ID:', result?.user?.id);
       
-      // Navigate after short delay
-      setTimeout(() => {
-        navigate('/');
-      }, 100);
+      // Navigate immediately without delay
+      navigate('/');
       
     } catch (err) {
       console.error('=== LOGIN ERROR ===');
       console.error('Error:', err);
       
       setError(err.message || 'خطأ في تسجيل الدخول');
-      setLoading(false);
     }
   };
 
@@ -84,9 +79,8 @@ export default function Login() {
               type="submit" 
               className="btn btn-primary"
               style={styles.button}
-              disabled={loading}
             >
-              {loading ? 'جاري التسجيل...' : 'تسجيل الدخول'}
+              {'تسجيل الدخول'}
             </button>
           </form>
 

@@ -142,7 +142,17 @@ function App() {
     const initApp = async () => {
       try {
         log('App: Loading user data...');
-        await loadUser();
+        
+        // Add timeout to prevent hanging
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Initialization timeout')), 15000)
+        );
+        
+        await Promise.race([
+          loadUser(),
+          timeoutPromise
+        ]);
+        
         log('App: User data loaded');
         
         if (mounted) {
@@ -159,6 +169,10 @@ function App() {
         logError('App: Init error:', error);
         if (mounted) {
           setInitializing(false);
+          // Show error message to user
+          if (error.message.includes('timeout')) {
+            alert('خطأ في الاتصال بالخادم. يرجى التحقق من الاتصال بالإنترنت وإعادة تحميل الصفحة');
+          }
         }
       }
     };
@@ -175,62 +189,15 @@ function App() {
     return () => {
       log('App: Component unmounting, cleaning up...');
       mounted = false;
-      subscription.unsubscribe();
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     };
   }, [loadUser, user]);
 
-  // Show loading screen while checking session
-  if (initializing || loading) {
-    return (
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 9999
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ 
-            fontSize: '60px', 
-            marginBottom: '24px',
-            animation: 'bounce 1s ease-in-out infinite'
-          }}>🛒</div>
-          <h1 style={{ 
-            fontSize: '48px', 
-            fontWeight: '900', 
-            background: 'linear-gradient(135deg, #6b7c59 0%, #8b7355 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            marginBottom: '16px'
-          }}>بيكيا</h1>
-          <div style={{
-            width: '40px',
-            height: '40px',
-            border: '4px solid rgba(107, 124, 89, 0.2)',
-            borderTop: '4px solid #6b7c59',
-            borderRadius: '50%',
-            margin: '0 auto',
-            animation: 'spin 1s linear infinite'
-          }} />
-        </div>
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-          @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-          }
-        `}</style>
-      </div>
-    );
+  // Skip loading screen entirely, show content immediately
+  if (initializing) {
+    return null;
   }
 
   if (showSplash) {
