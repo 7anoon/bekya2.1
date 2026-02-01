@@ -66,7 +66,7 @@ function App() {
   }
 
   return (
-    <BrowserRouter basename={import.meta.env.PROD ? '/bekya2.1' : '/'}>
+    <BrowserRouter basename={import.meta.env.VITE_DEPLOY_TARGET === 'github' ? '/bekya2.1' : '/'}>
       <OfflineDetector />
       {user && <Navbar />}
       <Routes>
