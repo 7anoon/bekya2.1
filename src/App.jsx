@@ -142,18 +142,7 @@ function App() {
     const initApp = async () => {
       try {
         log('App: Loading user data...');
-        
-        // Add timeout to prevent hanging on initialization
-        const loadTimeout = setTimeout(() => {
-          if (mounted && initializing) {
-            logError('App: Initialization timeout, proceeding anyway');
-            setInitializing(false);
-          }
-        }, 3000); // Max 3 seconds for initialization
-        
         await loadUser();
-        clearTimeout(loadTimeout);
-        
         log('App: User data loaded');
         
         if (mounted) {

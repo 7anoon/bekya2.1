@@ -175,29 +175,13 @@ export const useAuthStore = create((set) => ({
     set({ loading: true, error: null });
     
     try {
-      // Add timeout to prevent hanging
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Session check timeout')), 5000)
-      );
-      
-      const sessionPromise = supabase.auth.getSession();
-      
-      log('Checking session with timeout...');
-      const { data: { session }, error: sessionError } = await Promise.race([
-        sessionPromise,
-        timeoutPromise
-      ]).catch(err => {
-        log('Session check failed or timed out:', err);
-        return { data: { session: null }, error: null };
-      });
+      log('Checking session...');
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError) {
-        if (isAbortError(sessionError)) {
-          log('Session check aborted');
-          set({ user: null, profile: null, loading: false });
-          return;
-        }
-        throw sessionError;
+        logError('Session error:', sessionError);
+        set({ user: null, profile: null, loading: false });
+        return;
       }
       
       log('Session:', session ? 'FOUND' : 'NOT FOUND');
@@ -212,60 +196,40 @@ export const useAuthStore = create((set) => ({
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError) {
-        if (isAbortError(userError)) {
-          log('User check aborted');
-          set({ user: null, profile: null, loading: false });
-          return;
-        }
-        throw userError;
+        logError('User error:', userError);
+        set({ user: null, profile: null, loading: false });
+        return;
       }
       
       log('User:', user ? user.id : 'NULL');
       
       if (user) {
         log('Getting profile...');
-        try {
-          const { data: profile, error: profileError } = await Promise.race([
-            supabase.from('profiles').select('*').eq('id', user.id).single(),
-            new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('Profile fetch timeout')), 3000)
-            )
-          ]).catch(err => {
-            log('Profile fetch failed or timed out:', err);
-            return { data: null, error: err };
-          });
-          
-          if (profileError) {
-            logError('Profile error:', profileError);
-            // Create minimal profile as fallback
-            const minimalProfile = {
-              id: user.id,
-              username: user.email?.split('@')[0] || 'user',
-              email: user.email,
-              role: 'user'
-            };
-            set({ user, profile: minimalProfile, loading: false });
-            return;
-          }
-          
-          log('Profile loaded:', profile ? 'FOUND' : 'NOT FOUND');
-          
-          if (profile) {
-            log('Profile role:', profile.role);
-            set({ user, profile, loading: false });
-          } else {
-            log('Creating minimal profile');
-            const minimalProfile = {
-              id: user.id,
-              username: user.email?.split('@')[0] || 'user',
-              email: user.email,
-              role: 'user'
-            };
-            set({ user, profile: minimalProfile, loading: false });
-          }
-        } catch (profileError) {
-          log('Profile error, creating minimal profile');
-          logError('Profile fetch error:', profileError);
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        
+        if (profileError) {
+          logError('Profile error:', profileError);
+          // Create minimal profile as fallback
+          const minimalProfile = {
+            id: user.id,
+            username: user.email?.split('@')[0] || 'user',
+            email: user.email,
+            role: 'user'
+          };
+          set({ user, profile: minimalProfile, loading: false });
+          return;
+        }
+        
+        log('Profile loaded:', profile ? 'FOUND' : 'NOT FOUND');
+        
+        if (profile) {
+          log('Profile role:', profile.role);
+          set({ user, profile, loading: false });
+        } else {
           const minimalProfile = {
             id: user.id,
             username: user.email?.split('@')[0] || 'user',
