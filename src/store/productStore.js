@@ -445,9 +445,10 @@ export const useProductStore = create((set, get) => ({
         setTimeout(() => reject(new Error('timeout')), 20000)
       );
       
+      // جلب المنتجات المعتمدة
       let query = supabase
         .from('products')
-        .select('*, profiles(username, location)', { count: 'exact' })
+        .select('*, profiles!products_user_id_fkey(username, location)', { count: 'exact' })
         .eq('status', 'approved')
         .order('created_at', { ascending: false })
         .range((page - 1) * limit, page * limit - 1);
@@ -465,8 +466,22 @@ export const useProductStore = create((set, get) => ({
         throw new Error('خطأ في تحميل المنتجات. تأكد من اتصالك بالإنترنت');
       }
 
+      // جلب معلومات الأدمن مرة واحدة
+      const { data: adminData } = await supabase
+        .from('profiles')
+        .select('username, location, phone, email')
+        .eq('role', 'admin')
+        .limit(1)
+        .single();
+
+      // استبدال معلومات البائع بمعلومات الأدمن للمنتجات المعتمدة
+      const productsWithAdminInfo = (data || []).map(product => ({
+        ...product,
+        profiles: adminData || product.profiles // استخدام معلومات الأدمن بدل البائع
+      }));
+
       const result = { 
-        data: data || [], 
+        data: productsWithAdminInfo, 
         count, 
         totalPages: Math.ceil(count / limit) 
       };
@@ -475,7 +490,7 @@ export const useProductStore = create((set, get) => ({
       cacheManager.set(cacheKey, result);
       
       set({ 
-        products: data || [], 
+        products: productsWithAdminInfo, 
         loading: false,
         totalPages: Math.ceil(count / limit),
         currentPage: page,
