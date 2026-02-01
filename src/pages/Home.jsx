@@ -56,8 +56,13 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="loading">
-        <div className="netflix-loading"></div>
+      <div className="container">
+        <div className="netflix-hero" style={styles.heroSection}>
+          <div style={styles.heroContent}>
+            <div className="skeleton" style={{ width: '300px', height: '60px', margin: '0 auto 20px' }}></div>
+            <div className="skeleton" style={{ width: '400px', height: '24px', margin: '0 auto' }}></div>
+          </div>
+        </div>
       </div>
     );
   }

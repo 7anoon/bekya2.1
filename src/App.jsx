@@ -113,7 +113,7 @@ import Navbar from './components/Navbar';
 
 function App() {
   const { user, profile, loadUser, loading } = useAuthStore();
-  const [showSplash, setShowSplash] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [initializing, setInitializing] = useState(true);
 

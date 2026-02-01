@@ -41,6 +41,7 @@ export default function SignUp() {
     } catch (err) {
       console.error('Signup error:', err);
       setError(err.message || 'خطأ في التسجيل');
+    } finally {
       setLoading(false);
     }
   };

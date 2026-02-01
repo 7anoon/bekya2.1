@@ -40,6 +40,7 @@ export default function Profile() {
 
   const handleRetry = () => {
     setLoading(true);
+    setError(null);
     loadUserProducts();
   };
 
@@ -97,6 +98,20 @@ export default function Profile() {
       <div className="loading">
         <div className="spinner"></div>
         <p style={{ marginTop: '16px', color: '#9ca3af' }}>جارٍ تحميل الملف الشخصي...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container">
+        <div className="card" style={styles.error}>
+          <h2>حدث خطأ</h2>
+          <p>{error}</p>
+          <button className="btn btn-primary" onClick={handleRetry}>
+            إعادة المحاولة
+          </button>
+        </div>
       </div>
     );
   }

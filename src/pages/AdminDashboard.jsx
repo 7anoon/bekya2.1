@@ -244,7 +244,6 @@ export default function AdminDashboard() {
       setPendingProducts([]);
       setAllUsers([]);
     } finally {
-      console.log('Setting loading to false');
       setLoading(false);
     }
   };
