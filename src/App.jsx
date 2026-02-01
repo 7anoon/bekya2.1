@@ -179,18 +179,29 @@ function App() {
 
     initApp();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      log('App: Auth state changed:', _event, session?.user?.id);
-      if (mounted) {
-        loadUser();
-      }
-    });
+    let subscription;
+    
+    // Safely subscribe to auth state changes
+    try {
+      ({ data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        log('App: Auth state changed:', _event, session?.user?.id);
+        if (mounted) {
+          loadUser();
+        }
+      }));
+    } catch (error) {
+      logError('Failed to set up auth state change listener:', error);
+    }
 
     return () => {
       log('App: Component unmounting, cleaning up...');
       mounted = false;
       if (subscription) {
-        subscription.unsubscribe();
+        try {
+          subscription.unsubscribe();
+        } catch (error) {
+          logError('Error unsubscribing from auth state changes:', error);
+        }
       }
     };
   }, [loadUser, user]);

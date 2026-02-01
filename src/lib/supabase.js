@@ -17,6 +17,7 @@ let supabaseClient = null;
 // Function to create client with error handling
 function createSupabaseClient() {
   try {
+    // Create client with enhanced error handling and timeout
     const client = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       // استخدام localStorage بدل sessionStorage عشان الـ session يفضل محفوظ
@@ -44,10 +45,14 @@ function createSupabaseClient() {
     }
   });
   
-  // Add connection health check
-  client.auth.onAuthStateChange((event, session) => {
-    log('Auth state change:', event, session?.user?.id);
-  });
+  // Add connection health check with error handling
+  try {
+    client.auth.onAuthStateChange((event, session) => {
+      log('Auth state change:', event, session?.user?.id);
+    });
+  } catch (error) {
+    logError('Failed to set up auth state change listener:', error);
+  }
   
   return client;
 } catch (error) {
