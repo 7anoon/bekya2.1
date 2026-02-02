@@ -13,6 +13,7 @@ export default function Browse() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
   const { fetchProducts } = useProductStore();
   const { profile } = useAuthStore();
 
@@ -48,14 +49,24 @@ export default function Browse() {
     if (offers.length >= 0) {
       loadProducts(currentPage);
     }
-  }, [offers, currentPage]);
+  }, [offers, currentPage, searchQuery]);
 
   const loadProducts = async (page = 1) => {
     try {
       const result = await fetchProducts(profile?.location, page, 20);
-      const sellProducts = result.data.filter(product => 
+      let sellProducts = result.data.filter(product => 
         (!product.choice_type || product.choice_type === 'sell')
       );
+      
+      // تطبيق البحث
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        sellProducts = sellProducts.filter(product => 
+          product.title?.toLowerCase().includes(query) ||
+          product.description?.toLowerCase().includes(query) ||
+          product.category?.toLowerCase().includes(query)
+        );
+      }
       
       const productsWithDiscounts = sellProducts.map(product => {
         const activeOffer = offers.find(offer => 
@@ -137,6 +148,29 @@ export default function Browse() {
           <h1 style={styles.title}>تصفح المنتجات</h1>
         </div>
         <p style={styles.subtitle}>اكتشف أفضل العروض على المنتجات المستعملة</p>
+      </div>
+
+      {/* شريط البحث */}
+      <div style={styles.searchContainer}>
+        <div style={styles.searchBox}>
+          <span style={styles.searchIcon}>🔍</span>
+          <input
+            type="text"
+            placeholder="ابحث عن منتج..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={styles.searchInput}
+            className="input"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              style={styles.clearButton}
+            >
+              ✕
+            </button>
+          )}
+        </div>
       </div>
 
       <div style={styles.categoriesBar}>
@@ -291,6 +325,55 @@ const styles = {
   subtitle: {
     fontSize: '18px',
     color: '#d1d5db'
+  },
+  searchContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    marginBottom: '32px',
+    padding: '0 20px'
+  },
+  searchBox: {
+    position: 'relative',
+    width: '100%',
+    maxWidth: '600px'
+  },
+  searchIcon: {
+    position: 'absolute',
+    right: '20px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    fontSize: '20px',
+    pointerEvents: 'none',
+    zIndex: 1
+  },
+  searchInput: {
+    width: '100%',
+    padding: '16px 60px 16px 60px',
+    fontSize: '16px',
+    borderRadius: '50px',
+    border: '2px solid rgba(107, 124, 89, 0.3)',
+    background: 'rgba(45, 45, 45, 0.6)',
+    color: '#f9fafb',
+    transition: 'all 0.3s ease',
+    outline: 'none'
+  },
+  clearButton: {
+    position: 'absolute',
+    left: '20px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    background: 'rgba(107, 124, 89, 0.3)',
+    border: 'none',
+    borderRadius: '50%',
+    width: '28px',
+    height: '28px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    color: '#f9fafb',
+    fontSize: '16px',
+    transition: 'all 0.3s ease'
   },
   categoriesBar: {
     display: 'flex',
