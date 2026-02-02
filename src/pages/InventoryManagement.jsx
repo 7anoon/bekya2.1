@@ -1,539 +1,395 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/authStore';
-import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
+import { log, logError } from '../lib/utils';
 
 export default function InventoryManagement() {
   const { profile } = useAuthStore();
-  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [lowStockCategories, setLowStockCategories] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [editForm, setEditForm] = useState({});
 
-  const categories = {
-    all: 'كل الفئات',
-    furniture: 'أثاث',
-    clothes: 'ملابس',
-    books: 'كتب',
-    toys: 'ألعاب',
-    appliances: 'أجهزة منزلية',
-    sports: 'رياضة',
-    jewelry: 'مجوهرات وإكسسوارات',
-    other: 'أخرى'
-  };
-
+  // تحميل البيانات
   useEffect(() => {
-    if (profile?.role !== 'admin') {
-      navigate('/');
-      return;
-    }
     loadProducts();
-  }, [profile, navigate]);
+    loadCategories();
+    checkLowStock();
+  }, []);
 
   const loadProducts = async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
         .from('products')
-        .select(`
-          *,
-          profiles (username, phone, location)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
-
+      
       if (error) throw error;
       setProducts(data || []);
     } catch (err) {
-      console.error('Error loading products:', err);
-      alert('حدث خطأ في تحميل المنتجات');
+      logError('Error loading products:', err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const getCategoryStats = () => {
-    const stats = {};
-    Object.keys(categories).forEach(cat => {
-      if (cat === 'all') return;
-      stats[cat] = {
-        total: products.filter(p => p.category === cat).length,
-        approved: products.filter(p => p.category === cat && p.status === 'approved').length,
-        pending: products.filter(p => p.category === cat && p.status === 'pending').length
-      };
+  const loadCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('category')
+        .group('category');
+      
+      if (error) throw error;
+      
+      const uniqueCategories = [...new Set(data.map(item => item.category))];
+      setCategories(uniqueCategories);
+    } catch (err) {
+      logError('Error loading categories:', err);
+    }
+  };
+
+  const checkLowStock = async () => {
+    try {
+      // حساب عدد المنتجات في كل فئة
+      const categoryCounts = {};
+      products.forEach(product => {
+        categoryCounts[product.category] = (categoryCounts[product.category] || 0) + 1;
+      });
+      
+      // تحديد الفئات التي تحتوي على أقل من 5 منتجات
+      const lowStock = Object.entries(categoryCounts)
+        .filter(([category, count]) => count < 5)
+        .map(([category, count]) => ({ category, count }));
+      
+      setLowStockCategories(lowStock);
+    } catch (err) {
+      logError('Error checking low stock:', err);
+    }
+  };
+
+  const handleEdit = (product) => {
+    setEditingProduct(product.id);
+    setEditForm({
+      name: product.name,
+      category: product.category,
+      description: product.description,
+      price: product.price,
+      status: product.status
     });
-    return stats;
   };
 
-  const getFilteredProducts = () => {
-    let filtered = products;
-
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(p => p.category === selectedCategory);
+  const handleUpdate = async (productId) => {
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from('products')
+        .update({
+          name: editForm.name,
+          category: editForm.category,
+          description: editForm.description,
+          price: parseFloat(editForm.price),
+          status: editForm.status
+        })
+        .eq('id', productId);
+      
+      if (error) throw error;
+      
+      setEditingProduct(null);
+      setEditForm({});
+      await loadProducts();
+      checkLowStock();
+      log('Product updated successfully');
+    } catch (err) {
+      logError('Error updating product:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (searchTerm) {
-      filtered = filtered.filter(p => 
-        p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.description.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+  const handleDelete = async (productId) => {
+    if (!window.confirm('هل أنت متأكد من حذف هذا المنتج؟')) return;
+    
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', productId);
+      
+      if (error) throw error;
+      
+      await loadProducts();
+      checkLowStock();
+      log('Product deleted successfully');
+    } catch (err) {
+      logError('Error deleting product:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    return filtered;
   };
 
-  const getStatusText = (status) => {
-    const statusMap = {
-      pending: 'قيد المراجعة',
-      approved: 'معتمد',
-      rejected: 'مرفوض',
-      awaiting_seller: 'في انتظار البائع'
-    };
-    return statusMap[status] || status;
+  const handleStatusChange = async (productId, newStatus) => {
+    try {
+      const { error } = await supabase
+        .from('products')
+        .update({ status: newStatus })
+        .eq('id', productId);
+      
+      if (error) throw error;
+      
+      await loadProducts();
+      log('Status updated successfully');
+    } catch (err) {
+      logError('Error updating status:', err);
+      setError(err.message);
+    }
   };
 
-  const getStatusColor = (status) => {
-    const colorMap = {
-      pending: '#f59e0b',
-      approved: '#10b981',
-      rejected: '#ef4444',
-      awaiting_seller: '#3b82f6'
-    };
-    return colorMap[status] || '#6b7280';
-  };
-
-  const categoryStats = getCategoryStats();
-  const filteredProducts = getFilteredProducts();
-
-  if (loading) {
+  if (profile?.role !== 'admin') {
     return (
-      <div className="container">
-        <div style={styles.loading}>
-          <div className="spinner"></div>
-          <p>جاري التحميل...</p>
-        </div>
+      <div className="container" style={{ textAlign: 'center', padding: '50px' }}>
+        <h2>❌ الوصول مرفوض</h2>
+        <p>هذه الصفحة متاحة للأدمن فقط</p>
       </div>
     );
   }
 
   return (
     <div className="container">
-      <div style={styles.header}>
-        <h1 style={styles.title}>إدارة المخزون</h1>
-      </div>
-
-      {/* إحصائيات عامة */}
-      <div style={styles.statsGrid}>
-        <div className="card" style={styles.statCard}>
-          <div style={styles.statIcon}>📦</div>
-          <div style={styles.statValue}>{products.length}</div>
-          <div style={styles.statLabel}>إجمالي المنتجات</div>
-        </div>
-        <div className="card" style={styles.statCard}>
-          <div style={styles.statIcon}>✅</div>
-          <div style={styles.statValue}>
-            {products.filter(p => p.status === 'approved').length}
-          </div>
-          <div style={styles.statLabel}>منتجات معتمدة</div>
-        </div>
-        <div className="card" style={styles.statCard}>
-          <div style={styles.statIcon}>⏳</div>
-          <div style={styles.statValue}>
-            {products.filter(p => p.status === 'pending').length}
-          </div>
-          <div style={styles.statLabel}>في انتظار المراجعة</div>
-        </div>
-        <div className="card" style={styles.statCard}>
-          <div style={styles.statIcon}>❌</div>
-          <div style={styles.statValue}>
-            {products.filter(p => p.status === 'rejected').length}
-          </div>
-          <div style={styles.statLabel}>منتجات مرفوضة</div>
-        </div>
-      </div>
-
-      {/* إحصائيات الفئات */}
-      <div className="card" style={styles.categoriesCard}>
-        <h2 style={styles.sectionTitle}>إحصائيات الفئات</h2>
-        <div style={styles.categoriesGrid}>
-          {Object.entries(categoryStats).map(([cat, stats]) => (
-            <div key={cat} style={styles.categoryItem}>
-              <div style={styles.categoryHeader}>
-                <span style={styles.categoryName}>{categories[cat]}</span>
-                <span style={styles.categoryTotal}>{stats.total}</span>
-              </div>
-              <div style={styles.categoryStats}>
-                <span style={{...styles.categoryBadge, background: '#10b98120', color: '#10b981'}}>
-                  معتمد: {stats.approved}
-                </span>
-                <span style={{...styles.categoryBadge, background: '#f59e0b20', color: '#f59e0b'}}>
-                  معلق: {stats.pending}
-                </span>
-              </div>
-              {stats.approved < 3 && (
-                <div style={styles.lowStockWarning}>
-                  ⚠️ مخزون منخفض - يحتاج تجديد
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* فلاتر البحث */}
-      <div className="card" style={styles.filtersCard}>
-        <div style={styles.filtersRow}>
-          <div style={styles.filterGroup}>
-            <label style={styles.filterLabel}>الفئة:</label>
-            <select
-              className="input"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              style={styles.filterSelect}
-            >
-              {Object.entries(categories).map(([key, value]) => (
-                <option key={key} value={key}>{value}</option>
-              ))}
-            </select>
-          </div>
-
-          <div style={styles.filterGroup}>
-            <label style={styles.filterLabel}>بحث:</label>
-            <input
-              type="text"
-              className="input"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="ابحث عن منتج..."
-              style={styles.searchInput}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* قائمة المنتجات */}
-      <div style={styles.productsSection}>
-        <h2 style={styles.subtitle}>
-          المنتجات ({filteredProducts.length})
-        </h2>
+      <div style={{ padding: '20px 0' }}>
+        <h1 style={{ textAlign: 'center', marginBottom: '30px' }}>
+          📦 إدارة المخزون
+        </h1>
         
-        {filteredProducts.length === 0 ? (
-          <div className="card" style={styles.empty}>
-            <p>لا توجد منتجات</p>
-          </div>
-        ) : (
-          <div style={styles.productsList}>
-            {filteredProducts.map((product) => (
-              <div 
-                key={product.id} 
-                className="card" 
-                style={styles.productCard}
-                onClick={() => navigate(`/product/${product.id}`)}
-              >
-                <div style={styles.productLayout}>
-                  {/* صورة المنتج */}
-                  {product.images && product.images.length > 0 && (
-                    <div style={styles.productImage}>
-                      <img 
-                        src={product.images[0]} 
-                        alt={product.title}
-                        style={styles.image}
-                        onError={(e) => {
-                          e.target.src = 'https://placehold.co/150x150/e2e8f0/64748b?text=No+Image';
-                        }}
-                      />
-                    </div>
-                  )}
-
-                  {/* معلومات المنتج */}
-                  <div style={styles.productInfo}>
-                    <div style={styles.productHeader}>
-                      <h3 style={styles.productTitle}>{product.title}</h3>
-                      <span 
-                        style={{
-                          ...styles.statusBadge,
-                          background: getStatusColor(product.status) + '20',
-                          color: getStatusColor(product.status)
-                        }}
-                      >
-                        {getStatusText(product.status)}
-                      </span>
-                    </div>
-
-                    <p style={styles.productDesc}>{product.description}</p>
-
-                    <div style={styles.productDetails}>
-                      <span>الفئة: {categories[product.category]}</span>
-                      <span>الحالة: {product.condition}</span>
-                      {product.final_price && (
-                        <span>السعر: {product.final_price} جنيه</span>
-                      )}
-                    </div>
-
-                    {product.profiles && (
-                      <div style={styles.sellerInfo}>
-                        <span>البائع: {product.profiles.username}</span>
-                        <span>📍 {product.profiles.location}</span>
-                      </div>
-                    )}
-
-                    <div style={styles.productActions}>
-                      <button
-                        className="btn"
-                        style={styles.editBtn}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/edit-product/${product.id}`);
-                        }}
-                      >
-                        ✏️ تعديل
-                      </button>
-                      <button
-                        className="btn"
-                        style={styles.viewBtn}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/product/${product.id}`);
-                        }}
-                      >
-                        👁️ عرض
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+        {error && (
+          <div className="error-message" style={{ marginBottom: '20px' }}>
+            {error}
           </div>
         )}
+
+        {/* تنبيهات الفئات الناقصة */}
+        {lowStockCategories.length > 0 && (
+          <div className="card netflix-lift" style={{ 
+            backgroundColor: '#fff3cd', 
+            border: '1px solid #ffeaa7',
+            marginBottom: '30px'
+          }}>
+            <h2 style={{ color: '#856404' }}>⚠️ تنبيهات المخزون</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+              {lowStockCategories.map(({ category, count }) => (
+                <div key={category} style={{ 
+                  backgroundColor: '#fff', 
+                  padding: '15px', 
+                  borderRadius: '8px',
+                  border: '1px solid #ffd700'
+                }}>
+                  <h3 style={{ margin: '0 0 10px 0', color: '#856404' }}>{category}</h3>
+                  <p style={{ margin: '0', fontSize: '18px', fontWeight: 'bold', color: '#d35400' }}>
+                    {count} منتج فقط
+                  </p>
+                  <p style={{ margin: '5px 0 0 0', fontSize: '14px', color: '#856404' }}>
+                    تحتاج إلى مزيد من المنتجات
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* إحصائيات سريعة */}
+        <div className="stats-grid" style={{ marginBottom: '30px' }}>
+          <div className="stats-card netflix-lift">
+            <div className="icon-3d">📦</div>
+            <h3>إجمالي المنتجات</h3>
+            <p className="stats-number">{products.length}</p>
+          </div>
+          
+          <div className="stats-card netflix-lift">
+            <div className="icon-3d">✅</div>
+            <h3>المنتجات المتاحة</h3>
+            <p className="stats-number">{products.filter(p => p.status === 'available').length}</p>
+          </div>
+          
+          <div className="stats-card netflix-lift">
+            <div className="icon-3d">💰</div>
+            <h3>المنتجات المباعة</h3>
+            <p className="stats-number">{products.filter(p => p.status === 'sold').length}</p>
+          </div>
+          
+          <div className="stats-card netflix-lift">
+            <div className="icon-3d">⏸️</div>
+            <h3>قيد المراجعة</h3>
+            <p className="stats-number">{products.filter(p => p.status === 'pending').length}</p>
+          </div>
+        </div>
+
+        {/* جدول المنتجات */}
+        <div className="card netflix-lift">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h2>جميع المنتجات ({products.length})</h2>
+            <button 
+              className="morph-button"
+              onClick={loadProducts}
+              disabled={loading}
+            >
+              {loading ? 'جارٍ التحديث...' : 'تحديث'}
+            </button>
+          </div>
+          
+          {products.length === 0 ? (
+            <p style={{ textAlign: 'center', padding: '30px', color: '#666' }}>
+              لا توجد منتجات في المخزون
+            </p>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#f5f5f5' }}>
+                    <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #ddd' }}>المنتج</th>
+                    <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #ddd' }}>الفئة</th>
+                    <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #ddd' }}>السعر</th>
+                    <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #ddd' }}>الحالة</th>
+                    <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #ddd' }}>تاريخ الإضافة</th>
+                    <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #ddd' }}>الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.map(product => (
+                    <tr key={product.id} style={{ borderBottom: '1px solid #eee' }}>
+                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>
+                        {editingProduct === product.id ? (
+                          <input
+                            type="text"
+                            className="input"
+                            value={editForm.name}
+                            onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                            style={{ width: '150px' }}
+                          />
+                        ) : (
+                          product.name
+                        )}
+                      </td>
+                      
+                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>
+                        {editingProduct === product.id ? (
+                          <select
+                            className="input"
+                            value={editForm.category}
+                            onChange={(e) => setEditForm({...editForm, category: e.target.value})}
+                            style={{ width: '120px' }}
+                          >
+                            {categories.map(cat => (
+                              <option key={cat} value={cat}>{cat}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          product.category
+                        )}
+                      </td>
+                      
+                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>
+                        {editingProduct === product.id ? (
+                          <input
+                            type="number"
+                            className="input"
+                            value={editForm.price}
+                            onChange={(e) => setEditForm({...editForm, price: e.target.value})}
+                            style={{ width: '80px' }}
+                          />
+                        ) : (
+                          `${product.price} جنيه`
+                        )}
+                      </td>
+                      
+                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>
+                        {editingProduct === product.id ? (
+                          <select
+                            className="input"
+                            value={editForm.status}
+                            onChange={(e) => setEditForm({...editForm, status: e.target.value})}
+                            style={{ width: '100px' }}
+                          >
+                            <option value="pending">قيد المراجعة</option>
+                            <option value="available">متاح</option>
+                            <option value="sold">مباع</option>
+                            <option value="rejected">مرفوض</option>
+                          </select>
+                        ) : (
+                          <span className={`status-badge ${product.status}`}>
+                            {product.status === 'pending' && 'قيد المراجعة'}
+                            {product.status === 'available' && 'متاح'}
+                            {product.status === 'sold' && 'مباع'}
+                            {product.status === 'rejected' && 'مرفوض'}
+                          </span>
+                        )}
+                      </td>
+                      
+                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>
+                        {new Date(product.created_at).toLocaleDateString('ar-EG')}
+                      </td>
+                      
+                      <td style={{ padding: '12px', border: '1px solid #ddd', textAlign: 'center' }}>
+                        {editingProduct === product.id ? (
+                          <>
+                            <button 
+                              className="btn-success"
+                              onClick={() => handleUpdate(product.id)}
+                              style={{ padding: '5px 10px', fontSize: '12px', marginRight: '5px' }}
+                            >
+                              حفظ
+                            </button>
+                            <button 
+                              className="btn-secondary"
+                              onClick={() => setEditingProduct(null)}
+                              style={{ padding: '5px 10px', fontSize: '12px' }}
+                            >
+                              إلغاء
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button 
+                              className="btn-primary"
+                              onClick={() => handleEdit(product)}
+                              style={{ padding: '5px 10px', fontSize: '12px', marginRight: '5px' }}
+                            >
+                              تعديل
+                            </button>
+                            <button 
+                              className="btn-danger"
+                              onClick={() => handleDelete(product.id)}
+                              style={{ padding: '5px 10px', fontSize: '12px', marginRight: '5px' }}
+                            >
+                              حذف
+                            </button>
+                            {product.status !== 'sold' && (
+                              <button 
+                                className="btn-warning"
+                                onClick={() => handleStatusChange(product.id, 'sold')}
+                                style={{ padding: '5px 10px', fontSize: '12px' }}
+                              >
+                                بيع
+                              </button>
+                            )}
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 }
-
-const styles = {
-  header: {
-    marginBottom: '30px'
-  },
-  title: {
-    fontSize: '32px',
-    color: '#2d2d2d',
-    margin: 0,
-    fontWeight: '600'
-  },
-  loading: {
-    textAlign: 'center',
-    padding: '80px 20px',
-    color: '#9ca3af'
-  },
-  statsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '20px',
-    marginBottom: '30px'
-  },
-  statCard: {
-    padding: '24px',
-    textAlign: 'center'
-  },
-  statIcon: {
-    fontSize: '40px',
-    marginBottom: '12px'
-  },
-  statValue: {
-    fontSize: '32px',
-    fontWeight: '700',
-    color: '#2d2d2d',
-    marginBottom: '8px'
-  },
-  statLabel: {
-    fontSize: '14px',
-    color: '#7a7a7a',
-    fontWeight: '500'
-  },
-  categoriesCard: {
-    padding: '32px',
-    marginBottom: '30px'
-  },
-  sectionTitle: {
-    fontSize: '24px',
-    color: '#2d2d2d',
-    marginBottom: '24px',
-    fontWeight: '600'
-  },
-  categoriesGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-    gap: '20px'
-  },
-  categoryItem: {
-    padding: '20px',
-    background: 'rgba(107, 124, 89, 0.05)',
-    borderRadius: '12px',
-    border: '1px solid rgba(107, 124, 89, 0.1)'
-  },
-  categoryHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '12px'
-  },
-  categoryName: {
-    fontSize: '16px',
-    fontWeight: '600',
-    color: '#2d2d2d'
-  },
-  categoryTotal: {
-    fontSize: '24px',
-    fontWeight: '700',
-    color: '#6b7c59'
-  },
-  categoryStats: {
-    display: 'flex',
-    gap: '8px',
-    marginBottom: '8px'
-  },
-  categoryBadge: {
-    padding: '4px 10px',
-    borderRadius: '12px',
-    fontSize: '12px',
-    fontWeight: '600'
-  },
-  lowStockWarning: {
-    marginTop: '12px',
-    padding: '8px',
-    background: '#fef3c7',
-    color: '#92400e',
-    borderRadius: '8px',
-    fontSize: '13px',
-    fontWeight: '600',
-    textAlign: 'center'
-  },
-  filtersCard: {
-    padding: '24px',
-    marginBottom: '30px'
-  },
-  filtersRow: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-    gap: '20px'
-  },
-  filterGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px'
-  },
-  filterLabel: {
-    fontSize: '14px',
-    fontWeight: '600',
-    color: '#2d2d2d'
-  },
-  filterSelect: {
-    padding: '10px'
-  },
-  searchInput: {
-    padding: '10px'
-  },
-  productsSection: {
-    marginTop: '40px'
-  },
-  subtitle: {
-    fontSize: '24px',
-    color: '#2d2d2d',
-    marginBottom: '24px',
-    fontWeight: '600'
-  },
-  empty: {
-    textAlign: 'center',
-    padding: '60px 20px',
-    color: '#6b7280'
-  },
-  productsList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px'
-  },
-  productCard: {
-    padding: '20px',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease'
-  },
-  productLayout: {
-    display: 'flex',
-    gap: '20px',
-    flexWrap: 'wrap'
-  },
-  productImage: {
-    flex: '0 0 150px',
-    height: '150px'
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-    borderRadius: '12px'
-  },
-  productInfo: {
-    flex: '1',
-    minWidth: '280px'
-  },
-  productHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '12px',
-    gap: '12px'
-  },
-  productTitle: {
-    fontSize: '18px',
-    fontWeight: '600',
-    color: '#2d2d2d'
-  },
-  statusBadge: {
-    padding: '6px 14px',
-    borderRadius: '16px',
-    fontSize: '12px',
-    fontWeight: '500',
-    whiteSpace: 'nowrap'
-  },
-  productDesc: {
-    color: '#7a7a7a',
-    marginBottom: '12px',
-    lineHeight: '1.6',
-    fontSize: '14px'
-  },
-  productDetails: {
-    display: 'flex',
-    gap: '16px',
-    flexWrap: 'wrap',
-    fontSize: '13px',
-    color: '#6b7280',
-    marginBottom: '12px',
-    paddingBottom: '12px',
-    borderBottom: '1px solid #e5e7eb'
-  },
-  sellerInfo: {
-    display: 'flex',
-    gap: '16px',
-    fontSize: '13px',
-    color: '#6b7280',
-    marginBottom: '12px'
-  },
-  productActions: {
-    display: 'flex',
-    gap: '12px'
-  },
-  editBtn: {
-    background: '#3b82f6',
-    color: 'white',
-    borderRadius: '20px',
-    padding: '8px 16px',
-    fontSize: '14px'
-  },
-  viewBtn: {
-    background: '#6b7c59',
-    color: 'white',
-    borderRadius: '20px',
-    padding: '8px 16px',
-    fontSize: '14px'
-  }
-};
