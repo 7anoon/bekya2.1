@@ -370,18 +370,24 @@ const styles = {
   headerButtons: {
     display: 'flex',
     gap: '12px',
-    flexWrap: 'wrap'
+    flexWrap: 'wrap',
+    alignItems: 'center'
   },
   editProfileBtn: {
     background: '#3b82f6',
     color: 'white',
     borderRadius: '20px',
-    padding: '10px 20px',
-    fontSize: '14px'
+    padding: '12px 24px',
+    fontSize: '15px',
+    fontWeight: '600',
+    border: 'none',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease'
   },
   logoutBtn: {
-    fontSize: '14px',
-    padding: '10px 20px'
+    fontSize: '15px',
+    padding: '12px 24px',
+    fontWeight: '600'
   },
   info: {
     display: 'flex',
