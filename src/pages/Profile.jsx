@@ -10,6 +10,7 @@ export default function Profile() {
   const { fetchUserProducts, acceptNegotiation, rejectNegotiation } = useProductStore();
   const [products, setProducts] = useState([]);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const getCategoryName = (category) => {
     const categories = {
@@ -27,18 +28,19 @@ export default function Profile() {
 
   const loadUserProducts = async () => {
     try {
+      setLoading(true);
       setError(null);
       const data = await fetchUserProducts(profile.id);
       setProducts(data);
     } catch (err) {
       console.error('Error loading products:', err);
       setError(err.message || 'فشل في تحميل المنتجات');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleRetry = () => {
-    setLoading(true);
-    setError(null);
     loadUserProducts();
   };
 
@@ -90,6 +92,17 @@ export default function Profile() {
     };
     return colorMap[status] || '#6b7280';
   };
+
+  if (loading) {
+    return (
+      <div className="container">
+        <div style={styles.loading}>
+          <div className="spinner"></div>
+          <p>جاري تحميل منتجاتك...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (error) {
     return (
@@ -331,6 +344,11 @@ export default function Profile() {
 }
 
 const styles = {
+  loading: {
+    textAlign: 'center',
+    padding: '80px 20px',
+    color: '#9ca3af'
+  },
   statsGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
