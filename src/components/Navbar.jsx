@@ -226,7 +226,6 @@ export default function Navbar() {
           style={styles.menu}
         >
           <Link to="/" style={styles.link} onClick={() => setMenuOpen(false)}>الرئيسية</Link>
-          <Link to="/browse" style={styles.link} onClick={() => setMenuOpen(false)}>المنتجات</Link>
           <Link to="/add-product" style={styles.link} onClick={() => setMenuOpen(false)}>إضافة منتج</Link>
           <Link to="/profile" style={styles.link} onClick={() => setMenuOpen(false)}>حسابي</Link>
           {profile?.role === 'admin' && (
