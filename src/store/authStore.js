@@ -58,7 +58,8 @@ export const useAuthStore = create((set) => ({
             username,
             location,
             phone
-          }
+          },
+          emailRedirectTo: window.location.origin + '/bekya2.1/'
         }
       });
 
@@ -66,7 +67,19 @@ export const useAuthStore = create((set) => ({
         if (error.message.includes('already registered')) {
           throw new Error('البريد الإلكتروني مسجل بالفعل');
         }
+        if (error.message.includes('User already registered')) {
+          throw new Error('البريد الإلكتروني مسجل بالفعل');
+        }
+        if (error.status === 422) {
+          throw new Error('البيانات غير صحيحة. تأكد من صحة البريد الإلكتروني وكلمة المرور');
+        }
         throw new Error(`خطأ في التسجيل: ${error.message}`);
+      }
+
+      // Check if email confirmation is required
+      if (data.user && !data.session) {
+        // Email confirmation required
+        throw new Error('تم إرسال رسالة تأكيد إلى بريدك الإلكتروني. يرجى تأكيد البريد أولاً');
       }
 
       // Create profile manually if trigger doesn't work
