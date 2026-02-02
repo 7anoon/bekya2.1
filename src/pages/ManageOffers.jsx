@@ -17,6 +17,9 @@ export default function ManageOffers() {
     target_location: '',
     end_date: ''
   });
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   const getCategoryName = (category) => {
     const names = {
@@ -51,6 +54,48 @@ export default function ManageOffers() {
     }
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('حجم الصورة يجب أن يكون أقل من 5 ميجابايت');
+        return;
+      }
+      
+      setImageFile(file);
+      
+      // عرض معاينة الصورة
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadImage = async (file) => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+      const filePath = `offers/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      throw error;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -59,11 +104,21 @@ export default function ManageOffers() {
       return;
     }
 
+    setUploading(true);
+
     try {
+      let imageUrl = formData.image;
+      
+      // رفع الصورة إذا تم اختيار ملف
+      if (imageFile) {
+        imageUrl = await uploadImage(imageFile);
+      }
+
       const { data: offer, error } = await supabase
         .from('offers')
         .insert({
           ...formData,
+          image: imageUrl,
           discount_percentage: formData.discount_percentage ? parseInt(formData.discount_percentage) : null,
           category: formData.category || null,
           target_location: formData.target_location || null,
@@ -89,10 +144,14 @@ export default function ManageOffers() {
         target_location: '',
         end_date: ''
       });
+      setImageFile(null);
+      setImagePreview(null);
       loadOffers();
     } catch (err) {
       console.error('Error creating offer:', err);
-      alert('حدث خطأ في إضافة العرض');
+      alert('حدث خطأ في إضافة العرض: ' + err.message);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -200,14 +259,29 @@ export default function ManageOffers() {
             </div>
 
             <div style={styles.field}>
-              <label style={styles.label}>رابط الصورة (اختياري)</label>
+              <label style={styles.label}>صورة العرض (اختياري)</label>
               <input
-                type="url"
+                type="file"
                 className="input"
-                value={formData.image}
-                onChange={(e) => setFormData({...formData, image: e.target.value})}
-                placeholder="https://example.com/image.jpg"
+                accept="image/*"
+                onChange={handleImageChange}
+                style={styles.fileInput}
               />
+              {imagePreview && (
+                <div style={styles.imagePreviewContainer}>
+                  <img src={imagePreview} alt="معاينة" style={styles.imagePreview} />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImageFile(null);
+                      setImagePreview(null);
+                    }}
+                    style={styles.removeImageBtn}
+                  >
+                    ✕ إزالة الصورة
+                  </button>
+                </div>
+              )}
             </div>
 
             <div style={styles.row}>
@@ -262,8 +336,13 @@ export default function ManageOffers() {
               />
             </div>
 
-            <button type="submit" className="btn btn-primary" style={styles.submitBtn}>
-              نشر العرض
+            <button 
+              type="submit" 
+              className="btn btn-primary" 
+              style={styles.submitBtn}
+              disabled={uploading}
+            >
+              {uploading ? 'جاري الرفع...' : 'نشر العرض'}
             </button>
           </form>
         </div>
@@ -489,5 +568,39 @@ const styles = {
   offerActions: {
     display: 'flex',
     gap: '12px'
+  },
+  fileInput: {
+    padding: '12px',
+    cursor: 'pointer'
+  },
+  imagePreviewContainer: {
+    marginTop: '16px',
+    position: 'relative',
+    display: 'inline-block'
+  },
+  imagePreview: {
+    width: '200px',
+    height: '200px',
+    objectFit: 'cover',
+    borderRadius: '12px',
+    border: '2px solid #e5e7eb'
+  },
+  removeImageBtn: {
+    position: 'absolute',
+    top: '8px',
+    right: '8px',
+    background: '#ef4444',
+    color: 'white',
+    border: 'none',
+    borderRadius: '50%',
+    width: '32px',
+    height: '32px',
+    cursor: 'pointer',
+    fontSize: '16px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontWeight: 'bold',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
   }
 };
