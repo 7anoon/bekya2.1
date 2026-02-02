@@ -24,6 +24,13 @@ export default function SignUp() {
     setError('');
     setLoading(true);
 
+    console.log('Starting signup with:', {
+      username: formData.username,
+      email: formData.email,
+      location: formData.location,
+      phone: formData.phone
+    });
+
     try {
       const result = await signUp(
         formData.username,
@@ -33,9 +40,16 @@ export default function SignUp() {
         formData.phone
       );
       
+      console.log('Signup result:', result);
+      
       if (result && result.user) {
+        console.log('Signup successful, redirecting...');
         // Use window.location for reliable navigation after signup
         window.location.href = '/bekya2.1/';
+      } else {
+        console.error('No user in result');
+        setError('حدث خطأ في التسجيل. حاول مرة أخرى');
+        setLoading(false);
       }
     } catch (err) {
       console.error('Signup error:', err);
