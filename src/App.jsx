@@ -11,6 +11,7 @@ import Home from './pages/Home';
 import Browse from './pages/Browse';
 import AddProduct from './pages/AddProduct';
 import EditProduct from './pages/EditProduct';
+import EditProfile from './pages/EditProfile';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
 import ManageOffers from './pages/ManageOffers';
@@ -89,6 +90,7 @@ function App() {
         <Route path="/browse" element={user ? <Browse /> : <Navigate to="/login" />} />
         <Route path="/add-product" element={user ? <AddProduct /> : <Navigate to="/login" />} />
         <Route path="/edit-product/:id" element={user ? <EditProduct /> : <Navigate to="/login" />} />
+        <Route path="/edit-profile" element={user ? <EditProfile /> : <Navigate to="/login" />} />
         <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
         <Route path="/notifications" element={user ? <Notifications /> : <Navigate to="/login" />} />
         <Route path="/product/:id" element={user ? <ProductDetails /> : <Navigate to="/login" />} />

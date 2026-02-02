@@ -151,9 +151,18 @@ export default function Profile() {
             <h1 style={styles.title} className="netflix-shimmer">
               الملف الشخصي
             </h1>
-            <button className="btn btn-danger" onClick={signOut} style={styles.logoutBtn}>
-              تسجيل خروج
-            </button>
+            <div style={styles.headerButtons}>
+              <button 
+                className="btn"
+                style={styles.editProfileBtn}
+                onClick={() => navigate('/edit-profile')}
+              >
+                تعديل الملف الشخصي
+              </button>
+              <button className="btn btn-danger" onClick={signOut} style={styles.logoutBtn}>
+                تسجيل خروج
+              </button>
+            </div>
           </div>
           
           <div style={styles.info}>
@@ -357,6 +366,18 @@ const styles = {
     fontWeight: '800',
     display: 'flex',
     alignItems: 'center'
+  },
+  headerButtons: {
+    display: 'flex',
+    gap: '12px',
+    flexWrap: 'wrap'
+  },
+  editProfileBtn: {
+    background: '#3b82f6',
+    color: 'white',
+    borderRadius: '20px',
+    padding: '10px 20px',
+    fontSize: '14px'
   },
   logoutBtn: {
     fontSize: '14px',
