@@ -37,9 +37,9 @@ export default function EditProduct() {
 
       if (error) throw error;
 
-      // التحقق من الصلاحيات
-      if (profile.role !== 'admin' && data.user_id !== profile.id) {
-        alert('ليس لديك صلاحية لتعديل هذا المنتج');
+      // التحقق من الصلاحيات - الأدمن فقط يمكنه التعديل
+      if (profile.role !== 'admin') {
+        alert('ليس لديك صلاحية لتعديل المنتجات. التعديل متاح للإدارة فقط');
         navigate('/profile');
         return;
       }

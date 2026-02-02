@@ -320,16 +320,18 @@ export default function Profile() {
                           </div>
                         )}
 
-                        {/* زر التعديل */}
-                        <div style={styles.productActions}>
-                          <button
-                            className="btn"
-                            style={styles.editBtn}
-                            onClick={() => navigate(`/edit-product/${product.id}`)}
-                          >
-                            تعديل المنتج
-                          </button>
-                        </div>
+                        {/* زر التعديل للأدمن فقط */}
+                        {profile?.role === 'admin' && (
+                          <div style={styles.productActions}>
+                            <button
+                              className="btn"
+                              style={styles.editBtn}
+                              onClick={() => navigate(`/edit-product/${product.id}`)}
+                            >
+                              ✏️ تعديل المنتج
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

@@ -402,6 +402,20 @@ export default function ProductDetails() {
               </div>
             </div>
           )}
+
+          {/* زر تعديل المنتج للأدمن فقط */}
+          {profile?.role === 'admin' && (
+            <div style={styles.adminActions}>
+              <h3 className="section-title">تعديل المنتج</h3>
+              <button
+                className="btn"
+                style={{ ...styles.actionBtn, background: '#3b82f6', color: 'white' }}
+                onClick={() => navigate(`/edit-product/${product.id}`)}
+              >
+                ✏️ تعديل المنتج
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
