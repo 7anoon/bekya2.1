@@ -1,0 +1,1 @@
+Error: Failed to run sql query: ERROR: 42601: syntax error at or near "RAISE" LINE 219: RAISE NOTICE 'Migration completed successfully!'; ^
