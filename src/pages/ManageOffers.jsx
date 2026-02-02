@@ -163,7 +163,14 @@ export default function ManageOffers() {
       
       // رفع الصورة إذا تم اختيار ملف
       if (imageFile) {
-        imageUrl = await uploadImage(imageFile);
+        try {
+          imageUrl = await uploadImage(imageFile);
+        } catch (uploadError) {
+          console.error('Error uploading image:', uploadError);
+          // الاستمرار بدون صورة إذا فشل الرفع
+          imageUrl = formData.image || null;
+          alert('تحذير: لم يتم رفع الصورة. سيتم حفظ العرض بدون صورة.');
+        }
       }
 
       if (editingOffer) {
@@ -376,6 +383,17 @@ export default function ManageOffers() {
             <div style={styles.field}>
               <label style={styles.label}>صورة العرض (اختياري)</label>
               <input
+                type="text"
+                className="input"
+                value={formData.image}
+                onChange={(e) => setFormData({...formData, image: e.target.value})}
+                placeholder="أدخل رابط الصورة (اختياري)"
+                style={{marginBottom: '12px'}}
+              />
+              <small style={{color: '#6b7280', fontSize: '13px', display: 'block', marginBottom: '12px'}}>
+                أو ارفع صورة من جهازك:
+              </small>
+              <input
                 type="file"
                 className="input"
                 accept="image/*"
@@ -390,6 +408,7 @@ export default function ManageOffers() {
                     onClick={() => {
                       setImageFile(null);
                       setImagePreview(null);
+                      setFormData({...formData, image: ''});
                     }}
                     style={styles.removeImageBtn}
                   >
