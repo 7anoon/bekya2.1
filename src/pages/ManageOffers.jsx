@@ -79,9 +79,26 @@ export default function ManageOffers() {
       const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
       const filePath = `offers/${fileName}`;
 
+      // التحقق من وجود bucket أولاً
+      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+      
+      if (bucketsError) {
+        console.error('Error listing buckets:', bucketsError);
+        throw new Error('لا يمكن الوصول إلى التخزين');
+      }
+
+      const bucketExists = buckets?.some(b => b.name === 'product-images');
+      
+      if (!bucketExists) {
+        throw new Error('مساحة التخزين غير متوفرة. يرجى التواصل مع المطور.');
+      }
+
       const { error: uploadError } = await supabase.storage
         .from('product-images')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (uploadError) throw uploadError;
 
