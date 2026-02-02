@@ -9,6 +9,7 @@ export default function AddProduct() {
     title: '',
     description: '',
     category: '',
+    custom_category: '',
     weight: ''
   });
   const [images, setImages] = useState([]);
@@ -150,6 +151,12 @@ export default function AddProduct() {
       return;
     }
 
+    // التحقق من الفئة المخصصة إذا تم اختيار "أخرى"
+    if (formData.category === 'other' && !formData.custom_category) {
+      setError('يرجى تحديد اسم الفئة');
+      return;
+    }
+
     if (images.length === 0) {
       setError('يرجى رفع صورة واحدة على الأقل');
       return;
@@ -171,6 +178,11 @@ export default function AddProduct() {
         images: imageUrls,
         status: 'pending' // في انتظار موافقة الأدمن
       };
+      
+      // إضافة الفئة المخصصة إذا تم اختيار "أخرى"
+      if (formData.category === 'other' && formData.custom_category) {
+        productData.custom_category = formData.custom_category;
+      }
       
       // إضافة الوزن فقط إذا تم إدخاله
       if (formData.weight && formData.weight > 0) {
@@ -238,7 +250,7 @@ export default function AddProduct() {
             <select
               className="input"
               value={formData.category}
-              onChange={(e) => setFormData({...formData, category: e.target.value})}
+              onChange={(e) => setFormData({...formData, category: e.target.value, custom_category: ''})}
               required
             >
               <option value="">اختر نوع المنتج</option>
@@ -252,6 +264,24 @@ export default function AddProduct() {
               <option value="other">أخرى</option>
             </select>
           </div>
+
+          {/* حقل الفئة المخصصة - يظهر فقط عند اختيار "أخرى" */}
+          {formData.category === 'other' && (
+            <div style={styles.field}>
+              <label style={styles.label}>اسم الفئة *</label>
+              <input
+                type="text"
+                className="input"
+                value={formData.custom_category}
+                onChange={(e) => setFormData({...formData, custom_category: e.target.value})}
+                placeholder="مثال: إلكترونيات، أدوات مطبخ، ديكور..."
+                required
+              />
+              <small style={{color: '#6b7280', fontSize: '13px', display: 'block', marginTop: '4px'}}>
+                حدد نوع المنتج بدقة
+              </small>
+            </div>
+          )}
 
           <div style={styles.field}>
             <label style={styles.label}>تفاصيل المنتج *</label>
