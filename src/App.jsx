@@ -21,28 +21,14 @@ import Navbar from './components/Navbar';
 function App() {
   const { user, profile, loadUser, isLoading } = useAuthStore();
 
-  // Clear cache and storage on app start
+  // Initialize auth on app start
   useEffect(() => {
-    // Clear all storage
-    localStorage.clear();
-    sessionStorage.clear();
+    // Only clear cache on first visit or when explicitly needed
+    const hasInitialized = sessionStorage.getItem('app-initialized');
     
-    // Clear browser cache
-    if ('caches' in window) {
-      caches.keys().then(names => {
-        names.forEach(name => {
-          caches.delete(name);
-        });
-      });
-    }
-    
-    // Force reload to clear memory cache
-    if (window.performance) {
-      const navigation = window.performance.getEntriesByType('navigation')[0];
-      if (navigation && navigation.type === 'reload') {
-        // This is a reload, clear everything
-        window.location.reload(true);
-      }
+    if (!hasInitialized) {
+      sessionStorage.setItem('app-initialized', 'true');
+      log('App initialized');
     }
   }, []);
 
@@ -91,7 +77,7 @@ function App() {
   }
 
   return (
-    <BrowserRouter basename={import.meta.env.VITE_DEPLOY_TARGET === 'github' ? '/bekya2.1' : '/'}>
+    <BrowserRouter basename="/bekya2.1">
       <OfflineDetector />
       {user && <Navbar />}
       <Routes>
