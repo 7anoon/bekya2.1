@@ -9,23 +9,69 @@ export default function Home() {
   const navigate = useNavigate();
   const [offers, setOffers] = useState([]);
   const [productsCount, setProductsCount] = useState(0);
+  const [soldCount, setSoldCount] = useState(0);
+  const [averageRating, setAverageRating] = useState(0);
+  const [categoryCounts, setCategoryCounts] = useState({});
   const { fetchProducts } = useProductStore();
   const { profile } = useAuthStore();
 
   useEffect(() => {
     loadOffers();
-    loadProductsCount();
+    loadStats();
   }, []);
 
-  const loadProductsCount = async () => {
+  const loadStats = async () => {
     try {
-      const data = await fetchProducts(profile?.location);
-      const sellProducts = data.filter(product => 
-        (!product.choice_type || product.choice_type === 'sell')
-      );
-      setProductsCount(sellProducts.length);
+      // جلب عدد المنتجات المتاحة
+      const { count: availableCount, error: availableError } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'approved')
+        .or('choice_type.is.null,choice_type.eq.sell');
+      
+      if (availableError) throw availableError;
+      setProductsCount(availableCount || 0);
+
+      // جلب عدد المنتجات المباعة
+      const { count: soldProductsCount, error: soldError } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'sold');
+      
+      if (soldError) throw soldError;
+      setSoldCount(soldProductsCount || 0);
+
+      // حساب متوسط التقييم (من جدول المستخدمين أو المنتجات)
+      const { data: productsData, error: ratingError } = await supabase
+        .from('products')
+        .select('rating')
+        .not('rating', 'is', null);
+      
+      if (!ratingError && productsData && productsData.length > 0) {
+        const totalRating = productsData.reduce((sum, p) => sum + (p.rating || 0), 0);
+        const avgRating = totalRating / productsData.length;
+        setAverageRating(avgRating.toFixed(1));
+      } else {
+        setAverageRating('4.8'); // قيمة افتراضية
+      }
+
+      // جلب عدد المنتجات لكل فئة
+      const { data: categoryData, error: categoryError } = await supabase
+        .from('products')
+        .select('category')
+        .eq('status', 'approved')
+        .or('choice_type.is.null,choice_type.eq.sell');
+      
+      if (!categoryError && categoryData) {
+        const counts = {};
+        categoryData.forEach(item => {
+          const cat = item.category || 'أخرى';
+          counts[cat] = (counts[cat] || 0) + 1;
+        });
+        setCategoryCounts(counts);
+      }
     } catch (err) {
-      console.error('Error loading products count:', err);
+      console.error('Error loading stats:', err);
     }
   };
 
@@ -82,19 +128,19 @@ export default function Home() {
         {/* Stats */}
         <div style={styles.statsRow}>
           <div className="stats-card" style={styles.statCard}>
-            <div className="icon-3d">📦</div>
-            <div className="stats-number">{productsCount}+</div>
-            <div className="stats-label">منتج متاح</div>
+            <div className="icon-3d">⭐</div>
+            <div className="stats-number">{averageRating}</div>
+            <div className="stats-label">تقييم العملاء</div>
           </div>
           <div className="stats-card" style={styles.statCard}>
             <div className="icon-3d">✅</div>
-            <div className="stats-number">500+</div>
+            <div className="stats-number">+{soldCount}</div>
             <div className="stats-label">عملية بيع</div>
           </div>
           <div className="stats-card" style={styles.statCard}>
-            <div className="icon-3d">⭐</div>
-            <div className="stats-number">4.8</div>
-            <div className="stats-label">تقييم العملاء</div>
+            <div className="icon-3d">📦</div>
+            <div className="stats-number">+{productsCount}</div>
+            <div className="stats-label">منتج متاح</div>
           </div>
         </div>
       </div>
@@ -109,18 +155,20 @@ export default function Home() {
         </h2>
         <div style={styles.categoriesGrid}>
           {[
-            {icon: '🪑', name: 'أثاث', count: '30+'},
-            {icon: '👕', name: 'ملابس', count: '40+'},
-            {icon: '📚', name: 'كتب', count: '25+'},
-            {icon: '🎮', name: 'ألعاب', count: '20+'},
-            {icon: '🏠', name: 'أجهزة منزلية', count: '35+'}
+            {icon: '🪑', name: 'أثاث', key: 'أثاث'},
+            {icon: '👕', name: 'ملابس', key: 'ملابس'},
+            {icon: '📚', name: 'كتب', key: 'كتب'},
+            {icon: '🎮', name: 'ألعاب', key: 'ألعاب'},
+            {icon: '🏠', name: 'أجهزة منزلية', key: 'أجهزة منزلية'}
           ].map((cat, i) => (
             <div key={i} className="stats-card netflix-lift" style={styles.categoryCard}>
               <div className="icon-3d" style={{fontSize: '48px', marginBottom: '16px'}}>
                 {cat.icon}
               </div>
               <h3 style={styles.categoryName}>{cat.name}</h3>
-              <p style={styles.categoryCount}>{cat.count} منتج</p>
+              <p style={styles.categoryCount}>
+                {categoryCounts[cat.key] || 0} منتج
+              </p>
             </div>
           ))}
         </div>
