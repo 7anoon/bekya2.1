@@ -316,11 +316,6 @@ export default function AdminDashboard() {
           <div style={styles.linkTitle}>متابعة المخزون</div>
           <div style={styles.linkDesc}>متابعة الفئات والمبيعات</div>
         </a>
-        <a href="/admin/inventory" className="card" style={styles.linkCard}>
-          <div style={styles.linkIcon}>📦</div>
-          <div style={styles.linkTitle}>إدارة المخزون</div>
-          <div style={styles.linkDesc}>متابعة المنتجات والفئات</div>
-        </a>
         <a href="/admin/offers" className="card" style={styles.linkCard}>
           <div style={styles.linkIcon}>🎁</div>
           <div style={styles.linkTitle}>إدارة العروض</div>
