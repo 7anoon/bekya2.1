@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ImageLightbox from './ImageLightbox';
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, isAdmin, onDelete }) {
   const [showLightbox, setShowLightbox] = useState(false);
   const navigate = useNavigate();
 
@@ -13,6 +13,13 @@ export default function ProductCard({ product }) {
   const handleImageClick = (e) => {
     e.stopPropagation(); // منع انتقال الحدث للكارد
     setShowLightbox(true);
+  };
+
+  const handleDelete = (e) => {
+    e.stopPropagation(); // منع انتقال الحدث للكارد
+    if (onDelete) {
+      onDelete(product.id);
+    }
   };
 
   return (
@@ -46,6 +53,16 @@ export default function ProductCard({ product }) {
       <div style={styles.content}>
         <h3 style={styles.title}>{product.title}</h3>
         <p style={styles.description}>{product.description}</p>
+        
+        {isAdmin && (
+          <button
+            onClick={handleDelete}
+            style={styles.deleteButton}
+            className="btn"
+          >
+            🗑️ حذف
+          </button>
+        )}
         
         <div style={styles.details}>
           <div style={styles.priceContainer}>
@@ -218,5 +235,18 @@ const styles = {
     paddingTop: '24px',
     borderTop: '2px solid rgba(107, 124, 89, 0.15)',
     fontWeight: '600'
+  },
+  deleteButton: {
+    background: '#dc2626',
+    color: 'white',
+    border: 'none',
+    padding: '10px 20px',
+    borderRadius: '20px',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    marginBottom: '16px',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 4px 12px rgba(220, 38, 38, 0.4)'
   }
 };

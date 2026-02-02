@@ -17,6 +17,27 @@ export default function Browse() {
   const { fetchProducts } = useProductStore();
   const { profile } = useAuthStore();
 
+  const handleDeleteProduct = async (productId) => {
+    if (!confirm('هل أنت متأكد من حذف هذا المنتج نهائياً؟ لا يمكن التراجع عن هذا الإجراء.')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', productId);
+
+      if (error) throw error;
+
+      alert('تم حذف المنتج بنجاح');
+      loadProducts(currentPage);
+    } catch (err) {
+      console.error('Error deleting product:', err);
+      alert('خطأ في حذف المنتج: ' + err.message);
+    }
+  };
+
   useEffect(() => {
     loadOffers();
     
@@ -228,7 +249,12 @@ export default function Browse() {
         <>
           <div style={styles.grid}>
             {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard 
+                key={product.id} 
+                product={product}
+                isAdmin={profile?.role === 'admin'}
+                onDelete={handleDeleteProduct}
+              />
             ))}
           </div>
           
