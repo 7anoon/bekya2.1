@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useProductStore } from '../store/productStore';
 import ErrorBoundary from '../components/ErrorBoundary';
 
 export default function Profile() {
+  const navigate = useNavigate();
   const { profile, signOut } = useAuthStore();
   const { fetchUserProducts, acceptNegotiation, rejectNegotiation } = useProductStore();
   const [products, setProducts] = useState([]);
@@ -301,7 +303,7 @@ export default function Profile() {
                           <button
                             className="btn"
                             style={styles.editBtn}
-                            onClick={() => window.location.href = `/edit-product/${product.id}`}
+                            onClick={() => navigate(`/edit-product/${product.id}`)}
                           >
                             تعديل المنتج
                           </button>

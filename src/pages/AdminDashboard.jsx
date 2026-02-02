@@ -459,7 +459,7 @@ export default function AdminDashboard() {
                       <button
                         className="btn"
                         style={{ background: '#3b82f6', color: 'white' }}
-                        onClick={() => window.location.href = `/edit-product/${product.id}`}
+                        onClick={() => window.location.href = `/bekya2.1/edit-product/${product.id}`}
                       >
                         تعديل
                       </button>
@@ -496,7 +496,7 @@ export default function AdminDashboard() {
                         <button
                           className="btn"
                           style={{ background: '#3b82f6', color: 'white' }}
-                          onClick={() => window.location.href = `/edit-product/${product.id}`}
+                          onClick={() => window.location.href = `/bekya2.1/edit-product/${product.id}`}
                         >
                           تعديل
                         </button>
