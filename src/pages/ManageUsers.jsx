@@ -281,7 +281,7 @@ const styles = {
   },
   title: {
     fontSize: '32px',
-    color: '#2d2d2d',
+    color: '#000000',
     marginBottom: '24px',
     fontWeight: '600'
   },
@@ -308,8 +308,8 @@ const styles = {
   statLabel: {
     display: 'block',
     fontSize: '14px',
-    color: '#7a7a7a',
-    fontWeight: '500'
+    color: '#000000',
+    fontWeight: '600'
   },
   filterCard: {
     marginBottom: '32px',
@@ -377,7 +377,7 @@ const styles = {
   userName: {
     fontSize: '22px',
     fontWeight: '600',
-    color: '#2d2d2d',
+    color: '#000000',
     margin: 0
   },
   roleBadge: {
@@ -400,12 +400,12 @@ const styles = {
   },
   detailLabel: {
     fontSize: '13px',
-    color: '#7a7a7a',
-    fontWeight: '500'
+    color: '#000000',
+    fontWeight: '600'
   },
   detailValue: {
     fontSize: '15px',
-    color: '#2d2d2d',
+    color: '#000000',
     fontWeight: '600'
   },
   userActions: {
