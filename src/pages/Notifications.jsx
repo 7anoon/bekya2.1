@@ -315,7 +315,8 @@ const styles = {
     gap: '12px',
     alignItems: 'center',
     padding: '12px',
-    background: 'white',
+    background: 'rgba(107, 124, 89, 0.1)',
+    border: '1px solid rgba(107, 124, 89, 0.2)',
     borderRadius: '8px',
     marginBottom: '8px'
   },

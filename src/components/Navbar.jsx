@@ -370,10 +370,12 @@ if (typeof window !== 'undefined') {
         top: 100%;
         left: 0;
         right: 0;
-        background: white;
+        background: rgba(17, 24, 39, 0.98);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(107, 124, 89, 0.2);
         flex-direction: column;
         padding: 16px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         gap: 12px !important;
         align-items: stretch !important;
         transition: all 0.3s ease;
