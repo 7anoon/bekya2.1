@@ -8,6 +8,7 @@ export default function ManageOffers() {
   const navigate = useNavigate();
   const [offers, setOffers] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [editingOffer, setEditingOffer] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -165,28 +166,50 @@ export default function ManageOffers() {
         imageUrl = await uploadImage(imageFile);
       }
 
-      const { data: offer, error } = await supabase
-        .from('offers')
-        .insert({
-          ...formData,
-          image: imageUrl,
-          discount_percentage: formData.discount_percentage ? parseInt(formData.discount_percentage) : null,
-          category: formData.category || null,
-          target_location: formData.target_location || null,
-          end_date: formData.end_date || null,
-          product_id: formData.product_id || null,
-          created_by: profile.id
-        })
-        .select()
-        .single();
+      if (editingOffer) {
+        // تحديث عرض موجود
+        const { error } = await supabase
+          .from('offers')
+          .update({
+            title: formData.title,
+            description: formData.description,
+            image: imageUrl,
+            discount_percentage: formData.discount_percentage ? parseInt(formData.discount_percentage) : null,
+            category: formData.category || null,
+            target_location: formData.target_location || null,
+            end_date: formData.end_date || null,
+            product_id: formData.product_id || null
+          })
+          .eq('id', editingOffer.id);
 
-      if (error) throw error;
+        if (error) throw error;
+        alert('تم تحديث العرض بنجاح!');
+      } else {
+        // إضافة عرض جديد
+        const { data: offer, error } = await supabase
+          .from('offers')
+          .insert({
+            ...formData,
+            image: imageUrl,
+            discount_percentage: formData.discount_percentage ? parseInt(formData.discount_percentage) : null,
+            category: formData.category || null,
+            target_location: formData.target_location || null,
+            end_date: formData.end_date || null,
+            product_id: formData.product_id || null,
+            created_by: profile.id
+          })
+          .select()
+          .single();
 
-      // إرسال إشعارات للمستخدمين
-      await sendOfferNotifications(offer);
+        if (error) throw error;
 
-      alert('تم إضافة العرض بنجاح!');
+        // إرسال إشعارات للمستخدمين
+        await sendOfferNotifications(offer);
+        alert('تم إضافة العرض بنجاح!');
+      }
+
       setShowForm(false);
+      setEditingOffer(null);
       setFormData({
         title: '',
         description: '',
@@ -201,8 +224,8 @@ export default function ManageOffers() {
       setImagePreview(null);
       loadOffers();
     } catch (err) {
-      console.error('Error creating offer:', err);
-      alert('حدث خطأ في إضافة العرض: ' + err.message);
+      console.error('Error saving offer:', err);
+      alert('حدث خطأ في حفظ العرض: ' + err.message);
     } finally {
       setUploading(false);
     }
@@ -254,6 +277,39 @@ export default function ManageOffers() {
     }
   };
 
+  const handleEditOffer = (offer) => {
+    setEditingOffer(offer);
+    setFormData({
+      title: offer.title,
+      description: offer.description,
+      image: offer.image || '',
+      discount_percentage: offer.discount_percentage || '',
+      category: offer.category || '',
+      target_location: offer.target_location || '',
+      end_date: offer.end_date ? new Date(offer.end_date).toISOString().slice(0, 16) : '',
+      product_id: offer.product_id || ''
+    });
+    setImagePreview(offer.image || null);
+    setShowForm(true);
+  };
+
+  const handleCancelEdit = () => {
+    setShowForm(false);
+    setEditingOffer(null);
+    setFormData({
+      title: '',
+      description: '',
+      image: '',
+      discount_percentage: '',
+      category: '',
+      target_location: '',
+      end_date: '',
+      product_id: ''
+    });
+    setImageFile(null);
+    setImagePreview(null);
+  };
+
   const deleteOffer = async (offerId) => {
     if (!confirm('هل أنت متأكد من حذف هذا العرض؟')) return;
 
@@ -277,7 +333,13 @@ export default function ManageOffers() {
         <h1 style={styles.title}>إدارة العروض</h1>
         <button 
           className="btn btn-primary"
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => {
+            if (showForm) {
+              handleCancelEdit();
+            } else {
+              setShowForm(true);
+            }
+          }}
         >
           {showForm ? 'إلغاء' : '+ إضافة عرض جديد'}
         </button>
@@ -285,7 +347,7 @@ export default function ManageOffers() {
 
       {showForm && (
         <div className="card" style={styles.formCard}>
-          <h2 style={styles.formTitle}>عرض جديد</h2>
+          <h2 style={styles.formTitle}>{editingOffer ? 'تعديل العرض' : 'عرض جديد'}</h2>
           <form onSubmit={handleSubmit}>
             <div style={styles.field}>
               <label style={styles.label}>عنوان العرض *</label>
@@ -419,7 +481,7 @@ export default function ManageOffers() {
               style={styles.submitBtn}
               disabled={uploading}
             >
-              {uploading ? 'جاري الرفع...' : 'نشر العرض'}
+              {uploading ? 'جاري الحفظ...' : editingOffer ? 'حفظ التعديلات' : 'نشر العرض'}
             </button>
           </form>
         </div>
@@ -468,12 +530,23 @@ export default function ManageOffers() {
                   )}
                   {offer.end_date && (
                     <span style={styles.dateBadge}>
-                      ⏰ ينتهي: {new Date(offer.end_date).toLocaleDateString('ar-EG')}
+                      ينتهي: {new Date(offer.end_date).toLocaleDateString('ar-EG')}
                     </span>
                   )}
                 </div>
 
                 <div style={styles.offerActions}>
+                  <button
+                    className="btn"
+                    style={{
+                      background: '#3b82f6',
+                      color: 'white',
+                      borderRadius: '20px'
+                    }}
+                    onClick={() => handleEditOffer(offer)}
+                  >
+                    تعديل
+                  </button>
                   <button
                     className="btn"
                     style={{
