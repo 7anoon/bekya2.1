@@ -12,7 +12,6 @@ export default function ManageOffers() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    image: '',
     discount_percentage: '',
     category: '',
     target_location: '',
@@ -98,8 +97,6 @@ export default function ManageOffers() {
     setUploading(true);
 
     try {
-      const imageUrl = formData.image || null;
-
       if (editingOffer) {
         // تحديث عرض موجود
         const { error } = await supabase
@@ -107,7 +104,6 @@ export default function ManageOffers() {
           .update({
             title: formData.title,
             description: formData.description,
-            image: imageUrl,
             discount_percentage: formData.discount_percentage ? parseInt(formData.discount_percentage) : null,
             category: formData.category || null,
             target_location: formData.target_location || null,
@@ -123,8 +119,8 @@ export default function ManageOffers() {
         const { data: offer, error } = await supabase
           .from('offers')
           .insert({
-            ...formData,
-            image: imageUrl,
+            title: formData.title,
+            description: formData.description,
             discount_percentage: formData.discount_percentage ? parseInt(formData.discount_percentage) : null,
             category: formData.category || null,
             target_location: formData.target_location || null,
@@ -147,7 +143,6 @@ export default function ManageOffers() {
       setFormData({
         title: '',
         description: '',
-        image: '',
         discount_percentage: '',
         category: '',
         target_location: '',
@@ -214,7 +209,6 @@ export default function ManageOffers() {
     setFormData({
       title: offer.title,
       description: offer.description,
-      image: offer.image || '',
       discount_percentage: offer.discount_percentage || '',
       category: offer.category || '',
       target_location: offer.target_location || '',
@@ -230,7 +224,6 @@ export default function ManageOffers() {
     setFormData({
       title: '',
       description: '',
-      image: '',
       discount_percentage: '',
       category: '',
       target_location: '',
@@ -300,20 +293,6 @@ export default function ManageOffers() {
                 placeholder="تفاصيل العرض..."
                 required
               />
-            </div>
-
-            <div style={styles.field}>
-              <label style={styles.label}>رابط صورة العرض (اختياري)</label>
-              <input
-                type="text"
-                className="input"
-                value={formData.image}
-                onChange={(e) => setFormData({...formData, image: e.target.value})}
-                placeholder="أدخل رابط الصورة من الإنترنت (اختياري)"
-              />
-              <small style={{color: '#6b7280', fontSize: '13px', display: 'block', marginTop: '4px'}}>
-                مثال: https://example.com/image.jpg
-              </small>
             </div>
 
             <div style={styles.row}>
