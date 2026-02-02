@@ -457,6 +457,13 @@ export default function AdminDashboard() {
                         تفاوض
                       </button>
                       <button
+                        className="btn"
+                        style={{ background: '#3b82f6', color: 'white' }}
+                        onClick={() => window.location.href = `/edit-product/${product.id}`}
+                      >
+                        تعديل
+                      </button>
+                      <button
                         className="btn btn-danger"
                         onClick={() => {
                           const reason = prompt('سبب الرفض:');
@@ -470,7 +477,7 @@ export default function AdminDashboard() {
                         style={{ background: '#dc2626', color: 'white' }}
                         onClick={() => handleDeleteProduct(product.id)}
                       >
-                        🗑️ حذف نهائي
+                        حذف نهائي
                       </button>
                     </div>
                   )}
@@ -488,10 +495,17 @@ export default function AdminDashboard() {
                         </button>
                         <button
                           className="btn"
+                          style={{ background: '#3b82f6', color: 'white' }}
+                          onClick={() => window.location.href = `/edit-product/${product.id}`}
+                        >
+                          تعديل
+                        </button>
+                        <button
+                          className="btn"
                           style={{ background: '#dc2626', color: 'white' }}
                           onClick={() => handleDeleteProduct(product.id)}
                         >
-                          🗑️ حذف نهائي
+                          حذف نهائي
                         </button>
                       </div>
                     </div>

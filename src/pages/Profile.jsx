@@ -295,6 +295,17 @@ export default function Profile() {
                             <strong>سبب الرفض:</strong> {product.rejection_reason}
                           </div>
                         )}
+
+                        {/* زر التعديل */}
+                        <div style={styles.productActions}>
+                          <button
+                            className="btn"
+                            style={styles.editBtn}
+                            onClick={() => window.location.href = `/edit-product/${product.id}`}
+                          >
+                            تعديل المنتج
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -314,6 +325,17 @@ const styles = {
     gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
     gap: '24px',
     marginBottom: '40px'
+  },
+  productActions: {
+    marginTop: '16px',
+    paddingTop: '16px',
+    borderTop: '1px solid rgba(107, 124, 89, 0.1)'
+  },
+  editBtn: {
+    background: '#3b82f6',
+    color: 'white',
+    borderRadius: '20px',
+    padding: '10px 24px'
   },
   profileCard: {
     marginBottom: '40px',
