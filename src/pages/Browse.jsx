@@ -30,8 +30,10 @@ export default function Browse() {
 
       if (error) throw error;
 
+      // تحديث قائمة المنتجات مباشرة بحذف المنتج من الـ state
+      setProducts(prevProducts => prevProducts.filter(p => p.id !== productId));
+      
       alert('تم حذف المنتج بنجاح');
-      loadProducts(currentPage);
     } catch (err) {
       console.error('Error deleting product:', err);
       alert('خطأ في حذف المنتج: ' + err.message);
