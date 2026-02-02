@@ -713,7 +713,8 @@ const styles = {
     color: '#166534'
   },
   productDetails: {
-    background: '#f9fafb',
+    background: 'rgba(107, 124, 89, 0.1)',
+    border: '1px solid rgba(107, 124, 89, 0.2)',
     padding: '16px',
     borderRadius: '8px',
     marginBottom: '16px'
@@ -725,7 +726,7 @@ const styles = {
   },
   detailLabel: {
     fontWeight: '600',
-    color: '#000000'
+    color: '#d1d5db'
   },
   priceHighlight: {
     fontSize: '18px',
@@ -741,7 +742,8 @@ const styles = {
     fontWeight: '600'
   },
   sellerInfo: {
-    background: '#eff6ff',
+    background: 'rgba(139, 115, 85, 0.1)',
+    border: '1px solid rgba(139, 115, 85, 0.2)',
     padding: '16px',
     borderRadius: '8px',
     marginBottom: '16px'
@@ -750,10 +752,10 @@ const styles = {
     fontSize: '16px',
     fontWeight: '600',
     marginBottom: '12px',
-    color: '#000000'
+    color: '#f9fafb'
   },
   sellerData: {
-    color: '#000000',
+    color: '#d1d5db',
     fontWeight: '500'
   },
   actions: {
@@ -762,10 +764,10 @@ const styles = {
     flexWrap: 'wrap'
   },
   recycleNote: {
-    background: '#f0fdf4',
+    background: 'rgba(107, 124, 89, 0.15)',
     padding: '16px',
     borderRadius: '8px',
-    border: '2px solid #10b981'
+    border: '2px solid rgba(107, 124, 89, 0.4)'
   },
   modal: {
     position: 'fixed',
