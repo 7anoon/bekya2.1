@@ -233,6 +233,7 @@ export default function Navbar() {
             <>
               <Link to="/admin" style={styles.link} onClick={() => setMenuOpen(false)}>لوحة الإدارة</Link>
               <Link to="/admin/offers" style={styles.link} onClick={() => setMenuOpen(false)}>إدارة العروض</Link>
+              <Link to="/admin/users" style={styles.link} onClick={() => setMenuOpen(false)}>إدارة المستخدمين</Link>
             </>
           )}
           <button 
