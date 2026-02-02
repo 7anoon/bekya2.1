@@ -20,6 +20,7 @@ import Notifications from './pages/Notifications';
 import ProductDetails from './pages/ProductDetails';
 import UserProducts from './pages/UserProducts';
 import InventoryManagement from './pages/InventoryManagement';
+import StockTracking from './pages/StockTracking';
 import SetAdminRole from './pages/SetAdminRole';
 import Navbar from './components/Navbar';
 
@@ -115,6 +116,10 @@ function App() {
         <Route 
           path="/admin/inventory" 
           element={user && profile?.role === 'admin' ? <InventoryManagement /> : <Navigate to="/" />} 
+        />
+        <Route 
+          path="/admin/stock" 
+          element={user && profile?.role === 'admin' ? <StockTracking /> : <Navigate to="/" />} 
         />
         <Route 
           path="/set-admin" 

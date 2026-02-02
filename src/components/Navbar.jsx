@@ -231,6 +231,7 @@ export default function Navbar() {
           {profile?.role === 'admin' && (
             <>
               <Link to="/admin" style={styles.link} onClick={() => setMenuOpen(false)}>لوحة الإدارة</Link>
+              <Link to="/admin/stock" style={styles.link} onClick={() => setMenuOpen(false)}>متابعة المخزون</Link>
               <Link to="/admin/inventory" style={styles.link} onClick={() => setMenuOpen(false)}>إدارة المخزون</Link>
               <Link to="/admin/offers" style={styles.link} onClick={() => setMenuOpen(false)}>إدارة العروض</Link>
               <Link to="/admin/users" style={styles.link} onClick={() => setMenuOpen(false)}>إدارة المستخدمين</Link>

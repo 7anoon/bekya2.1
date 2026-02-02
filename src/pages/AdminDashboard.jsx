@@ -311,6 +311,11 @@ export default function AdminDashboard() {
 
       {/* روابط سريعة */}
       <div style={styles.quickLinks}>
+        <a href="/admin/stock" className="card" style={styles.linkCard}>
+          <div style={styles.linkIcon}>📊</div>
+          <div style={styles.linkTitle}>متابعة المخزون</div>
+          <div style={styles.linkDesc}>متابعة الفئات والمبيعات</div>
+        </a>
         <a href="/admin/inventory" className="card" style={styles.linkCard}>
           <div style={styles.linkIcon}>📦</div>
           <div style={styles.linkTitle}>إدارة المخزون</div>
