@@ -309,6 +309,30 @@ export default function AdminDashboard() {
     <div className="container">
       <h1 style={styles.title}>لوحة الإدارة</h1>
 
+      {/* روابط سريعة */}
+      <div style={styles.quickLinks}>
+        <a href="/admin/sales" className="card" style={styles.linkCard}>
+          <div style={styles.linkIcon}>💰</div>
+          <div style={styles.linkTitle}>إدارة المبيعات</div>
+          <div style={styles.linkDesc}>تسجيل ومتابعة عمليات البيع</div>
+        </a>
+        <a href="/admin/inventory" className="card" style={styles.linkCard}>
+          <div style={styles.linkIcon}>📦</div>
+          <div style={styles.linkTitle}>إدارة المخزون</div>
+          <div style={styles.linkDesc}>متابعة المنتجات والفئات</div>
+        </a>
+        <a href="/admin/offers" className="card" style={styles.linkCard}>
+          <div style={styles.linkIcon}>🎁</div>
+          <div style={styles.linkTitle}>إدارة العروض</div>
+          <div style={styles.linkDesc}>إضافة وتعديل العروض</div>
+        </a>
+        <a href="/admin/users" className="card" style={styles.linkCard}>
+          <div style={styles.linkIcon}>👥</div>
+          <div style={styles.linkTitle}>إدارة المستخدمين</div>
+          <div style={styles.linkDesc}>عرض وإدارة المستخدمين</div>
+        </a>
+      </div>
+
       <div style={styles.stats}>
         <div className="card" style={styles.statCard}>
           <h3 style={styles.statNumber}>{pendingProducts.length}</h3>
@@ -605,6 +629,34 @@ const styles = {
     fontSize: '32px',
     color: '#10b981',
     marginBottom: '30px'
+  },
+  quickLinks: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+    gap: '20px',
+    marginBottom: '40px'
+  },
+  linkCard: {
+    padding: '24px',
+    textAlign: 'center',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    textDecoration: 'none',
+    display: 'block'
+  },
+  linkIcon: {
+    fontSize: '48px',
+    marginBottom: '12px'
+  },
+  linkTitle: {
+    fontSize: '18px',
+    fontWeight: '600',
+    color: '#2d2d2d',
+    marginBottom: '8px'
+  },
+  linkDesc: {
+    fontSize: '14px',
+    color: '#7a7a7a'
   },
   stats: {
     display: 'grid',
