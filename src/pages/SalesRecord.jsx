@@ -9,6 +9,7 @@ export default function SalesRecord() {
   const [sales, setSales] = useState([]);
   const [products, setProducts] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [editingSale, setEditingSale] = useState(null);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     product_id: '',
@@ -71,29 +72,53 @@ export default function SalesRecord() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.product_id || !formData.buyer_name || !formData.sale_price) {
-      alert('يجب إدخال المنتج واسم المشتري والسعر');
+    if (!formData.buyer_name || !formData.sale_price) {
+      alert('يجب إدخال اسم المشتري والسعر');
+      return;
+    }
+
+    // إذا كان تعديل، لا نحتاج product_id
+    if (!editingSale && !formData.product_id) {
+      alert('يجب اختيار المنتج');
       return;
     }
 
     try {
-      // تحديث المنتج ليصبح مباع
-      const { error } = await supabase
-        .from('products')
-        .update({
-          status: 'sold',
-          buyer_name: formData.buyer_name,
-          buyer_phone: formData.buyer_phone || null,
-          sale_price: parseFloat(formData.sale_price),
-          sale_date: formData.sale_date || new Date().toISOString(),
-          sale_notes: formData.notes || null
-        })
-        .eq('id', formData.product_id);
+      if (editingSale) {
+        // تحديث عملية بيع موجودة
+        const { error } = await supabase
+          .from('products')
+          .update({
+            buyer_name: formData.buyer_name,
+            buyer_phone: formData.buyer_phone || null,
+            sale_price: parseFloat(formData.sale_price),
+            sale_date: formData.sale_date || new Date().toISOString(),
+            sale_notes: formData.notes || null
+          })
+          .eq('id', editingSale.id);
 
-      if (error) throw error;
+        if (error) throw error;
+        alert('تم تحديث عملية البيع بنجاح!');
+      } else {
+        // تسجيل عملية بيع جديدة
+        const { error } = await supabase
+          .from('products')
+          .update({
+            status: 'sold',
+            buyer_name: formData.buyer_name,
+            buyer_phone: formData.buyer_phone || null,
+            sale_price: parseFloat(formData.sale_price),
+            sale_date: formData.sale_date || new Date().toISOString(),
+            sale_notes: formData.notes || null
+          })
+          .eq('id', formData.product_id);
 
-      alert('تم تسجيل عملية البيع بنجاح!');
+        if (error) throw error;
+        alert('تم تسجيل عملية البيع بنجاح!');
+      }
+
       setShowForm(false);
+      setEditingSale(null);
       setFormData({
         product_id: '',
         buyer_name: '',
@@ -107,6 +132,58 @@ export default function SalesRecord() {
       console.error('Error saving sale:', err);
       alert('حدث خطأ في حفظ عملية البيع: ' + err.message);
     }
+  };
+
+  const handleEdit = (sale) => {
+    setEditingSale(sale);
+    setFormData({
+      product_id: sale.id,
+      buyer_name: sale.buyer_name || '',
+      buyer_phone: sale.buyer_phone || '',
+      sale_price: sale.sale_price || sale.final_price || '',
+      sale_date: sale.sale_date ? new Date(sale.sale_date).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16),
+      notes: sale.sale_notes || ''
+    });
+    setShowForm(true);
+  };
+
+  const handleDelete = async (saleId) => {
+    if (!confirm('هل أنت متأكد من حذف هذه العملية؟ سيتم إرجاع المنتج للحالة المعتمدة.')) return;
+
+    try {
+      // إرجاع المنتج لحالة approved وحذف بيانات البيع
+      const { error } = await supabase
+        .from('products')
+        .update({
+          status: 'approved',
+          buyer_name: null,
+          buyer_phone: null,
+          sale_price: null,
+          sale_date: null,
+          sale_notes: null
+        })
+        .eq('id', saleId);
+
+      if (error) throw error;
+      alert('تم حذف عملية البيع وإرجاع المنتج للمتاح');
+      loadData();
+    } catch (err) {
+      console.error('Error deleting sale:', err);
+      alert('حدث خطأ في حذف العملية');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setShowForm(false);
+    setEditingSale(null);
+    setFormData({
+      product_id: '',
+      buyer_name: '',
+      buyer_phone: '',
+      sale_price: '',
+      sale_date: new Date().toISOString().slice(0, 16),
+      notes: ''
+    });
   };
 
   const getCategoryName = (category) => {
@@ -172,7 +249,9 @@ export default function SalesRecord() {
       {/* فورم إضافة عملية بيع */}
       {showForm && (
         <div className="card" style={styles.formCard}>
-          <h2 style={styles.formTitle}>تسجيل عملية بيع جديدة</h2>
+          <h2 style={styles.formTitle}>
+            {editingSale ? 'تعديل عملية بيع' : 'تسجيل عملية بيع جديدة'}
+          </h2>
           <form onSubmit={handleSubmit}>
             <div style={styles.row}>
               <div style={styles.field}>
@@ -199,29 +278,31 @@ export default function SalesRecord() {
               </div>
             </div>
 
-            <div style={styles.field}>
-              <label style={styles.label}>المنتج *</label>
-              <select
-                className="input"
-                value={formData.product_id}
-                onChange={(e) => {
-                  const selectedProduct = products.find(p => p.id === e.target.value);
-                  setFormData({
-                    ...formData, 
-                    product_id: e.target.value,
-                    sale_price: selectedProduct?.final_price || ''
-                  });
-                }}
-                required
-              >
-                <option value="">اختر المنتج</option>
-                {products.map((product) => (
-                  <option key={product.id} value={product.id}>
-                    {product.title} - {product.final_price} جنيه ({getCategoryName(product.category)})
-                  </option>
-                ))}
-              </select>
-            </div>
+            {!editingSale && (
+              <div style={styles.field}>
+                <label style={styles.label}>المنتج *</label>
+                <select
+                  className="input"
+                  value={formData.product_id}
+                  onChange={(e) => {
+                    const selectedProduct = products.find(p => p.id === e.target.value);
+                    setFormData({
+                      ...formData, 
+                      product_id: e.target.value,
+                      sale_price: selectedProduct?.final_price || ''
+                    });
+                  }}
+                  required
+                >
+                  <option value="">اختر المنتج</option>
+                  {products.map((product) => (
+                    <option key={product.id} value={product.id}>
+                      {product.title} - {product.final_price} جنيه ({getCategoryName(product.category)})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div style={styles.row}>
               <div style={styles.field}>
@@ -259,9 +340,21 @@ export default function SalesRecord() {
               />
             </div>
 
-            <button type="submit" className="btn btn-primary" style={styles.submitBtn}>
-              حفظ عملية البيع
-            </button>
+            <div style={styles.formButtons}>
+              <button type="submit" className="btn btn-primary" style={styles.submitBtn}>
+                {editingSale ? 'حفظ التعديلات' : 'حفظ عملية البيع'}
+              </button>
+              {editingSale && (
+                <button 
+                  type="button" 
+                  className="btn" 
+                  style={styles.cancelBtn}
+                  onClick={handleCancelEdit}
+                >
+                  إلغاء التعديل
+                </button>
+              )}
+            </div>
           </form>
         </div>
       )}
@@ -318,6 +411,23 @@ export default function SalesRecord() {
                       <strong>ملاحظات:</strong> {sale.sale_notes}
                     </div>
                   )}
+                </div>
+
+                <div style={styles.saleActions}>
+                  <button 
+                    className="btn btn-primary"
+                    style={styles.editBtn}
+                    onClick={() => handleEdit(sale)}
+                  >
+                    ✏️ تعديل
+                  </button>
+                  <button 
+                    className="btn"
+                    style={styles.deleteBtn}
+                    onClick={() => handleDelete(sale.id)}
+                  >
+                    🗑️ حذف
+                  </button>
                 </div>
               </div>
             ))}
@@ -399,7 +509,7 @@ const styles = {
     fontSize: '14px'
   },
   submitBtn: {
-    width: '100%',
+    flex: 1,
     padding: '14px',
     fontSize: '16px'
   },
@@ -484,5 +594,40 @@ const styles = {
     fontSize: '14px',
     color: '#000000',
     lineHeight: '1.6'
+  },
+  saleActions: {
+    display: 'flex',
+    gap: '12px',
+    marginTop: '20px',
+    paddingTop: '16px',
+    borderTop: '2px solid #e5e7eb'
+  },
+  editBtn: {
+    flex: 1,
+    padding: '12px',
+    fontSize: '15px',
+    fontWeight: '600'
+  },
+  deleteBtn: {
+    flex: 1,
+    padding: '12px',
+    fontSize: '15px',
+    fontWeight: '600',
+    background: '#dc2626',
+    color: 'white',
+    border: 'none'
+  },
+  formButtons: {
+    display: 'flex',
+    gap: '12px',
+    marginTop: '8px'
+  },
+  cancelBtn: {
+    flex: 1,
+    padding: '14px',
+    fontSize: '16px',
+    background: '#6b7280',
+    color: 'white',
+    border: 'none'
   }
 };
