@@ -174,30 +174,6 @@ export default function SalesRecord() {
         <div className="card" style={styles.formCard}>
           <h2 style={styles.formTitle}>تسجيل عملية بيع جديدة</h2>
           <form onSubmit={handleSubmit}>
-            <div style={styles.field}>
-              <label style={styles.label}>المنتج *</label>
-              <select
-                className="input"
-                value={formData.product_id}
-                onChange={(e) => {
-                  const selectedProduct = products.find(p => p.id === e.target.value);
-                  setFormData({
-                    ...formData, 
-                    product_id: e.target.value,
-                    sale_price: selectedProduct?.final_price || ''
-                  });
-                }}
-                required
-              >
-                <option value="">اختر المنتج</option>
-                {products.map((product) => (
-                  <option key={product.id} value={product.id}>
-                    {product.title} - {product.final_price} جنيه ({getCategoryName(product.category)})
-                  </option>
-                ))}
-              </select>
-            </div>
-
             <div style={styles.row}>
               <div style={styles.field}>
                 <label style={styles.label}>اسم المشتري *</label>
@@ -221,6 +197,30 @@ export default function SalesRecord() {
                   placeholder="01xxxxxxxxx"
                 />
               </div>
+            </div>
+
+            <div style={styles.field}>
+              <label style={styles.label}>المنتج *</label>
+              <select
+                className="input"
+                value={formData.product_id}
+                onChange={(e) => {
+                  const selectedProduct = products.find(p => p.id === e.target.value);
+                  setFormData({
+                    ...formData, 
+                    product_id: e.target.value,
+                    sale_price: selectedProduct?.final_price || ''
+                  });
+                }}
+                required
+              >
+                <option value="">اختر المنتج</option>
+                {products.map((product) => (
+                  <option key={product.id} value={product.id}>
+                    {product.title} - {product.final_price} جنيه ({getCategoryName(product.category)})
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div style={styles.row}>
