@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
-  // GitHub Pages base path - must match repo name
+  // GitHub Pages base path
   base: '/bekya2.1/',
   plugins: [
     react(),
