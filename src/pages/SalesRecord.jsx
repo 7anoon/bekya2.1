@@ -479,9 +479,9 @@ const styles = {
     marginBottom: '8px'
   },
   statLabel: {
-    fontSize: '14px',
+    fontSize: '15px',
     color: '#000000',
-    fontWeight: '500'
+    fontWeight: '600'
   },
   formCard: {
     marginBottom: '40px',
@@ -504,9 +504,9 @@ const styles = {
   label: {
     display: 'block',
     marginBottom: '8px',
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#000000',
-    fontSize: '14px'
+    fontSize: '15px'
   },
   submitBtn: {
     flex: 1,
@@ -525,7 +525,9 @@ const styles = {
   empty: {
     textAlign: 'center',
     padding: '60px 20px',
-    color: '#000000'
+    color: '#000000',
+    fontSize: '16px',
+    fontWeight: '600'
   },
   salesList: {
     display: 'flex',
@@ -554,11 +556,11 @@ const styles = {
   saleCategory: {
     display: 'inline-block',
     background: 'rgba(107, 124, 89, 0.1)',
-    color: '#556b2f',
+    color: '#000000',
     padding: '6px 14px',
     borderRadius: '16px',
-    fontSize: '13px',
-    fontWeight: '500'
+    fontSize: '14px',
+    fontWeight: '700'
   },
   salePrice: {
     fontSize: '28px',
@@ -578,21 +580,22 @@ const styles = {
     borderRadius: '8px'
   },
   detailLabel: {
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#000000',
-    fontSize: '14px'
+    fontSize: '15px'
   },
   detailValue: {
     color: '#000000',
-    fontWeight: '500',
-    fontSize: '14px'
+    fontWeight: '600',
+    fontSize: '15px'
   },
   notesBox: {
     padding: '12px',
     background: 'rgba(139, 115, 85, 0.08)',
     borderRadius: '8px',
-    fontSize: '14px',
+    fontSize: '15px',
     color: '#000000',
+    fontWeight: '600',
     lineHeight: '1.6'
   },
   saleActions: {
@@ -606,15 +609,16 @@ const styles = {
     flex: 1,
     padding: '12px',
     fontSize: '15px',
-    fontWeight: '600'
+    fontWeight: '700',
+    color: '#000000'
   },
   deleteBtn: {
     flex: 1,
     padding: '12px',
     fontSize: '15px',
-    fontWeight: '600',
+    fontWeight: '700',
     background: '#dc2626',
-    color: 'white',
+    color: '#ffffff',
     border: 'none'
   },
   formButtons: {
@@ -626,8 +630,9 @@ const styles = {
     flex: 1,
     padding: '14px',
     fontSize: '16px',
+    fontWeight: '700',
     background: '#6b7280',
-    color: 'white',
+    color: '#ffffff',
     border: 'none'
   }
 };
