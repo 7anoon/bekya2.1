@@ -18,6 +18,7 @@ import ManageOffers from './pages/ManageOffers';
 import ManageUsers from './pages/ManageUsers';
 import Notifications from './pages/Notifications';
 import ProductDetails from './pages/ProductDetails';
+import UserProducts from './pages/UserProducts';
 import SetAdminRole from './pages/SetAdminRole';
 import Navbar from './components/Navbar';
 
@@ -105,6 +106,10 @@ function App() {
         <Route 
           path="/admin/users" 
           element={user && profile?.role === 'admin' ? <ManageUsers /> : <Navigate to="/" />} 
+        />
+        <Route 
+          path="/profile/:userId" 
+          element={user && profile?.role === 'admin' ? <UserProducts /> : <Navigate to="/" />} 
         />
         <Route 
           path="/set-admin" 
