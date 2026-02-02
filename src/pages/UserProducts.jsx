@@ -264,12 +264,12 @@ const styles = {
   },
   label: {
     fontWeight: '600',
-    color: '#5d5d5d',
+    color: '#000000',
     fontSize: '14px'
   },
   value: {
-    color: '#2d2d2d',
-    fontWeight: '500'
+    color: '#000000',
+    fontWeight: '600'
   },
   productsSection: {
     marginTop: '40px'
