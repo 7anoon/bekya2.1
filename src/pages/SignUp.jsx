@@ -25,7 +25,7 @@ export default function SignUp() {
     setLoading(true);
 
     try {
-      await signUp(
+      const result = await signUp(
         formData.username,
         formData.email,
         formData.password,
@@ -33,11 +33,16 @@ export default function SignUp() {
         formData.phone
       );
       
-      // Navigate using React Router instead of hard reload
-      navigate('/');
+      if (result && result.user) {
+        // Wait a bit for auth state to update
+        setTimeout(() => {
+          navigate('/');
+        }, 1000);
+      }
     } catch (err) {
       console.error('Signup error:', err);
       setError(err.message || 'خطأ في التسجيل');
+    } finally {
       setLoading(false);
     }
   };
