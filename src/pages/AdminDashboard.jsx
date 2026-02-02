@@ -261,6 +261,27 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleDeleteProduct = async (productId) => {
+    if (!confirm('هل أنت متأكد من حذف هذا المنتج نهائياً؟ لا يمكن التراجع عن هذا الإجراء.')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', productId);
+
+      if (error) throw error;
+
+      alert('تم حذف المنتج بنجاح');
+      loadData();
+    } catch (err) {
+      console.error('Error deleting product:', err);
+      alert('خطأ في حذف المنتج: ' + err.message);
+    }
+  };
+
   const handleNegotiate = (product) => {
     setSelectedProduct(product);
     setNegotiationPrice(product.suggested_price);
@@ -444,6 +465,13 @@ export default function AdminDashboard() {
                       >
                         رفض
                       </button>
+                      <button
+                        className="btn"
+                        style={{ background: '#dc2626', color: 'white' }}
+                        onClick={() => handleDeleteProduct(product.id)}
+                      >
+                        🗑️ حذف نهائي
+                      </button>
                     </div>
                   )}
 
@@ -451,13 +479,21 @@ export default function AdminDashboard() {
                     <div style={styles.recycleNote}>
                       <p><strong>فكرة إعادة التدوير:</strong></p>
                       <p>{product.recycle_idea}</p>
-                      <button
-                        className="btn btn-primary"
-                        onClick={() => handleApprove(product.id, 0)}
-                        style={{ marginTop: '12px' }}
-                      >
-                        موافقة على إعادة التدوير
-                      </button>
+                      <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+                        <button
+                          className="btn btn-primary"
+                          onClick={() => handleApprove(product.id, 0)}
+                        >
+                          موافقة على إعادة التدوير
+                        </button>
+                        <button
+                          className="btn"
+                          style={{ background: '#dc2626', color: 'white' }}
+                          onClick={() => handleDeleteProduct(product.id)}
+                        >
+                          🗑️ حذف نهائي
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
