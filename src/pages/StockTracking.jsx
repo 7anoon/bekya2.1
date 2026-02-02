@@ -197,7 +197,7 @@ export default function StockTracking() {
                   <button
                     className="btn"
                     style={{...styles.actionBtn, background: status.color}}
-                    onClick={() => navigate('/add-product')}
+                    onClick={() => navigate('/admin')}
                   >
                     إضافة منتج
                   </button>
