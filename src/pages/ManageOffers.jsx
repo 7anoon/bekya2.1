@@ -126,6 +126,17 @@ export default function ManageOffers() {
       return;
     }
 
+    // التحقق من أن التاريخ ليس في الماضي
+    if (formData.end_date) {
+      const selectedDate = new Date(formData.end_date);
+      const now = new Date();
+      
+      if (selectedDate < now) {
+        alert('لا يمكن اختيار تاريخ في الماضي. يرجى اختيار تاريخ في المستقبل.');
+        return;
+      }
+    }
+
     setUploading(true);
 
     try {
@@ -356,7 +367,11 @@ export default function ManageOffers() {
                 className="input"
                 value={formData.end_date}
                 onChange={(e) => setFormData({...formData, end_date: e.target.value})}
+                min={new Date().toISOString().slice(0, 16)}
               />
+              <small style={{color: '#6b7280', fontSize: '13px', marginTop: '4px', display: 'block'}}>
+                يجب اختيار تاريخ في المستقبل
+              </small>
             </div>
 
             <button 
