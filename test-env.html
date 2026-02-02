@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Environment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #0a0e27;
+            color: white;
+        }
+        .info {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+    </style>
+</head>
+<body>
+    <h1>🔍 اختبار البيئة</h1>
+    <div class="info">
+        <h3>معلومات الموقع:</h3>
+        <p>URL: <span id="url"></span></p>
+        <p>Protocol: <span id="protocol"></span></p>
+        <p>Host: <span id="host"></span></p>
+    </div>
+    
+    <div class="info">
+        <h3>Supabase Configuration:</h3>
+        <p>URL: <span id="supabase-url" class="error">Not configured in build</span></p>
+        <p>Key: <span id="supabase-key" class="error">Not configured in build</span></p>
+    </div>
+
+    <div class="info">
+        <h3>LocalStorage:</h3>
+        <pre id="storage"></pre>
+    </div>
+
+    <script>
+        document.getElementById('url').textContent = window.location.href;
+        document.getElementById('protocol').textContent = window.location.protocol;
+        document.getElementById('host').textContent = window.location.host;
+        
+        // Check localStorage
+        const storage = {};
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            storage[key] = localStorage.getItem(key).substring(0, 50) + '...';
+        }
+        document.getElementById('storage').textContent = JSON.stringify(storage, null, 2);
+    </script>
+</body>
+</html>
