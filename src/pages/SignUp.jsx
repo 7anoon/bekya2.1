@@ -34,15 +34,12 @@ export default function SignUp() {
       );
       
       if (result && result.user) {
-        // Wait a bit for auth state to update
-        setTimeout(() => {
-          navigate('/');
-        }, 1000);
+        // Use window.location for reliable navigation after signup
+        window.location.href = '/bekya2.1/';
       }
     } catch (err) {
       console.error('Signup error:', err);
       setError(err.message || 'خطأ في التسجيل');
-    } finally {
       setLoading(false);
     }
   };
