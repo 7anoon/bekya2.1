@@ -121,6 +121,11 @@ export default function ManageOffers() {
       return;
     }
 
+    if (!formData.discount_percentage || formData.discount_percentage <= 0) {
+      alert('يجب إدخال نسبة الخصم');
+      return;
+    }
+
     setUploading(true);
 
     try {
@@ -303,15 +308,16 @@ export default function ManageOffers() {
 
             <div style={styles.row}>
               <div style={styles.field}>
-                <label style={styles.label}>نسبة الخصم % (اختياري)</label>
+                <label style={styles.label}>نسبة الخصم % *</label>
                 <input
                   type="number"
                   className="input"
                   value={formData.discount_percentage}
                   onChange={(e) => setFormData({...formData, discount_percentage: e.target.value})}
                   placeholder="50"
-                  min="0"
+                  min="1"
                   max="100"
+                  required
                 />
               </div>
 
