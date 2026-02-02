@@ -230,7 +230,13 @@ export default function Profile() {
                           {product.weight && <span>الوزن: {product.weight} كجم</span>}
                           {product.condition && <span>الحالة: {product.condition}</span>}
                           <span>
-                            {product.choice_type === 'recycle' ? 'إعادة تدوير' : product.suggested_price ? `${product.suggested_price} جنيه` : 'في انتظار التسعير'}
+                            {product.choice_type === 'recycle' 
+                              ? 'إعادة تدوير' 
+                              : product.final_price 
+                                ? `السعر: ${product.final_price} جنيه` 
+                                : product.suggested_price 
+                                  ? `السعر المقترح: ${product.suggested_price} جنيه` 
+                                  : 'في انتظار التسعير'}
                           </span>
                         </div>
 
