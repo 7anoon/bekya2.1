@@ -19,8 +19,6 @@ export default function ManageOffers() {
     end_date: '',
     product_id: ''
   });
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [products, setProducts] = useState([]);
 
@@ -73,65 +71,6 @@ export default function ManageOffers() {
     }
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert('حجم الصورة يجب أن يكون أقل من 5 ميجابايت');
-        return;
-      }
-      
-      setImageFile(file);
-      
-      // عرض معاينة الصورة
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const uploadImage = async (file) => {
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
-      const filePath = `offers/${fileName}`;
-
-      // التحقق من وجود bucket أولاً
-      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
-      
-      if (bucketsError) {
-        console.error('Error listing buckets:', bucketsError);
-        throw new Error('لا يمكن الوصول إلى التخزين');
-      }
-
-      const bucketExists = buckets?.some(b => b.name === 'product-images');
-      
-      if (!bucketExists) {
-        throw new Error('مساحة التخزين غير متوفرة. يرجى التواصل مع المطور.');
-      }
-
-      const { error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(filePath);
-
-      return publicUrl;
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      throw error;
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -159,19 +98,7 @@ export default function ManageOffers() {
     setUploading(true);
 
     try {
-      let imageUrl = formData.image;
-      
-      // رفع الصورة إذا تم اختيار ملف
-      if (imageFile) {
-        try {
-          imageUrl = await uploadImage(imageFile);
-        } catch (uploadError) {
-          console.error('Error uploading image:', uploadError);
-          // الاستمرار بدون صورة إذا فشل الرفع
-          imageUrl = formData.image || null;
-          alert('تحذير: لم يتم رفع الصورة. سيتم حفظ العرض بدون صورة.');
-        }
-      }
+      const imageUrl = formData.image || null;
 
       if (editingOffer) {
         // تحديث عرض موجود
@@ -227,8 +154,6 @@ export default function ManageOffers() {
         end_date: '',
         product_id: ''
       });
-      setImageFile(null);
-      setImagePreview(null);
       loadOffers();
     } catch (err) {
       console.error('Error saving offer:', err);
@@ -296,7 +221,6 @@ export default function ManageOffers() {
       end_date: offer.end_date ? new Date(offer.end_date).toISOString().slice(0, 16) : '',
       product_id: offer.product_id || ''
     });
-    setImagePreview(offer.image || null);
     setShowForm(true);
   };
 
@@ -313,8 +237,6 @@ export default function ManageOffers() {
       end_date: '',
       product_id: ''
     });
-    setImageFile(null);
-    setImagePreview(null);
   };
 
   const deleteOffer = async (offerId) => {
@@ -381,41 +303,17 @@ export default function ManageOffers() {
             </div>
 
             <div style={styles.field}>
-              <label style={styles.label}>صورة العرض (اختياري)</label>
+              <label style={styles.label}>رابط صورة العرض (اختياري)</label>
               <input
                 type="text"
                 className="input"
                 value={formData.image}
                 onChange={(e) => setFormData({...formData, image: e.target.value})}
-                placeholder="أدخل رابط الصورة (اختياري)"
-                style={{marginBottom: '12px'}}
+                placeholder="أدخل رابط الصورة من الإنترنت (اختياري)"
               />
-              <small style={{color: '#6b7280', fontSize: '13px', display: 'block', marginBottom: '12px'}}>
-                أو ارفع صورة من جهازك:
+              <small style={{color: '#6b7280', fontSize: '13px', display: 'block', marginTop: '4px'}}>
+                مثال: https://example.com/image.jpg
               </small>
-              <input
-                type="file"
-                className="input"
-                accept="image/*"
-                onChange={handleImageChange}
-                style={styles.fileInput}
-              />
-              {imagePreview && (
-                <div style={styles.imagePreviewContainer}>
-                  <img src={imagePreview} alt="معاينة" style={styles.imagePreview} />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setImageFile(null);
-                      setImagePreview(null);
-                      setFormData({...formData, image: ''});
-                    }}
-                    style={styles.removeImageBtn}
-                  >
-                    ✕ إزالة الصورة
-                  </button>
-                </div>
-              )}
             </div>
 
             <div style={styles.row}>
@@ -737,39 +635,5 @@ const styles = {
   offerActions: {
     display: 'flex',
     gap: '12px'
-  },
-  fileInput: {
-    padding: '12px',
-    cursor: 'pointer'
-  },
-  imagePreviewContainer: {
-    marginTop: '16px',
-    position: 'relative',
-    display: 'inline-block'
-  },
-  imagePreview: {
-    width: '200px',
-    height: '200px',
-    objectFit: 'cover',
-    borderRadius: '12px',
-    border: '2px solid #e5e7eb'
-  },
-  removeImageBtn: {
-    position: 'absolute',
-    top: '8px',
-    right: '8px',
-    background: '#ef4444',
-    color: 'white',
-    border: 'none',
-    borderRadius: '50%',
-    width: '32px',
-    height: '32px',
-    cursor: 'pointer',
-    fontSize: '16px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontWeight: 'bold',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
   }
 };
