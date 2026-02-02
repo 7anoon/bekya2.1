@@ -54,8 +54,7 @@ export default function Browse() {
     try {
       const result = await fetchProducts(profile?.location, page, 20);
       const sellProducts = result.data.filter(product => 
-        (!product.choice_type || product.choice_type === 'sell') &&
-        product.category !== 'electronics' // إخفاء المنتجات الإلكترونية
+        (!product.choice_type || product.choice_type === 'sell')
       );
       
       const productsWithDiscounts = sellProducts.map(product => {

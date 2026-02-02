@@ -509,8 +509,7 @@ export const useProductStore = create((set, get) => ({
     const cachedData = cacheManager.get(cacheKey);
     
     if (cachedData) {
-      // فلترة المنتجات الإلكترونية من الـ cache
-      return cachedData.filter(product => product.category !== 'electronics');
+      return cachedData;
     }
     
     // Create abort controller for timeout
@@ -529,8 +528,7 @@ export const useProductStore = create((set, get) => ({
 
       if (error) throw error;
       
-      // فلترة المنتجات الإلكترونية
-      const filteredData = data.filter(product => product.category !== 'electronics');
+      const filteredData = data;
       
       // Cache the result
       cacheManager.set(cacheKey, filteredData, 3 * 60 * 1000); // 3 minutes for user products
@@ -564,8 +562,7 @@ export const useProductStore = create((set, get) => ({
         throw error;
       }
       
-      // فلترة المنتجات الإلكترونية
-      const filteredData = (data || []).filter(product => product.category !== 'electronics');
+      const filteredData = data || [];
       
       return filteredData;
     } catch (error) {

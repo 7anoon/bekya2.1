@@ -18,7 +18,7 @@ COMMENT ON COLUMN products.rejected_initial_price IS 'هل رفض العميل �
 ALTER TABLE offers 
 ADD COLUMN IF NOT EXISTS category TEXT;
 
-COMMENT ON COLUMN offers.category IS 'الفئة المستهدفة للعرض (electronics, furniture, books, clothes, toys, other)';
+COMMENT ON COLUMN offers.category IS 'الفئة المستهدفة للعرض (furniture, books, clothes, toys, other)';
 
 
 -- ========================================

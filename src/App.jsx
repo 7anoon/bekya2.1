@@ -21,6 +21,31 @@ import Navbar from './components/Navbar';
 function App() {
   const { user, profile, loadUser, isLoading } = useAuthStore();
 
+  // Clear cache and storage on app start
+  useEffect(() => {
+    // Clear all storage
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Clear browser cache
+    if ('caches' in window) {
+      caches.keys().then(names => {
+        names.forEach(name => {
+          caches.delete(name);
+        });
+      });
+    }
+    
+    // Force reload to clear memory cache
+    if (window.performance) {
+      const navigation = window.performance.getEntriesByType('navigation')[0];
+      if (navigation && navigation.type === 'reload') {
+        // This is a reload, clear everything
+        window.location.reload(true);
+      }
+    }
+  }, []);
+
   // Save current route to localStorage on route change
   useEffect(() => {
     const saveCurrentRoute = () => {
