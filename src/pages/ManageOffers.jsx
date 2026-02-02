@@ -15,11 +15,13 @@ export default function ManageOffers() {
     discount_percentage: '',
     category: '',
     target_location: '',
-    end_date: ''
+    end_date: '',
+    product_id: ''
   });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [products, setProducts] = useState([]);
 
   const getCategoryName = (category) => {
     const names = {
@@ -38,7 +40,23 @@ export default function ManageOffers() {
       return;
     }
     loadOffers();
+    loadProducts();
   }, [profile, navigate]);
+
+  const loadProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, title, price, status')
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setProducts(data || []);
+    } catch (err) {
+      console.error('Error loading products:', err);
+    }
+  };
 
   const loadOffers = async () => {
     try {
@@ -156,6 +174,7 @@ export default function ManageOffers() {
           category: formData.category || null,
           target_location: formData.target_location || null,
           end_date: formData.end_date || null,
+          product_id: formData.product_id || null,
           created_by: profile.id
         })
         .select()
@@ -175,7 +194,8 @@ export default function ManageOffers() {
         discount_percentage: '',
         category: '',
         target_location: '',
-        end_date: ''
+        end_date: '',
+        product_id: ''
       });
       setImageFile(null);
       setImagePreview(null);
@@ -358,6 +378,25 @@ export default function ManageOffers() {
                 onChange={(e) => setFormData({...formData, target_location: e.target.value})}
                 placeholder="اتركه فارغاً لكل المناطق"
               />
+            </div>
+
+            <div style={styles.field}>
+              <label style={styles.label}>المنتج المستهدف (اختياري)</label>
+              <select
+                className="input"
+                value={formData.product_id}
+                onChange={(e) => setFormData({...formData, product_id: e.target.value})}
+              >
+                <option value="">كل المنتجات</option>
+                {products.map((product) => (
+                  <option key={product.id} value={product.id}>
+                    {product.title} - {product.price} جنيه
+                  </option>
+                ))}
+              </select>
+              <small style={{color: '#6b7280', fontSize: '13px', marginTop: '4px', display: 'block'}}>
+                اختر منتج معين لتطبيق العرض عليه، أو اتركه فارغاً لتطبيق العرض على كل المنتجات
+              </small>
             </div>
 
             <div style={styles.field}>
