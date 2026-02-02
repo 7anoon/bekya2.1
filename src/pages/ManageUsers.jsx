@@ -61,32 +61,47 @@ export default function ManageUsers() {
   };
 
   const deleteUser = async (userId) => {
-    if (!confirm('هل أنت متأكد من حذف هذا المستخدم؟ سيتم حذف جميع منتجاته أيضاً.')) {
+    if (!confirm('هل أنت متأكد من حذف هذا المستخدم؟ سيتم حذف جميع منتجاته وإشعاراته نهائياً.')) {
       return;
     }
 
     try {
-      // حذف منتجات المستخدم أولاً
-      const { error: productsError } = await supabase
-        .from('products')
-        .delete()
-        .eq('user_id', userId);
+      // استخدام الدالة لحذف المستخدم بالكامل
+      const { error } = await supabase.rpc('delete_user_completely', {
+        user_id_to_delete: userId
+      });
 
-      if (productsError) throw productsError;
+      if (error) {
+        // إذا الدالة مش موجودة، نحذف من profiles فقط
+        if (error.message.includes('function') || error.code === '42883') {
+          console.warn('Database function not found, deleting profile only');
+          
+          // حذف الإشعارات
+          await supabase.from('notifications').delete().eq('user_id', userId);
+          
+          // حذف المنتجات
+          await supabase.from('products').delete().eq('user_id', userId);
+          
+          // حذف من profiles
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .delete()
+            .eq('id', userId);
 
-      // حذف المستخدم
-      const { error: userError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', userId);
+          if (profileError) throw profileError;
+          
+          alert('تم حذف بيانات المستخدم من التطبيق. لحذفه نهائياً، قم بتشغيل migration-delete-user-function.sql في Supabase');
+        } else {
+          throw error;
+        }
+      } else {
+        alert('تم حذف المستخدم نهائياً بنجاح');
+      }
 
-      if (userError) throw userError;
-
-      alert('تم حذف المستخدم بنجاح');
       loadUsers();
     } catch (err) {
       console.error('Error deleting user:', err);
-      alert('حدث خطأ في حذف المستخدم');
+      alert('حدث خطأ في حذف المستخدم: ' + err.message);
     }
   };
 

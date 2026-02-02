@@ -41,19 +41,8 @@ export default function Home() {
       if (soldError) throw soldError;
       setSoldCount(soldProductsCount || 0);
 
-      // حساب متوسط التقييم (من جدول المستخدمين أو المنتجات)
-      const { data: productsData, error: ratingError } = await supabase
-        .from('products')
-        .select('rating')
-        .not('rating', 'is', null);
-      
-      if (!ratingError && productsData && productsData.length > 0) {
-        const totalRating = productsData.reduce((sum, p) => sum + (p.rating || 0), 0);
-        const avgRating = totalRating / productsData.length;
-        setAverageRating(avgRating.toFixed(1));
-      } else {
-        setAverageRating('4.8'); // قيمة افتراضية
-      }
+      // استخدام تقييم افتراضي (لأن جدول products مفيش فيه rating)
+      setAverageRating('4.8');
 
       // جلب عدد المنتجات لكل فئة
       const { data: categoryData, error: categoryError } = await supabase
