@@ -239,7 +239,7 @@ export default function ProductDetails() {
           <div style={styles.priceSection}>
             {product.choice_type === 'recycle' ? (
               <div style={styles.recycleBox}>
-                <h3 style={styles.recycleTitle}>♻️ إعادة تدوير</h3>
+                <h3 style={styles.recycleTitle}>إعادة تدوير</h3>
                 {product.recycle_idea && (
                   <p style={styles.recycleIdea}>{product.recycle_idea}</p>
                 )}
@@ -249,7 +249,7 @@ export default function ProductDetails() {
                 {activeOffer && product.final_price ? (
                   <div style={styles.offerPriceBox}>
                     <div style={styles.offerBanner}>
-                      🎉 عرض خاص: خصم {activeOffer.discount_percentage}%
+                      عرض خاص: خصم {activeOffer.discount_percentage}%
                     </div>
                     <div style={styles.offerTitle}>{activeOffer.title}</div>
                     {activeOffer.description && (
@@ -268,7 +268,7 @@ export default function ProductDetails() {
                       </div>
                     </div>
                     <div style={styles.savings}>
-                      وفر {Math.round(product.final_price * (activeOffer.discount_percentage / 100))} جنيه! 💰
+                      وفر {Math.round(product.final_price * (activeOffer.discount_percentage / 100))} جنيه!
                     </div>
                     {activeOffer.end_date && (
                       <div style={styles.offerEndDate}>
@@ -334,11 +334,11 @@ export default function ProductDetails() {
               </h3>
               <div style={styles.sellerInfo}>
                 <div style={styles.sellerItem}>
-                  <span className="seller-label">👤 الاسم:</span>
+                  <span className="seller-label">الاسم:</span>
                   <span className="seller-value">{seller.username}</span>
                 </div>
                 <div style={styles.sellerItem}>
-                  <span className="seller-label">📍 الموقع:</span>
+                  <span className="seller-label">الموقع:</span>
                   <span className="seller-value">{seller.location}</span>
                 </div>
                 {product.status === 'approved' && (

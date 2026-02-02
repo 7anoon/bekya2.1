@@ -59,7 +59,7 @@ export default function Login() {
       <div style={styles.content}>
         <div className="card" style={styles.card}>
           <div style={styles.header}>
-            <h1 style={styles.logo}>بيكيا 🛒</h1>
+            <h1 style={styles.logo}>بيكيا</h1>
             <p style={styles.tagline}>الحاجة القديمة لسه ليها قيمة</p>
           </div>
 

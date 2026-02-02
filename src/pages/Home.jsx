@@ -99,11 +99,11 @@ export default function Home() {
 
   return (
     <div className="container">
-      {/* 🌟 Hero Section */}
+      {/* Hero Section */}
       <div className="netflix-hero" style={styles.heroSection}>
         <div style={styles.heroContent}>
           <h1 style={styles.heroTitle} className="netflix-shimmer">
-            🛒 بيكيا
+            بيكيا
           </h1>
           <p style={styles.heroSubtitle}>
             الحاجة القديمة لسه ليها قيمة
@@ -113,14 +113,14 @@ export default function Home() {
           </p>
           <div style={styles.heroButtons}>
             <button className="morph-button" onClick={() => navigate('/add-product')}>
-              🎯 ابدأ البيع الآن
+              ابدأ البيع الآن
             </button>
             <button 
               className="morph-button" 
               style={{background: 'linear-gradient(135deg, #8b7355 0%, #6d5a42 100%)'}}
               onClick={() => navigate('/browse')}
             >
-              🔍 تصفح المنتجات
+              تصفح المنتجات
             </button>
           </div>
         </div>
@@ -128,17 +128,24 @@ export default function Home() {
         {/* Stats */}
         <div style={styles.statsRow}>
           <div className="stats-card" style={styles.statCard}>
-            <div className="icon-3d">⭐</div>
+            <svg style={{width: '48px', height: '48px', margin: '0 auto 16px'}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
             <div className="stats-number">{averageRating}</div>
             <div className="stats-label">تقييم العملاء</div>
           </div>
           <div className="stats-card" style={styles.statCard}>
-            <div className="icon-3d">✅</div>
+            <svg style={{width: '48px', height: '48px', margin: '0 auto 16px'}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
             <div className="stats-number">+{soldCount}</div>
             <div className="stats-label">عملية بيع</div>
           </div>
           <div className="stats-card" style={styles.statCard}>
-            <div className="icon-3d">📦</div>
+            <svg style={{width: '48px', height: '48px', margin: '0 auto 16px'}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            </svg>
             <div className="stats-number">+{productsCount}</div>
             <div className="stats-label">منتج متاح</div>
           </div>
@@ -147,24 +154,20 @@ export default function Home() {
 
       <div className="glow-divider"></div>
 
-      {/* 🎨 Categories Section */}
+      {/* Categories Section */}
       <div style={styles.categoriesSection}>
         <h2 style={styles.sectionTitle}>
-          <span className="icon-3d" style={{marginLeft: '16px'}}>🏷️</span>
           فئاتنا الموجودة
         </h2>
         <div style={styles.categoriesGrid}>
           {[
-            {icon: '🪑', name: 'أثاث', key: 'أثاث'},
-            {icon: '👕', name: 'ملابس', key: 'ملابس'},
-            {icon: '📚', name: 'كتب', key: 'كتب'},
-            {icon: '🎮', name: 'ألعاب', key: 'ألعاب'},
-            {icon: '🏠', name: 'أجهزة منزلية', key: 'أجهزة منزلية'}
+            {name: 'أثاث', key: 'أثاث'},
+            {name: 'ملابس', key: 'ملابس'},
+            {name: 'كتب', key: 'كتب'},
+            {name: 'ألعاب', key: 'ألعاب'},
+            {name: 'أجهزة منزلية', key: 'أجهزة منزلية'}
           ].map((cat, i) => (
             <div key={i} className="stats-card netflix-lift" style={styles.categoryCard}>
-              <div className="icon-3d" style={{fontSize: '48px', marginBottom: '16px'}}>
-                {cat.icon}
-              </div>
               <h3 style={styles.categoryName}>{cat.name}</h3>
               <p style={styles.categoryCount}>
                 {categoryCounts[cat.key] || 0} منتج
@@ -180,7 +183,6 @@ export default function Home() {
       {offers.length > 0 && (
         <div style={styles.offersSection}>
           <h2 style={styles.offersTitle}>
-            <span className="icon-3d" style={{marginLeft: '16px'}}>🎉</span>
             العروض الحالية
           </h2>
           <div style={styles.offersGrid}>
@@ -195,12 +197,12 @@ export default function Home() {
                   <p style={styles.offerDesc}>{offer.description}</p>
                   {offer.discount_percentage && (
                     <div style={styles.discountBadge} className="netflix-badge">
-                      🔥 خصم {offer.discount_percentage}%
+                      خصم {offer.discount_percentage}%
                     </div>
                   )}
                   {offer.end_date && (
                     <p style={styles.offerDate}>
-                      ⏰ ينتهي: {new Date(offer.end_date).toLocaleDateString('ar-EG')}
+                      ينتهي: {new Date(offer.end_date).toLocaleDateString('ar-EG')}
                     </p>
                   )}
                 </div>
@@ -212,23 +214,19 @@ export default function Home() {
 
       <div className="glow-divider"></div>
 
-      {/* 🎯 How It Works */}
+      {/* How It Works */}
       <div style={styles.howItWorksSection}>
         <h2 style={styles.sectionTitle}>
-          <span className="icon-3d" style={{marginLeft: '16px'}}>🔄</span>
           كيف يعمل بيكيا؟
         </h2>
         <div style={styles.stepsGrid}>
           {[
-            {icon: '📸', title: 'صور منتجك', desc: 'التقط صور واضحة للمنتج'},
-            {icon: '💰', title: 'حدد السعر', desc: 'السعر يحدده المدير'},
-            {icon: '✅', title: 'انتظر الموافقة', desc: 'سنراجع منتجك ونوافق عليه'},
-            {icon: '🎉', title: 'ابدأ البيع', desc: 'منتجك متاح للبيع الآن!'}
+            {title: 'صور منتجك', desc: 'التقط صور واضحة للمنتج'},
+            {title: 'حدد السعر', desc: 'السعر يحدده المدير'},
+            {title: 'انتظر الموافقة', desc: 'سنراجع منتجك ونوافق عليه'},
+            {title: 'ابدأ البيع', desc: 'منتجك متاح للبيع الآن!'}
           ].map((step, i) => (
             <div key={i} className="stats-card netflix-lift" style={styles.stepCard}>
-              <div className="icon-3d" style={{fontSize: '56px', marginBottom: '20px'}}>
-                {step.icon}
-              </div>
               <div style={styles.stepNumber}>{i + 1}</div>
               <h3 style={styles.stepTitle}>{step.title}</h3>
               <p style={styles.stepDesc}>{step.desc}</p>
@@ -237,10 +235,9 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 🎯 Final CTA */}
+      {/* Final CTA */}
       <div style={styles.finalCTA}>
         <div className="stats-card" style={styles.ctaCard}>
-          <div className="icon-3d" style={{fontSize: '64px', marginBottom: '24px'}}>🚀</div>
           <h2 style={styles.ctaTitle}>جاهز للبدء؟</h2>
           <p style={styles.ctaDesc}>انضم لآلاف البائعين الناجحين على بيكيا</p>
           <button className="morph-button" onClick={() => navigate('/add-product')} style={{marginTop: '24px'}}>

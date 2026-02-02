@@ -60,12 +60,6 @@ export default function SetAdminRole() {
   return (
     <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
       <div className="card" style={{ padding: '40px', textAlign: 'center', maxWidth: '500px', ...getStatusStyle() }}>
-        <div style={{ fontSize: '60px', marginBottom: '20px' }}>
-          {status === 'checking' && '🔍'}
-          {status === 'updating' && '🔄'}
-          {status === 'success' && '✅'}
-          {status === 'error' && '❌'}
-        </div>
         <h2 style={{ marginBottom: '16px' }}>
           {status === 'checking' && 'التحقق من الصلاحيات'}
           {status === 'updating' && 'تحديث الصلاحيات'}

@@ -149,12 +149,12 @@ export default function Browse() {
   };
 
   const categories = [
-    { id: 'all', name: 'الكل', icon: '🛍️' },
-    { id: 'furniture', name: 'أثاث', icon: '🪑' },
-    { id: 'clothes', name: 'ملابس', icon: '👕' },
-    { id: 'books', name: 'كتب', icon: '📚' },
-    { id: 'games', name: 'ألعاب', icon: '🎮' },
-    { id: 'home', name: 'أجهزة منزلية', icon: '🏠' }
+    { id: 'all', name: 'الكل' },
+    { id: 'furniture', name: 'أثاث' },
+    { id: 'clothes', name: 'ملابس' },
+    { id: 'books', name: 'كتب' },
+    { id: 'games', name: 'ألعاب' },
+    { id: 'home', name: 'أجهزة منزلية' }
   ];
 
   const selectedCategoryData = categories.find(cat => cat.id === selectedCategory) || categories[0];
@@ -167,7 +167,6 @@ export default function Browse() {
     <div className="container">
       <div style={styles.header}>
         <div style={styles.titleContainer}>
-          <div className="icon-3d" style={styles.titleIcon}>🛍️</div>
           <h1 style={styles.title}>تصفح المنتجات</h1>
         </div>
         <p style={styles.subtitle}>اكتشف أفضل العروض على المنتجات المستعملة</p>
@@ -176,7 +175,10 @@ export default function Browse() {
       {/* شريط البحث */}
       <div style={styles.searchContainer}>
         <div style={styles.searchBox}>
-          <span style={styles.searchIcon}>🔍</span>
+          <svg style={styles.searchIcon} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
           <input
             type="text"
             placeholder="ابحث عن منتج..."
@@ -203,7 +205,6 @@ export default function Browse() {
             style={styles.dropdownButton}
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           >
-            <span style={{fontSize: '24px', marginLeft: '12px'}}>{selectedCategoryData.icon}</span>
             <span style={{fontSize: '18px', fontWeight: '700'}}>{selectedCategoryData.name}</span>
             <span style={{fontSize: '20px', marginRight: '12px', transition: 'transform 0.3s ease', transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'}}>▼</span>
           </button>
@@ -223,7 +224,6 @@ export default function Browse() {
                     setIsDropdownOpen(false);
                   }}
                 >
-                  <span style={{fontSize: '24px', marginLeft: '12px'}}>{cat.icon}</span>
                   <span style={{fontSize: '16px', fontWeight: '600'}}>{cat.name}</span>
                   {selectedCategory === cat.id && (
                     <span style={{marginRight: 'auto', color: '#6b7c59', fontSize: '18px'}}>✓</span>
@@ -243,7 +243,6 @@ export default function Browse() {
 
       {filteredProducts.length === 0 ? (
         <div style={styles.empty}>
-          <div className="icon-3d" style={{fontSize: '80px', marginBottom: '24px'}}>📦</div>
           <h3 style={styles.emptyTitle}>لا توجد منتجات</h3>
           <p style={styles.emptyText}>لا توجد منتجات في هذه الفئة حالياً</p>
         </div>

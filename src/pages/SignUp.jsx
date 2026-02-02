@@ -62,7 +62,7 @@ export default function SignUp() {
     <div style={styles.container} className="signup-container">
       <div style={styles.leftSide} className="signup-left-side">
         <div style={styles.brandContainer}>
-          <h1 style={styles.brandTitle}>بيكيا بتناديك! 🛒</h1>
+          <h1 style={styles.brandTitle}>بيكيا بتناديك!</h1>
           <p style={styles.brandSubtitle}>انضم لمجتمعنا اليوم</p>
           <p style={styles.brandDescription}>
             ابدأ رحلتك في بيع وشراء المنتجات<br/>
@@ -74,7 +74,7 @@ export default function SignUp() {
       <div className="card signup-card" style={styles.card}>
         {/* Mobile Brand Header */}
         <div className="mobile-brand-header">
-          <h1 style={styles.mobileBrandTitle}>بيكيا بتناديك! 🛒</h1>
+          <h1 style={styles.mobileBrandTitle}>بيكيا بتناديك!</h1>
         </div>
         
         <h1 style={styles.title} className="signup-title">إنشاء حساب جديد</h1>

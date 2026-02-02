@@ -458,12 +458,12 @@ export default function ManageOffers() {
                   )}
                   {offer.category && (
                     <span style={styles.categoryBadge}>
-                      📦 {getCategoryName(offer.category)}
+                      {getCategoryName(offer.category)}
                     </span>
                   )}
                   {offer.target_location && (
                     <span style={styles.locationBadge}>
-                      📍 {offer.target_location}
+                      {offer.target_location}
                     </span>
                   )}
                   {offer.end_date && (

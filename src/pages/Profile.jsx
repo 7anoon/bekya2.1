@@ -109,7 +109,10 @@ export default function Profile() {
         {/* Premium Stats Cards */}
         <div style={styles.statsGrid}>
           <div className="stats-card">
-            <div className="icon-3d">👤</div>
+            <svg style={{width: '48px', height: '48px', margin: '0 auto 16px'}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
             <div style={{marginTop: '16px'}}>
               <div className="stats-number">{products.length}</div>
               <div className="stats-label">منتجاتي</div>
@@ -117,7 +120,10 @@ export default function Profile() {
           </div>
           
           <div className="stats-card">
-            <div className="icon-3d">✅</div>
+            <svg style={{width: '48px', height: '48px', margin: '0 auto 16px'}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
             <div style={{marginTop: '16px'}}>
               <div className="stats-number">{products.filter(p => p.status === 'approved').length}</div>
               <div className="stats-label">تم الموافقة</div>
@@ -125,7 +131,10 @@ export default function Profile() {
           </div>
           
           <div className="stats-card">
-            <div className="icon-3d">⏳</div>
+            <svg style={{width: '48px', height: '48px', margin: '0 auto 16px'}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
             <div style={{marginTop: '16px'}}>
               <div className="stats-number">{products.filter(p => p.status === 'pending').length}</div>
               <div className="stats-label">قيد المراجعة</div>
@@ -138,7 +147,6 @@ export default function Profile() {
         <div className="card" style={styles.profileCard}>
           <div style={styles.profileHeader}>
             <h1 style={styles.title} className="netflix-shimmer">
-              <span className="icon-3d" style={{marginLeft: '16px'}}>👤</span>
               الملف الشخصي
             </h1>
             <button className="btn btn-danger" onClick={signOut} style={styles.logoutBtn}>
@@ -168,7 +176,6 @@ export default function Profile() {
 
         {error ? (
           <div className="card" style={styles.errorCard}>
-            <div style={styles.errorIcon}>⚠️</div>
             <h3 style={styles.errorTitle}>خطأ في تحميل المنتجات</h3>
             <p style={styles.errorMessage}>{error}</p>
             <button className="btn btn-primary" onClick={handleRetry}>
@@ -242,7 +249,7 @@ export default function Profile() {
 
                         {product.choice_type === 'recycle' && product.recycle_idea && (
                           <div style={styles.recycleInfo}>
-                            <strong>💡 فكرة إعادة التدوير:</strong>
+                            <strong>فكرة إعادة التدوير:</strong>
                             <p>{product.recycle_idea}</p>
                           </div>
                         )}
@@ -250,7 +257,7 @@ export default function Profile() {
                         {/* عرض التفاوض */}
                         {product.status === 'awaiting_seller' && product.negotiated_price && (
                           <div style={styles.negotiationOffer}>
-                            <h4 style={styles.negotiationTitle}>🤝 عرض سعر جديد من الإدارة</h4>
+                            <h4 style={styles.negotiationTitle}>عرض سعر جديد من الإدارة</h4>
                             <div style={styles.priceComparison}>
                               <div>
                                 <span style={styles.priceLabel}>السعر المقترح منك:</span>

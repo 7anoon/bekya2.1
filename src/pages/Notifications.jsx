@@ -130,19 +130,8 @@ export default function Notifications() {
   };
 
   const getNotificationIcon = (type) => {
-    const icons = {
-      new_product: '🆕',
-      product_approved: '✅',
-      product_rejected: '❌',
-      price_negotiation: '🤝',
-      price_rejected: '⚠️',
-      price_update: '💰',
-      negotiation: '🤝',
-      approved: '✅',
-      rejected: '❌',
-      offer: '🎉'
-    };
-    return icons[type] || '📢';
+    // استخدام SVG icons بدلاً من emojis
+    return '•';
   };
 
   const getTimeAgo = (date) => {
@@ -171,7 +160,7 @@ export default function Notifications() {
             onClick={markAllAsRead}
             style={styles.markAllBtn}
           >
-            ✓ تعليم الكل كمقروء ({unreadCount})
+            تعليم الكل كمقروء ({unreadCount})
           </button>
         )}
       </div>
