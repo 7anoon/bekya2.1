@@ -608,30 +608,6 @@ const styles = {
     color: '#10b981',
     marginBottom: '30px'
   },
-  quickLinks: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-    gap: '20px',
-    marginBottom: '40px'
-  },
-  linkCard: {
-    padding: '24px',
-    textAlign: 'center',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    textDecoration: 'none',
-    display: 'block'
-  },
-  linkTitle: {
-    fontSize: '18px',
-    fontWeight: '600',
-    color: '#2d2d2d',
-    marginBottom: '8px'
-  },
-  linkDesc: {
-    fontSize: '14px',
-    color: '#7a7a7a'
-  },
   stats: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
