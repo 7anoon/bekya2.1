@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useProductStore } from '../store/productStore';
 import { supabase } from '../lib/supabase';
 import ImageLightbox from '../components/ImageLightbox';
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   const [pendingProducts, setPendingProducts] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -461,7 +463,7 @@ export default function AdminDashboard() {
                       <button
                         className="btn"
                         style={{ background: '#3b82f6', color: 'white' }}
-                        onClick={() => window.location.href = `/bekya2.1/edit-product/${product.id}`}
+                        onClick={() => navigate(`/edit-product/${product.id}`)}
                       >
                         تعديل
                       </button>
@@ -498,7 +500,7 @@ export default function AdminDashboard() {
                         <button
                           className="btn"
                           style={{ background: '#3b82f6', color: 'white' }}
-                          onClick={() => window.location.href = `/bekya2.1/edit-product/${product.id}`}
+                          onClick={() => navigate(`/edit-product/${product.id}`)}
                         >
                           تعديل
                         </button>

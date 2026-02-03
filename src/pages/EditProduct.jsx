@@ -29,18 +29,53 @@ export default function EditProduct() {
 
   const loadProduct = async () => {
     try {
+      setLoading(true);
+      
+      // التحقق من المستخدم أولاً
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        alert('يجب تسجيل الدخول أولاً');
+        navigate('/login');
+        return;
+      }
+
+      // جلب بيانات المستخدم
+      const { data: userProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) {
+        console.error('Error loading profile:', profileError);
+        alert('حدث خطأ في تحميل بيانات المستخدم');
+        navigate('/');
+        return;
+      }
+
+      // التحقق من الصلاحيات - الأدمن فقط يمكنه التعديل
+      if (userProfile?.role !== 'admin') {
+        alert('ليس لديك صلاحية لتعديل المنتجات. التعديل متاح للإدارة فقط');
+        navigate('/');
+        return;
+      }
+
+      // جلب بيانات المنتج
       const { data, error } = await supabase
         .from('products')
         .select('*')
         .eq('id', id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error loading product:', error);
+        throw error;
+      }
 
-      // التحقق من الصلاحيات - الأدمن فقط يمكنه التعديل
-      if (profile.role !== 'admin') {
-        alert('ليس لديك صلاحية لتعديل المنتجات. التعديل متاح للإدارة فقط');
-        navigate('/profile');
+      if (!data) {
+        alert('المنتج غير موجود');
+        navigate('/admin');
         return;
       }
 
@@ -58,8 +93,8 @@ export default function EditProduct() {
       setLoading(false);
     } catch (err) {
       console.error('Error loading product:', err);
-      alert('حدث خطأ في تحميل المنتج');
-      navigate('/profile');
+      alert('حدث خطأ في تحميل المنتج: ' + (err.message || 'خطأ غير معروف'));
+      navigate('/admin');
     }
   };
 
