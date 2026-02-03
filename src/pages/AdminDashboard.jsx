@@ -309,25 +309,7 @@ export default function AdminDashboard() {
     <div className="container">
       <h1 style={styles.title}>لوحة الإدارة</h1>
 
-      {/* روابط سريعة */}
-      <div style={styles.quickLinks}>
-        <a href="/admin/stock" className="card" style={styles.linkCard}>
-          <div style={styles.linkTitle}>متابعة المخزون</div>
-          <div style={styles.linkDesc}>متابعة الفئات والمبيعات</div>
-        </a>
-        <a href="/admin/sales" className="card" style={styles.linkCard}>
-          <div style={styles.linkTitle}>سجل المبيعات</div>
-          <div style={styles.linkDesc}>تسجيل ومتابعة المبيعات</div>
-        </a>
-        <a href="/admin/offers" className="card" style={styles.linkCard}>
-          <div style={styles.linkTitle}>إدارة العروض</div>
-          <div style={styles.linkDesc}>إضافة وتعديل العروض</div>
-        </a>
-        <a href="/admin/users" className="card" style={styles.linkCard}>
-          <div style={styles.linkTitle}>إدارة المستخدمين</div>
-          <div style={styles.linkDesc}>عرض وإدارة المستخدمين</div>
-        </a>
-      </div>
+
 
       <div style={styles.stats}>
         <div className="card" style={styles.statCard}>
