@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import { copyFileSync } from 'fs';
+import { resolve } from 'path';
 
 export default defineConfig({
   // GitHub Pages base path - use '/' for local development
@@ -34,7 +36,22 @@ export default defineConfig({
           }
         ]
       }
-    })
+    }),
+    // Copy 404.html to dist after build
+    {
+      name: 'copy-404',
+      closeBundle() {
+        try {
+          copyFileSync(
+            resolve(__dirname, 'public/404.html'),
+            resolve(__dirname, 'dist/404.html')
+          );
+          console.log('✓ Copied 404.html to dist');
+        } catch (err) {
+          console.error('Failed to copy 404.html:', err);
+        }
+      }
+    }
   ],
   build: {
     // Optimize for mobile performance

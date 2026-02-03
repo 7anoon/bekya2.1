@@ -4,43 +4,35 @@
     <meta charset="utf-8">
     <title>Redirecting...</title>
     <script>
-      // Single Page Apps for GitHub Pages
-      // MIT License
-      // https://github.com/rafgraph/spa-github-pages
-      // This script takes the current url and converts the path and query
-      // string into just a query string, and then redirects the browser
-      // to the new url with only a query string and hash fragment,
-      // e.g. https://www.foo.tld/one/two?a=b&c=d#qwe, becomes
-      // https://www.foo.tld/?/one/two&a=b~and~c=d#qwe
-      // Note: this 404.html file must be at least 512 bytes for it to work
-      // with Internet Explorer (it is currently > 512 bytes)
-
-      // If you're creating a Project Pages site and NOT using a custom domain,
-      // then set pathSegmentsToKeep to 1 (enterprise users may need to set it to > 1).
-      // This way the code will only replace the route part of the path, and not
-      // the real directory in which the app resides, for example:
-      // https://username.github.io/repo-name/one/two?a=b&c=d#qwe becomes
-      // https://username.github.io/repo-name/?/one/two&a=b~and~c=d#qwe
-      // Otherwise, leave pathSegmentsToKeep as 0.
-      var pathSegmentsToKeep = 1;
-
-      var l = window.location;
-      var pathSegments = l.pathname.split('/').slice(1);
-      var repoName = pathSegments[0];
-      var route = pathSegments.slice(1).join('/');
+      // GitHub Pages SPA redirect for bekya2.1
+      // Handles client-side routing by redirecting to index.html
       
-      l.replace(
-        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-        '/' + repoName + '/?/' + route +
-        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-        l.hash
-      );
-
+      (function() {
+        var l = window.location;
+        var base = '/bekya2.1/';
+        
+        // Get the path after /bekya2.1/
+        var path = l.pathname.replace(base, '');
+        
+        // Redirect to index.html with the path preserved
+        if (path && path !== l.pathname) {
+          var redirect = l.protocol + '//' + l.hostname + 
+            (l.port ? ':' + l.port : '') + 
+            base + 
+            '?redirect=' + encodeURIComponent(path) +
+            (l.search ? '&' + l.search.slice(1) : '') +
+            l.hash;
+          
+          window.location.replace(redirect);
+        } else {
+          // Fallback to base URL
+          window.location.replace(l.protocol + '//' + l.hostname + 
+            (l.port ? ':' + l.port : '') + base);
+        }
+      })();
     </script>
   </head>
   <body>
-    <!-- This file is needed for GitHub Pages to handle client-side routing correctly -->
-    <!-- The script above redirects all 404s back to index.html with the proper route -->
     <p>Redirecting...</p>
   </body>
 </html>
