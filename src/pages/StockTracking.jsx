@@ -69,7 +69,16 @@ export default function StockTracking() {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database error:', error);
+        // Handle specific 404 errors
+        if (error.code === '42P01' || error.message.includes('does not exist')) {
+          alert('⚠️ جدول المنتجات غير موجود. يرجى تشغيل ملف final-migration.sql في Supabase SQL Editor');
+        } else {
+          alert('حدث خطأ في تحميل البيانات: ' + error.message);
+        }
+        return;
+      }
 
       // تنظيم البيانات حسب الفئات
       const categorizedData = {};
@@ -92,7 +101,7 @@ export default function StockTracking() {
       setLastUpdate(new Date());
     } catch (err) {
       console.error('Error loading stock data:', err);
-      alert('حدث خطأ في تحميل البيانات');
+      alert('حدث خطأ في تحميل البيانات: ' + err.message);
     } finally {
       setLoading(false);
     }

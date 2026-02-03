@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Database Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6">Database Connection Test</h1>
+        
+        <div id="results" class="space-y-4"></div>
+        
+        <div class="mt-8">
+            <button onclick="runTest()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Run Database Test
+            </button>
+            <button onclick="runMigration()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-4">
+                Run Complete Migration
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Hardcoded Supabase credentials
+        const supabaseUrl = 'https://kxuvoovqvtwhtxjnnboo.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4dXZvb3ZxdnR3aHR4am5uYm9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5Mjc1MzUsImV4cCI6MjA4NDUwMzUzNX0.4jLdfrpRlBwzfvPdYpnQQM_n48HYEYkRnrIooUasrXw';
+        
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        function log(message, data = null) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = 'bg-white p-4 rounded shadow';
+            
+            if (data) {
+                div.innerHTML = `<div class="font-semibold">${message}</div><pre class="text-sm bg-gray-100 p-2 mt-2 overflow-x-auto">${JSON.stringify(data, null, 2)}</pre>`;
+            } else {
+                div.innerHTML = `<div class="font-semibold">${message}</div>`;
+            }
+            
+            results.appendChild(div);
+            console.log(message, data);
+        }
+
+        async function runTest() {
+            document.getElementById('results').innerHTML = '<div class="text-gray-600">Running tests...</div>';
+            
+            try {
+                // Test connection
+                log(' Testing basic connection...');
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('count')
+                    .limit(1);
+                
+                if (error) {
+                    log('❌ Connection Error:', error);
+                    return;
+                }
+                
+                log('✅ Connected to Supabase successfully!');
+                
+                // Test table structure
+                log('Testing table structures...');
+                const tablesToCheck = ['products', 'profiles', 'sales', 'offers', 'notifications'];
+                
+                for (const table of tablesToCheck) {
+                    try {
+                        const { data, error } = await supabase
+                            .from(table)
+                            .select('*')
+                            .limit(1);
+                        
+                        if (error) {
+                            log(`❌ Table ${table}:`, error);
+                        } else {
+                            log(`✅ Table ${table}: accessible`);
+                        }
+                    } catch (err) {
+                        log(`❌ Table ${table}:`, err.message);
+                    }
+                }
+                
+                // Test RLS
+                log('Testing Row Level Security...');
+                const { data: rlsData, error: rlsError } = await supabase
+                    .rpc('get_rls_status');
+                
+                if (rlsError) {
+                    log('ℹ️ RLS test function not available (this is normal)');
+                } else {
+                    log('RLS Status:', rlsData);
+                }
+                
+            } catch (error) {
+                log('❌ Test failed:', error);
+            }
+        }
+
+        async function runMigration() {
+            log('Running complete migration...');
+            
+            // Complete migration SQL
+            const migrationSQL = `
+-- Complete Database Setup for Bekya 2.1
+-- Run this in your Supabase SQL Editor to fix all 404 errors
+
+-- 1. ENSURE ALL REQUIRED TABLES EXIST
+
+-- Create sales table
+CREATE TABLE IF NOT EXISTS sales (
+  id SERIAL PRIMARY KEY,
+  product_id UUID REFERENCES products(id),
+  product_name TEXT NOT NULL,
+  category TEXT,
+  sold_to UUID REFERENCES profiles(id),
+  sale_price DECIMAL(10, 2) NOT NULL,
+  sale_date DATE DEFAULT CURRENT_DATE,
+  notes TEXT,
+  user_id UUID REFERENCES profiles(id),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create offers table
+CREATE TABLE IF NOT EXISTS offers (
+  id SERIAL PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT,
+  discount_percentage INTEGER,
+  start_date DATE,
+  end_date DATE,
+  category TEXT,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create notifications table
+CREATE TABLE IF NOT EXISTS notifications (
+  id SERIAL PRIMARY KEY,
+  user_id UUID REFERENCES profiles(id) NOT NULL,
+  message TEXT NOT NULL,
+  read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 2. ADD MISSING COLUMNS TO EXISTING TABLES
+
+-- Add weight column to products
+ALTER TABLE products 
+ADD COLUMN IF NOT EXISTS weight DECIMAL(10, 2);
+
+-- Add profile columns
+ALTER TABLE profiles 
+ADD COLUMN IF NOT EXISTS phone TEXT;
+
+ALTER TABLE profiles 
+ADD COLUMN IF NOT EXISTS location TEXT;
+
+-- 3. ENABLE ROW LEVEL SECURITY
+
+ALTER TABLE sales ENABLE ROW LEVEL SECURITY;
+ALTER TABLE offers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+
+-- 4. CREATE POLICIES
+
+-- Sales policies
+CREATE POLICY IF NOT EXISTS "Admin full access to sales" 
+ON sales FOR ALL 
+USING (EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin'));
+
+CREATE POLICY IF NOT EXISTS "Users can read their own sales" 
+ON sales FOR SELECT 
+USING (user_id = auth.uid() OR sold_to = auth.uid());
+
+-- Offers policies
+CREATE POLICY IF NOT EXISTS "Admin full access to offers" 
+ON offers FOR ALL 
+USING (EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin'));
+
+CREATE POLICY IF NOT EXISTS "Users can read active offers" 
+ON offers FOR SELECT 
+USING (is_active = TRUE);
+
+-- Notifications policies
+CREATE POLICY IF NOT EXISTS "Users can read their own notifications" 
+ON notifications FOR SELECT 
+USING (user_id = auth.uid());
+
+CREATE POLICY IF NOT EXISTS "Users can update their own notifications" 
+ON notifications FOR UPDATE 
+USING (user_id = auth.uid());
+
+-- 5. CREATE VIEWS
+
+-- Admin stats view
+CREATE OR REPLACE VIEW admin_stats AS
+SELECT 
+  COUNT(*) as total_products,
+  COUNT(CASE WHEN status = 'approved' THEN 1 END) as available_products,
+  COUNT(CASE WHEN status = 'sold' THEN 1 END) as sold_products,
+  COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_products,
+  COUNT(CASE WHEN status = 'rejected' THEN 1 END) as rejected_products
+FROM products;
+
+-- Sales summary view
+CREATE OR REPLACE VIEW sales_summary AS
+SELECT 
+  p.category,
+  COUNT(*) as total_sales,
+  SUM(s.sale_price) as total_revenue,
+  AVG(s.sale_price) as average_price,
+  MAX(s.sale_date) as last_sale_date
+FROM sales s
+JOIN products p ON s.product_id = p.id
+GROUP BY p.category
+ORDER BY total_revenue DESC;
+
+-- 6. FINAL VERIFICATION
+
+SELECT 'Migration completed successfully!' as status_message;
+            `;
+            
+            try {
+                // This is a simplified approach - in reality, you'd need to run this in Supabase SQL editor
+                log('📋 Migration SQL prepared. Please copy and run this in your Supabase SQL Editor:');
+                log('Migration SQL:', migrationSQL);
+                
+                // Try to execute some basic checks
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('count')
+                    .limit(1);
+                
+                if (!error) {
+                    log('✅ Basic database connection is working');
+                }
+                
+            } catch (error) {
+                log('❌ Migration preparation failed:', error);
+            }
+        }
+
+        // Run test on page load
+        window.addEventListener('load', runTest);
+    </script>
+</body>
+</html>
