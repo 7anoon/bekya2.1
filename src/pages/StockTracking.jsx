@@ -308,7 +308,7 @@ export default function StockTracking() {
                 <button
                   className="btn"
                   style={styles.viewBtn}
-                  onClick={() => navigate('/browse')}
+                  onClick={() => navigate(`/browse?category=${cat}`)}
                 >
                   عرض المنتجات
                 </button>

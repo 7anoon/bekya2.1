@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useProductStore } from '../store/productStore';
 import { useAuthStore } from '../store/authStore';
 import { supabase } from '../lib/supabase';
@@ -6,6 +7,7 @@ import ProductCard from '../components/ProductCard';
 import { BrowseSkeleton } from '../components/Skeletons';
 
 export default function Browse() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [offers, setOffers] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -16,6 +18,14 @@ export default function Browse() {
   const [searchQuery, setSearchQuery] = useState('');
   const { fetchProducts } = useProductStore();
   const { profile } = useAuthStore();
+
+  // قراءة الفئة من URL عند تحميل الصفحة
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get('category');
+    if (categoryFromUrl) {
+      setSelectedCategory(categoryFromUrl);
+    }
+  }, [searchParams]);
 
   const handleDeleteProduct = async (productId) => {
     if (!confirm('هل أنت متأكد من حذف هذا المنتج نهائياً؟ لا يمكن التراجع عن هذا الإجراء.')) {
@@ -153,9 +163,25 @@ export default function Browse() {
     { id: 'furniture', name: 'أثاث' },
     { id: 'clothes', name: 'ملابس' },
     { id: 'books', name: 'كتب' },
-    { id: 'games', name: 'ألعاب' },
-    { id: 'home', name: 'أجهزة منزلية' }
+    { id: 'toys', name: 'ألعاب' },
+    { id: 'appliances', name: 'أجهزة منزلية' },
+    { id: 'sports', name: 'رياضة' },
+    { id: 'jewelry', name: 'مجوهرات وإكسسوارات' },
+    { id: 'other', name: 'أخرى' }
   ];
+
+  // دالة لتغيير الفئة وتحديث URL
+  const handleCategoryChange = (categoryId) => {
+    setSelectedCategory(categoryId);
+    setIsDropdownOpen(false);
+    
+    // تحديث URL
+    if (categoryId === 'all') {
+      setSearchParams({});
+    } else {
+      setSearchParams({ category: categoryId });
+    }
+  };
 
   const selectedCategoryData = categories.find(cat => cat.id === selectedCategory) || categories[0];
 
@@ -167,9 +193,25 @@ export default function Browse() {
     <div className="container">
       <div style={styles.header}>
         <div style={styles.titleContainer}>
-          <h1 style={styles.title}>تصفح المنتجات</h1>
+          <h1 style={styles.title}>
+            {selectedCategory === 'all' ? 'تصفح المنتجات' : `منتجات ${selectedCategoryData.name}`}
+          </h1>
         </div>
-        <p style={styles.subtitle}>اكتشف أفضل العروض على المنتجات المستعملة</p>
+        <p style={styles.subtitle}>
+          {selectedCategory === 'all' 
+            ? 'اكتشف أفضل العروض على المنتجات المستعملة'
+            : `تصفح جميع منتجات ${selectedCategoryData.name} المتاحة`
+          }
+        </p>
+        {selectedCategory !== 'all' && (
+          <button
+            className="btn btn-secondary"
+            onClick={() => handleCategoryChange('all')}
+            style={styles.showAllButton}
+          >
+            عرض جميع المنتجات
+          </button>
+        )}
       </div>
 
       {/* شريط البحث */}
@@ -219,10 +261,7 @@ export default function Browse() {
                     ...styles.dropdownItem,
                     background: selectedCategory === cat.id ? 'rgba(107, 124, 89, 0.3)' : 'transparent'
                   }}
-                  onClick={() => {
-                    setSelectedCategory(cat.id);
-                    setIsDropdownOpen(false);
-                  }}
+                  onClick={() => handleCategoryChange(cat.id)}
                 >
                   <span style={{fontSize: '16px', fontWeight: '600'}}>{cat.name}</span>
                   {selectedCategory === cat.id && (
@@ -352,6 +391,12 @@ const styles = {
   subtitle: {
     fontSize: '18px',
     color: '#d1d5db'
+  },
+  showAllButton: {
+    marginTop: '20px',
+    padding: '12px 32px',
+    fontSize: '16px',
+    fontWeight: '600'
   },
   searchContainer: {
     display: 'flex',
