@@ -1,0 +1,64 @@
+name: Auto Push Changes to GitHub
+
+on:
+  # تشغيل تلقائي عند أي تعديل في الملفات
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  # تشغيل يدوي عند الحاجة
+  workflow_dispatch:
+
+jobs:
+  auto-push:
+    runs-on: ubuntu-latest
+    steps:
+      # خطوة 1: جلب الكود من المستودع
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      # خطوة 2: إعداد Git
+      - name: Setup Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git config --global pull.rebase false
+
+      # خطوة 3: فحص التغييرات
+      - name: Check for changes
+        run: |
+          git diff --name-only HEAD^ HEAD > changed_files.txt
+          echo "الملفات المعدلة:"
+          cat changed_files.txt
+
+      # خطوة 4: تلقائي push للتغييرات
+      - name: Auto commit and push
+        run: |
+          # إضافة جميع الملفات
+          git add .
+          
+          # فحص إذا كان في تغييرات
+          if ! git diff --cached --quiet; then
+            # إنشاء commit تلقائي
+            git commit -m "Auto-commit: تحديث تلقائي من GitHub Actions 🤖
+            
+            التغييرات المطبقة:
+            - تحديث الملفات المعدلة تلقائياً
+            - الحفاظ على أحدث نسخة من المشروع"
+            
+            # push التغييرات
+            git push origin main
+            echo "✅ تم رفع التغييرات تلقائياً إلى GitHub"
+          else
+            echo "ℹ️  لا توجد تغييرات جديدة للمراجعة"
+          fi
+
+      # خطوة 5: إرسال إشعار (اختياري)
+      - name: Send notification
+        if: success()
+        run: |
+          echo "🎉 عملية الرفع التلقائي تمت بنجاح!"
+          echo "الوقت: $(date)"

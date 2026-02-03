@@ -1,0 +1,59 @@
+name: Auto Sync Local Changes
+
+on:
+  # تشغيل عند أي push للـ main branch
+  push:
+    branches: [ main ]
+  
+  # تشغيل يدوي
+  workflow_dispatch:
+  
+  # تشغيل كل ساعة للتحقق من التحديثات
+  schedule:
+    - cron: '0 * * * *'
+
+jobs:
+  sync-changes:
+    runs-on: ubuntu-latest
+    steps:
+      # جلب أحدث نسخة من المستودع
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      # إعداد Git
+      - name: Setup Git configuration
+        run: |
+          git config --global user.name "Auto-Sync Bot"
+          git config --global user.email "bot@autosync.com"
+
+      # فحص التغييرات المحلية
+      - name: Check for local changes
+        run: |
+          echo "🔍 فحص التغييرات المحلية..."
+          git status
+          
+          # إذا كان في تغييرات غير مرفوعة
+          if [[ -n "$(git status --porcelain)" ]]; then
+            echo "📝 وجد تغييرات جديدة"
+            git add .
+            git commit -m "Auto-sync: مزامنة التغييرات المحلية 🔄
+            
+            التغييرات:
+            - مزامنة الملفات المحدثة تلقائياً
+            - الحفاظ على أحدث إصدار من المشروع"
+            git push origin main
+            echo "✅ تم مزامنة التغييرات مع GitHub"
+          else
+            echo "✅ لا توجد تغييرات جديدة للمزامنة"
+          fi
+
+      # إنشاء تقرير بالتغييرات
+      - name: Generate change report
+        run: |
+          echo "📋 تقرير التغييرات:"
+          echo "التاريخ: $(date)"
+          echo "الـ Commit الحالي: $(git rev-parse HEAD)"
+          git log --oneline -5
