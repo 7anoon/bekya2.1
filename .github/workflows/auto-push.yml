@@ -30,9 +30,15 @@ jobs:
       # خطوة 3: فحص التغييرات
       - name: Check for changes
         run: |
-          git diff --name-only HEAD^ HEAD > changed_files.txt
+          # التعامل مع الحالة الأولى للـ commit
+          if git rev-parse HEAD^ >/dev/null 2>&1; then
+            git diff --name-only HEAD^ HEAD > changed_files.txt
+          else
+            # إذا كان هذا أول commit
+            git diff --name-only HEAD > changed_files.txt
+          fi
           echo "الملفات المعدلة:"
-          cat changed_files.txt
+          cat changed_files.txt || echo "لا توجد ملفات محدثة"
 
       # خطوة 4: تلقائي push للتغييرات
       - name: Auto commit and push
