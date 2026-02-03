@@ -25,13 +25,15 @@
           var decoded = l.search.slice(1).split('&').map(function(s) { 
             return s.replace(/~and~/g, '&')
           }).join('?');
+          var pathSegments = l.pathname.split('/').filter(function(s) { return s; });
+          var basePath = pathSegments.length > 0 ? '/' + pathSegments[0] + '/' : '/';
           window.history.replaceState(null, null,
-              l.pathname.slice(0, -1) + decoded + l.hash
+              basePath + decoded + l.hash
           );
         }
       }(window.location))
     </script>
-    <script type="module" crossorigin src="/bekya2.1/assets/index-BKpsZfSX.js"></script>
+    <script type="module" crossorigin src="/bekya2.1/assets/index-DI7PzWh-.js"></script>
     <link rel="modulepreload" crossorigin href="/bekya2.1/assets/react-vendor-Gq4blHEi.js">
     <link rel="modulepreload" crossorigin href="/bekya2.1/assets/supabase-CbUG4vy5.js">
     <link rel="stylesheet" crossorigin href="/bekya2.1/assets/index-D2fndURy.css">

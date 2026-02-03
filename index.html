@@ -25,8 +25,10 @@
           var decoded = l.search.slice(1).split('&').map(function(s) { 
             return s.replace(/~and~/g, '&')
           }).join('?');
+          var pathSegments = l.pathname.split('/').filter(function(s) { return s; });
+          var basePath = pathSegments.length > 0 ? '/' + pathSegments[0] + '/' : '/';
           window.history.replaceState(null, null,
-              l.pathname.slice(0, -1) + decoded + l.hash
+              basePath + decoded + l.hash
           );
         }
       }(window.location))
