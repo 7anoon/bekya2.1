@@ -82,7 +82,7 @@ export default function Browse() {
     if (offers.length >= 0) {
       loadProducts(currentPage);
     }
-  }, [offers, currentPage, searchQuery]);
+  }, [offers, currentPage, searchQuery, selectedCategory]);
 
   const loadProducts = async (page = 1) => {
     try {
