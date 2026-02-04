@@ -78,6 +78,11 @@ export default function ManageOffers() {
       return;
     }
 
+    if (!formData.category) {
+      alert('يجب اختيار الفئة المستهدفة');
+      return;
+    }
+
     if (!formData.discount_percentage || formData.discount_percentage <= 0) {
       alert('يجب إدخال نسبة الخصم');
       return;
@@ -105,7 +110,8 @@ export default function ManageOffers() {
             title: formData.title,
             description: formData.description,
             discount_percentage: formData.discount_percentage ? parseInt(formData.discount_percentage) : null,
-            category: formData.category || null,
+            // إذا اختار "كل الفئات"، نحفظ null لتطبيق العرض على كل المنتجات
+            category: formData.category === 'all' ? null : formData.category,
             target_location: formData.target_location || null,
             end_date: formData.end_date || null,
             product_name: formData.product_name || null
@@ -122,7 +128,8 @@ export default function ManageOffers() {
             title: formData.title,
             description: formData.description,
             discount_percentage: formData.discount_percentage ? parseInt(formData.discount_percentage) : null,
-            category: formData.category || null,
+            // إذا اختار "كل الفئات"، نحفظ null لتطبيق العرض على كل المنتجات
+            category: formData.category === 'all' ? null : formData.category,
             target_location: formData.target_location || null,
             end_date: formData.end_date || null,
             product_name: formData.product_name || null,
@@ -210,7 +217,8 @@ export default function ManageOffers() {
       title: offer.title,
       description: offer.description,
       discount_percentage: offer.discount_percentage || '',
-      category: offer.category || '',
+      // إذا category كان null، نعرض "all" (كل الفئات)
+      category: offer.category || 'all',
       target_location: offer.target_location || '',
       end_date: offer.end_date ? new Date(offer.end_date).toISOString().slice(0, 16) : '',
       product_name: offer.product_name || ''
@@ -311,19 +319,27 @@ export default function ManageOffers() {
               </div>
 
               <div style={styles.field}>
-                <label style={styles.label}>الفئة المستهدفة (اختياري)</label>
+                <label style={styles.label}>الفئة المستهدفة *</label>
                 <select
                   className="input"
                   value={formData.category}
                   onChange={(e) => setFormData({...formData, category: e.target.value})}
+                  required
                 >
-                  <option value="">كل الفئات</option>
+                  <option value="" disabled>اختر الفئة المستهدفة...</option>
+                  <option value="all">كل الفئات</option>
                   <option value="furniture">أثاث</option>
                   <option value="clothes">ملابس</option>
                   <option value="books">كتب</option>
                   <option value="toys">ألعاب</option>
+                  <option value="appliances">أجهزة منزلية</option>
+                  <option value="sports">رياضة</option>
+                  <option value="jewelry">مجوهرات وإكسسوارات</option>
                   <option value="other">أخرى</option>
                 </select>
+                <small style={{color: '#6b7280', fontSize: '13px', marginTop: '4px', display: 'block'}}>
+                  اختر "كل الفئات" لتطبيق العرض على جميع المنتجات، أو اختر فئة معينة
+                </small>
               </div>
             </div>
 
@@ -409,11 +425,9 @@ export default function ManageOffers() {
                       خصم {offer.discount_percentage}%
                     </span>
                   )}
-                  {offer.category && (
-                    <span style={styles.categoryBadge}>
-                      {getCategoryName(offer.category)}
-                    </span>
-                  )}
+                  <span style={styles.categoryBadge}>
+                    {offer.category ? getCategoryName(offer.category) : 'كل الفئات'}
+                  </span>
                   {offer.target_location && (
                     <span style={styles.locationBadge}>
                       {offer.target_location}
