@@ -27,6 +27,12 @@ export default function Profile() {
   };
 
   const loadUserProducts = async () => {
+    // Safety check
+    if (!profile?.id) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -45,8 +51,13 @@ export default function Profile() {
   };
 
   useEffect(() => {
-    loadUserProducts();
-  }, [profile.id]);
+    // Safety check: only load if profile is available
+    if (profile?.id) {
+      loadUserProducts();
+    } else {
+      setLoading(false);
+    }
+  }, [profile?.id]);
 
   const handleAcceptNegotiation = async (productId) => {
     if (confirm('هل تريد قبول عرض السعر الجديد؟')) {
@@ -99,6 +110,21 @@ export default function Profile() {
         <div style={styles.loading}>
           <div className="spinner"></div>
           <p>جاري تحميل منتجاتك...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error if no profile
+  if (!profile?.id) {
+    return (
+      <div className="container">
+        <div className="card" style={styles.errorCard}>
+          <h3 style={styles.errorTitle}>حدث خطأ</h3>
+          <p style={styles.errorMessage}>حدث خطأ في تحميل البيانات. حاول تسجيل الدخول مرة أخرى</p>
+          <button className="btn btn-primary" onClick={() => navigate('/login')}>
+            تسجيل الدخول
+          </button>
         </div>
       </div>
     );
