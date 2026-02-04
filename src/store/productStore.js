@@ -226,7 +226,9 @@ export const useProductStore = create((set, get) => ({
       .update({ 
         status: 'approved', 
         final_price: finalPrice,
-        approved_at: new Date().toISOString()
+        approved_at: new Date().toISOString(),
+        // مسح ملاحظة الإدارة بعد الموافقة
+        negotiation_note: null
       })
       .eq('id', productId)
       .select()
