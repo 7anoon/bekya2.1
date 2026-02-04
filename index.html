@@ -20,17 +20,28 @@
     
     <!-- GitHub Pages SPA redirect handler -->
     <script>
-      // This script runs BEFORE React loads
-      // It removes the redirect parameter from URL if present
       (function() {
+        // Handle hash-based redirect from 404.html
+        var hash = window.location.hash;
+        if (hash && hash.length > 1) {
+          var path = hash.substring(1); // Remove the #
+          
+          // If it looks like a route (starts with /)
+          if (path.startsWith('/')) {
+            // Store for React Router
+            sessionStorage.setItem('redirect-path', path);
+            
+            // Clean the URL
+            window.history.replaceState(null, null, window.location.pathname);
+          }
+        }
+        
+        // Also handle query parameter redirect (backup method)
         var params = new URLSearchParams(window.location.search);
         var redirect = params.get('redirect');
         
         if (redirect) {
-          // Store for React Router to handle
           sessionStorage.setItem('redirect-path', redirect);
-          
-          // Clean the URL
           var cleanUrl = window.location.pathname + window.location.hash;
           window.history.replaceState(null, null, cleanUrl);
         }

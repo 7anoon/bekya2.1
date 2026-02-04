@@ -2,27 +2,27 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Redirecting...</title>
+    <title>بيكيا</title>
     <script>
-      // GitHub Pages SPA redirect - Simple and reliable
+      // Immediate redirect for GitHub Pages SPA
       (function() {
         var path = window.location.pathname;
         
-        // If we're on a 404 page, redirect to index with the path in sessionStorage
-        if (path && path !== '/bekya2.1/' && path !== '/bekya2.1/index.html') {
-          // Extract the path after /bekya2.1/
-          var redirectPath = path.replace('/bekya2.1', '');
-          
-          // Store it for the app to handle
-          sessionStorage.setItem('redirect-path', redirectPath);
-          
-          // Redirect to the base URL
+        // Remove /bekya2.1 from path
+        var cleanPath = path.replace('/bekya2.1', '');
+        
+        // If there's a path, redirect to index with hash
+        if (cleanPath && cleanPath !== '/' && cleanPath !== '/index.html') {
+          // Use hash-based redirect as fallback
+          window.location.replace('/bekya2.1/#' + cleanPath + window.location.search + window.location.hash);
+        } else {
+          // Go to home
           window.location.replace('/bekya2.1/');
         }
       })();
     </script>
   </head>
   <body>
-    <p>Redirecting...</p>
+    <p style="text-align: center; padding: 40px; font-family: Arial;">جاري التحميل...</p>
   </body>
 </html>
