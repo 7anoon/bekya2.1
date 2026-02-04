@@ -20,20 +20,18 @@
     
     <!-- GitHub Pages SPA redirect handler -->
     <script>
+      // This script runs BEFORE React loads
+      // It removes the redirect parameter from URL if present
       (function() {
-        var l = window.location;
-        var params = new URLSearchParams(l.search);
+        var params = new URLSearchParams(window.location.search);
         var redirect = params.get('redirect');
         
         if (redirect) {
-          // Store the redirect path for React Router to handle
-          sessionStorage.setItem('github-pages-redirect', redirect);
+          // Store for React Router to handle
+          sessionStorage.setItem('redirect-path', redirect);
           
-          // Clean up the URL
-          var base = '/bekya2.1/';
-          var cleanUrl = l.protocol + '//' + l.hostname + 
-            (l.port ? ':' + l.port : '') + base + l.hash;
-          
+          // Clean the URL
+          var cleanUrl = window.location.pathname + window.location.hash;
           window.history.replaceState(null, null, cleanUrl);
         }
       })();

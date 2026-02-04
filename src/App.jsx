@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import { supabase } from './lib/supabase';
 import { log, logError } from './lib/utils';
@@ -35,16 +35,6 @@ function App() {
     if (!hasInitialized) {
       sessionStorage.setItem('app-initialized', 'true');
       log('App initialized');
-    }
-    
-    // Handle GitHub Pages redirect after React Router is ready
-    const redirectPath = sessionStorage.getItem('github-pages-redirect');
-    if (redirectPath) {
-      sessionStorage.removeItem('github-pages-redirect');
-      // Wait a bit for React Router to be fully ready
-      setTimeout(() => {
-        window.location.pathname = '/bekya2.1' + redirectPath;
-      }, 100);
     }
   }, []);
 
@@ -94,6 +84,7 @@ function App() {
 
   return (
     <BrowserRouter basename="/bekya2.1">
+      <RedirectHandler />
       <OfflineDetector />
       {user && <Navbar />}
       <Routes>
@@ -138,6 +129,27 @@ function App() {
       </Routes>
     </BrowserRouter>
   );
+}
+
+// Component to handle GitHub Pages redirects
+function RedirectHandler() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const redirectPath = sessionStorage.getItem('redirect-path');
+    
+    if (redirectPath && location.pathname === '/') {
+      // Clear the stored path
+      sessionStorage.removeItem('redirect-path');
+      
+      // Navigate to the intended path
+      log('Redirecting to:', redirectPath);
+      navigate(redirectPath, { replace: true });
+    }
+  }, [navigate, location]);
+
+  return null;
 }
 
 // Wrap App with ErrorBoundary

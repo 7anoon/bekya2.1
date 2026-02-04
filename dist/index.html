@@ -20,26 +20,24 @@
     
     <!-- GitHub Pages SPA redirect handler -->
     <script>
+      // This script runs BEFORE React loads
+      // It removes the redirect parameter from URL if present
       (function() {
-        var l = window.location;
-        var params = new URLSearchParams(l.search);
+        var params = new URLSearchParams(window.location.search);
         var redirect = params.get('redirect');
         
         if (redirect) {
-          // Store the redirect path for React Router to handle
-          sessionStorage.setItem('github-pages-redirect', redirect);
+          // Store for React Router to handle
+          sessionStorage.setItem('redirect-path', redirect);
           
-          // Clean up the URL
-          var base = '/bekya2.1/';
-          var cleanUrl = l.protocol + '//' + l.hostname + 
-            (l.port ? ':' + l.port : '') + base + l.hash;
-          
+          // Clean the URL
+          var cleanUrl = window.location.pathname + window.location.hash;
           window.history.replaceState(null, null, cleanUrl);
         }
       })();
     </script>
-    <script type="module" crossorigin src="/bekya2.1/assets/index-CiT9xUFE.js"></script>
-    <link rel="modulepreload" crossorigin href="/bekya2.1/assets/react-vendor-AT0ValFE.js">
+    <script type="module" crossorigin src="/bekya2.1/assets/index-DwSW9DQe.js"></script>
+    <link rel="modulepreload" crossorigin href="/bekya2.1/assets/react-vendor-By0eNyEF.js">
     <link rel="modulepreload" crossorigin href="/bekya2.1/assets/supabase-CbUG4vy5.js">
     <link rel="stylesheet" crossorigin href="/bekya2.1/assets/index-D2fndURy.css">
   <link rel="manifest" href="/bekya2.1/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/bekya2.1/registerSW.js"></script></head>

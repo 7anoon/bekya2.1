@@ -4,30 +4,20 @@
     <meta charset="utf-8">
     <title>Redirecting...</title>
     <script>
-      // GitHub Pages SPA redirect for bekya2.1
-      // Handles client-side routing by redirecting to index.html
-      
+      // GitHub Pages SPA redirect - Simple and reliable
       (function() {
-        var l = window.location;
-        var base = '/bekya2.1/';
+        var path = window.location.pathname;
         
-        // Get the path after /bekya2.1/
-        var path = l.pathname.replace(base, '');
-        
-        // Redirect to index.html with the path preserved
-        if (path && path !== l.pathname) {
-          var redirect = l.protocol + '//' + l.hostname + 
-            (l.port ? ':' + l.port : '') + 
-            base + 
-            '?redirect=' + encodeURIComponent(path) +
-            (l.search ? '&' + l.search.slice(1) : '') +
-            l.hash;
+        // If we're on a 404 page, redirect to index with the path in sessionStorage
+        if (path && path !== '/bekya2.1/' && path !== '/bekya2.1/index.html') {
+          // Extract the path after /bekya2.1/
+          var redirectPath = path.replace('/bekya2.1', '');
           
-          window.location.replace(redirect);
-        } else {
-          // Fallback to base URL
-          window.location.replace(l.protocol + '//' + l.hostname + 
-            (l.port ? ':' + l.port : '') + base);
+          // Store it for the app to handle
+          sessionStorage.setItem('redirect-path', redirectPath);
+          
+          // Redirect to the base URL
+          window.location.replace('/bekya2.1/');
         }
       })();
     </script>
