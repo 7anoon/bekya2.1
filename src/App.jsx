@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import { supabase } from './lib/supabase';
 import { log, logError } from './lib/utils';
@@ -84,7 +84,34 @@ function App() {
 
   return (
     <BrowserRouter basename="/bekya2.1">
-      <RedirectHandler />
+      <RoutesWrapper user={user} profile={profile} />
+    </BrowserRouter>
+  );
+}
+
+// Separate component to use navigate hook
+function RoutesWrapper({ user, profile }) {
+  const navigate = useNavigate();
+
+  // Handle GitHub Pages redirect - runs once when app loads
+  useEffect(() => {
+    const redirectPath = sessionStorage.getItem('redirect-path');
+    
+    if (redirectPath) {
+      log('GitHub Pages redirect detected:', redirectPath);
+      // Clear the stored path
+      sessionStorage.removeItem('redirect-path');
+      
+      // Navigate to the intended path after a short delay
+      setTimeout(() => {
+        log('Navigating to:', redirectPath);
+        navigate(redirectPath, { replace: true });
+      }, 100);
+    }
+  }, [navigate]);
+
+  return (
+    <>
       <OfflineDetector />
       {user && <Navbar />}
       <Routes>
@@ -127,29 +154,8 @@ function App() {
           element={user ? <SetAdminRole /> : <Navigate to="/login" />} 
         />
       </Routes>
-    </BrowserRouter>
+    </>
   );
-}
-
-// Component to handle GitHub Pages redirects
-function RedirectHandler() {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  useEffect(() => {
-    const redirectPath = sessionStorage.getItem('redirect-path');
-    
-    if (redirectPath && location.pathname === '/') {
-      // Clear the stored path
-      sessionStorage.removeItem('redirect-path');
-      
-      // Navigate to the intended path
-      log('Redirecting to:', redirectPath);
-      navigate(redirectPath, { replace: true });
-    }
-  }, [navigate, location]);
-
-  return null;
 }
 
 // Wrap App with ErrorBoundary
