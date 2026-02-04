@@ -22,6 +22,8 @@ export default defineConfig({
         orientation: 'portrait'
       },
       workbox: {
+        navigateFallback: '/bekya2.1/index.html',
+        navigateFallbackDenylist: [/^\/bekya2\.1\/api/, /^\/bekya2\.1\/admin/],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
