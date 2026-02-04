@@ -99,16 +99,16 @@ function RoutesWrapper({ user, profile }) {
     
     if (redirectPath) {
       log('GitHub Pages redirect detected:', redirectPath);
-      // Clear the stored path
+      // Clear the stored path immediately
       sessionStorage.removeItem('redirect-path');
       
-      // Navigate to the intended path after a short delay
-      setTimeout(() => {
+      // Only navigate if user is logged in and path is not login/signup
+      if (user && redirectPath !== '/login' && redirectPath !== '/signup') {
         log('Navigating to:', redirectPath);
         navigate(redirectPath, { replace: true });
-      }, 100);
+      }
     }
-  }, [navigate]);
+  }, [navigate, user]);
 
   return (
     <>
