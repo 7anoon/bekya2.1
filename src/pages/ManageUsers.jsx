@@ -45,18 +45,31 @@ export default function ManageUsers() {
     }
 
     try {
-      const { error } = await supabase
+      // تحديث الدور في قاعدة البيانات
+      const { data, error } = await supabase
         .from('profiles')
         .update({ role: newRole })
-        .eq('id', userId);
+        .eq('id', userId)
+        .select();
 
-      if (error) throw error;
-      
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+
+      // التحقق من أن التحديث تم بنجاح
+      if (!data || data.length === 0) {
+        throw new Error('لم يتم تحديث البيانات. تحقق من صلاحيات RLS في Supabase');
+      }
+
+      console.log('Role updated successfully:', data);
       alert('تم تحديث الصلاحيات بنجاح');
-      loadUsers();
+      
+      // إعادة تحميل المستخدمين للتأكد من التحديث
+      await loadUsers();
     } catch (err) {
       console.error('Error updating role:', err);
-      alert('حدث خطأ في تحديث الصلاحيات');
+      alert('حدث خطأ في تحديث الصلاحيات: ' + (err.message || 'خطأ غير معروف'));
     }
   };
 
