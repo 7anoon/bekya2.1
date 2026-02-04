@@ -26,12 +26,15 @@
         var redirect = params.get('redirect');
         
         if (redirect) {
-          // Remove the redirect parameter and navigate to the path
-          var base = '/bekya2.1/';
-          var newPath = base + redirect;
+          // Store the redirect path for React Router to handle
+          sessionStorage.setItem('github-pages-redirect', redirect);
           
-          // Use replaceState to update the URL without reloading
-          window.history.replaceState(null, null, newPath + l.hash);
+          // Clean up the URL
+          var base = '/bekya2.1/';
+          var cleanUrl = l.protocol + '//' + l.hostname + 
+            (l.port ? ':' + l.port : '') + base + l.hash;
+          
+          window.history.replaceState(null, null, cleanUrl);
         }
       })();
     </script>

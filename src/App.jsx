@@ -36,6 +36,16 @@ function App() {
       sessionStorage.setItem('app-initialized', 'true');
       log('App initialized');
     }
+    
+    // Handle GitHub Pages redirect after React Router is ready
+    const redirectPath = sessionStorage.getItem('github-pages-redirect');
+    if (redirectPath) {
+      sessionStorage.removeItem('github-pages-redirect');
+      // Wait a bit for React Router to be fully ready
+      setTimeout(() => {
+        window.location.pathname = '/bekya2.1' + redirectPath;
+      }, 100);
+    }
   }, []);
 
   // Save current route to localStorage on route change

@@ -26,16 +26,19 @@
         var redirect = params.get('redirect');
         
         if (redirect) {
-          // Remove the redirect parameter and navigate to the path
-          var base = '/bekya2.1/';
-          var newPath = base + redirect;
+          // Store the redirect path for React Router to handle
+          sessionStorage.setItem('github-pages-redirect', redirect);
           
-          // Use replaceState to update the URL without reloading
-          window.history.replaceState(null, null, newPath + l.hash);
+          // Clean up the URL
+          var base = '/bekya2.1/';
+          var cleanUrl = l.protocol + '//' + l.hostname + 
+            (l.port ? ':' + l.port : '') + base + l.hash;
+          
+          window.history.replaceState(null, null, cleanUrl);
         }
       })();
     </script>
-    <script type="module" crossorigin src="/bekya2.1/assets/index-BGEjX1yP.js"></script>
+    <script type="module" crossorigin src="/bekya2.1/assets/index-CiT9xUFE.js"></script>
     <link rel="modulepreload" crossorigin href="/bekya2.1/assets/react-vendor-AT0ValFE.js">
     <link rel="modulepreload" crossorigin href="/bekya2.1/assets/supabase-CbUG4vy5.js">
     <link rel="stylesheet" crossorigin href="/bekya2.1/assets/index-D2fndURy.css">
