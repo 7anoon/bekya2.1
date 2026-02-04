@@ -105,7 +105,8 @@ export default function Browse() {
         const activeOffer = offers.find(offer => 
           offer.is_active && 
           offer.discount_percentage && 
-          offer.category === product.category &&
+          // إذا category فارغ، العرض يطبق على كل المنتجات
+          (!offer.category || offer.category === product.category) &&
           (!offer.end_date || new Date(offer.end_date) > new Date())
         );
 
