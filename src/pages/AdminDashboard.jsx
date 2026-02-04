@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProductStore } from '../store/productStore';
 import { supabase } from '../lib/supabase';
+import { getCategoryDisplayName } from '../lib/utils';
 import ImageLightbox from '../components/ImageLightbox';
 
 export default function AdminDashboard() {
@@ -15,20 +16,6 @@ export default function AdminDashboard() {
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [userRole, setUserRole] = useState(null);
   const { fetchPendingProducts, approveProduct, rejectProduct, negotiateProduct } = useProductStore();
-
-  const getCategoryName = (category) => {
-    const categories = {
-      furniture: 'أثاث',
-      clothes: 'ملابس',
-      books: 'كتب',
-      toys: 'ألعاب',
-      appliances: 'أجهزة منزلية',
-      sports: 'رياضة',
-      jewelry: 'مجوهرات وإكسسوارات',
-      other: 'أخرى'
-    };
-    return categories[category] || category;
-  };
 
   const getStatusText = (product) => {
     // إذا البائع وافق على العرض - نتحقق من negotiation_note
@@ -380,7 +367,7 @@ export default function AdminDashboard() {
                     {product.category && (
                       <div style={styles.detailRow}>
                         <span style={styles.detailLabel}>الفئة:</span>
-                        <span style={styles.sellerData}>{getCategoryName(product.category)}</span>
+                        <span style={styles.sellerData}>{getCategoryDisplayName(product)}</span>
                       </div>
                     )}
                     {product.weight && (

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
 import { useProductStore } from '../store/productStore';
+import { getCategoryDisplayName } from '../lib/utils';
 import ImageLightbox from '../components/ImageLightbox';
 import './ProductDetails.css';
 
@@ -305,11 +306,7 @@ export default function ProductDetails() {
             <div style={styles.infoItem}>
               <span className="info-label">الفئة:</span>
               <span className="info-value">
-                {product.category === 'furniture' && 'أثاث'}
-                {product.category === 'clothes' && 'ملابس'}
-                {product.category === 'books' && 'كتب'}
-                {product.category === 'toys' && 'ألعاب'}
-                {product.category === 'other' && 'أخرى'}
+                {getCategoryDisplayName(product)}
               </span>
             </div>
             {product.original_price && (

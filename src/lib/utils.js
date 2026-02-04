@@ -61,3 +61,26 @@ export function createAbortController(timeoutMs = 15000) {
     cleanup: () => clearTimeout(timeoutId)
   };
 }
+
+// Get category display name with custom category support
+export function getCategoryDisplayName(product) {
+  const categoryNames = {
+    furniture: 'أثاث',
+    clothes: 'ملابس',
+    books: 'كتب',
+    toys: 'ألعاب',
+    appliances: 'أجهزة منزلية',
+    sports: 'رياضة',
+    jewelry: 'مجوهرات وإكسسوارات',
+    other: 'أخرى'
+  };
+
+  const baseName = categoryNames[product.category] || product.category || 'غير محدد';
+  
+  // إذا كانت الفئة "أخرى" وفيه اسم مخصص، نضيفه في قوسين
+  if (product.category === 'other' && product.custom_category) {
+    return `${baseName} (${product.custom_category})`;
+  }
+  
+  return baseName;
+}
