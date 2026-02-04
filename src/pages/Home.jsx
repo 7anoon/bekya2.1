@@ -158,9 +158,6 @@ export default function Home() {
           ].map((cat, i) => (
             <div key={i} className="stats-card netflix-lift" style={styles.categoryCard}>
               <h3 style={styles.categoryName}>{cat.name}</h3>
-              <p style={styles.categoryCount}>
-                {categoryCounts[cat.key] || 0}
-              </p>
             </div>
           ))}
         </div>
