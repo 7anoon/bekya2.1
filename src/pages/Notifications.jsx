@@ -6,9 +6,16 @@ import { useNavigate } from 'react-router-dom';
 export default function Notifications() {
   const { profile } = useAuthStore();
   const [notifications, setNotifications] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Safety check: only load if profile is available
+    if (!profile?.id) {
+      setIsLoading(false);
+      return;
+    }
+
     loadNotifications();
     
     // الاستماع للإشعارات الجديدة باستخدام Supabase Realtime
@@ -34,7 +41,7 @@ export default function Notifications() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [profile?.id]);
 
   const playNotificationSound = () => {
     try {
@@ -46,7 +53,14 @@ export default function Notifications() {
   };
 
   const loadNotifications = async () => {
+    // Safety check
+    if (!profile?.id) {
+      setIsLoading(false);
+      return;
+    }
+
     try {
+      setIsLoading(true);
       const { data, error } = await supabase
         .from('notifications')
         .select('*, products(title, images, final_price)')
@@ -58,6 +72,8 @@ export default function Notifications() {
       setNotifications(data || []);
     } catch (err) {
       console.error('Error loading notifications:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -89,6 +105,9 @@ export default function Notifications() {
   };
 
   const markAllAsRead = async () => {
+    // Safety check
+    if (!profile?.id) return;
+
     try {
       // تحديث قاعدة البيانات
       const { error } = await supabase
@@ -149,6 +168,29 @@ export default function Notifications() {
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="container">
+        <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+          <div className="spinner"></div>
+          <p style={{ marginTop: '20px', color: '#6b7280' }}>جاري تحميل الإشعارات...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error if no profile
+  if (!profile?.id) {
+    return (
+      <div className="container">
+        <div className="card" style={styles.empty}>
+          <p>حدث خطأ في تحميل البيانات. حاول تسجيل الدخول مرة أخرى</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container">
