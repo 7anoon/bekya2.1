@@ -28,7 +28,7 @@ WITH CHECK (
 );
 
 -- التأكد من أن المستخدمين يمكنهم تحديث ملفاتهم الشخصية
-CREATE POLICY IF NOT EXISTS "Users can update own profile"
+CREATE POLICY "Users can update own profile"
 ON profiles
 FOR UPDATE
 TO authenticated
